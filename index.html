@@ -526,7 +526,26 @@
         { Title: "Secretary", Icon: "📜", Order: 6, Points: "50000+", Description: "Worthy of trust.", StatusText: "Inner Circle.", ProtocolText: "Respect and safeguard.", DutiesText: "Authority on smaller matters.", ContactText: "UNLIMITED", CssClass: "elite-butler" },
         { Title: "Queen's Champion", Icon: "⚔️", Order: 7, Points: "100000", Description: "Ultimate submissive!", StatusText: "You have made it!", ProtocolText: "2 bodies, 1 soul!", DutiesText: "Enjoy the love you earned.", ContactText: "LEGENDARY", CssClass: "legendary" }
     ];
-    
+
+    // --- NEW: Audio Unlocker for Browsers ---
+    let audioUnlocked = false;
+    document.addEventListener('click', () => {
+        if (!audioUnlocked) {
+            // Play and immediately pause all sounds to "wake them up"
+            ['msgSound', 'coinSound', 'skipSound'].forEach(id => {
+                const sound = document.getElementById(id);
+                if (sound) {
+                    sound.play().then(() => {
+                        sound.pause();
+                        sound.currentTime = 0;
+                    }).catch(e => console.log("Audio waiting for interaction"));
+                }
+            });
+            audioUnlocked = true;
+            console.log("Audio Engine Unlocked");
+        }
+    }, { once: true });
+  
     // Placeholder for CMS hierarchy data
     let cmsHierarchyData = null;
 
@@ -554,7 +573,19 @@
         getItem: (key) => { try { return localStorage.getItem(key); } catch(e) { return null; } },
         removeItem: (key) => { try { localStorage.removeItem(key); } catch(e) {} }
     };
-    function triggerSound(id) { const el = document.getElementById(id); if(el) { el.currentTime = 0; el.play().catch(e=>{}); } 
+    function triggerSound(id) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.pause(); // Reset any currently playing sound
+            el.currentTime = 0;
+            
+            const playPromise = el.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("Sound blocked. Sub needs to click the screen once.");
+                });
+            }
+        }
     }
 
     /* --- INIT --- */
