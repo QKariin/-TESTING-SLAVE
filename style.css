@@ -1587,6 +1587,116 @@ html, body {
   margin-right: 5px;
 }
 
+/* --- NEW REVIEW CARD UI --- */
+.review-details-card {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 20px;
+    width: 90%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    z-index: 10;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.m-status-badge-big {
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-shadow: 0 0 15px currentColor;
+}
+
+.m-reward-row { display: flex; align-items: center; gap: 20px; }
+.m-points-glow {
+    color: var(--neon-yellow);
+    font-weight: 900;
+    font-size: 1.2rem;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* Queen Feedback Split */
+.q-feedback-split {
+    display: flex;
+    width: 100%;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid #333;
+}
+
+.q-media-box {
+    width: 80px;
+    height: 80px;
+    background: #000;
+    border-radius: 8px;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.q-thumb-container img, .q-thumb-container video { width: 100%; height: 100%; object-fit: cover; }
+.q-zoom-icon { position: absolute; bottom: 2px; right: 2px; font-size: 0.6rem; background: rgba(0,0,0,0.7); padding: 2px; border-radius: 4px; }
+
+.q-nav-box { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+.q-label { font-size: 0.6rem; color: var(--neon-pink); font-weight: 900; letter-spacing: 1px; }
+.q-nav-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #444;
+    color: white;
+    font-size: 0.7rem;
+    padding: 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Rajdhani';
+    text-align: left;
+}
+
+/* Modal Bottom Buttons */
+.modal-footer-nav {
+    position: absolute;
+    bottom: 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 90%;
+    z-index: 20;
+}
+
+.nav-main-btn {
+    background: rgba(20,20,20,0.9);
+    border: 1px solid #444;
+    color: #aaa;
+    padding: 10px;
+    font-size: 0.7rem;
+    font-weight: 900;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.close-pink { background: var(--neon-pink); color: black; grid-column: span 2; border: none; }
+
+/* Overlays */
+.order-overlay-centered {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    z-index: 15;
+}
+
 .action-btn {
   background: rgba(255,255,255,0.9);
   color: black;
