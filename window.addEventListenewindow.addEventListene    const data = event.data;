@@ -632,21 +632,39 @@
     window.addEventListener("message", (event) => {
       const data = event.data;
 
-      // Catch the immediate Echo from Wix
+      // 1. Check for Full Data (Database & Profile)
+      if (data.type === "UPDATE_FULL_DATA") {
+          if (data.profile) { 
+              gameStats = { ...gameStats, ...data.profile }; 
+              if (data.profile.lastWorship) lastWorshipTime = new Date(data.profile.lastWorship).getTime();
+              updateStats(); 
+          }
+          if (data.galleryData) {
+              galleryData = Array.isArray(data.galleryData) ? data.galleryData : JSON.parse(data.galleryData);
+              renderGallery(); 
+          }
+      }
+
+      // 2. Check for Chat Echo (Instant Messages)
       if (data.type === "CHAT_ECHO") {
           const chatContent = document.getElementById('chatContent');
           if (chatContent && data.msgObj) {
-              // Reuse your existing logic to format the single message
               const m = data.msgObj;
-              const isMe = true; // Echo is always from 'user'
-              const contentHtml = `<div class="msg m-slave">${m.message}</div>`;
-              const timeDiv = `<div class="msg-time">${new Date(m._createdDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>`;
-              const rowContent = `<div class="msg-col" style="justify-content: flex-end;">${contentHtml} ${timeDiv}</div>`;
+              const isMe = (m.sender === 'user'); 
+              const msgClass = isMe ? 'm-slave' : 'm-queen';
+              const rowClass = isMe ? 'mr-out' : 'mr-in';
               
-              chatContent.innerHTML += `<div class="msg-row mr-out">${rowContent}</div>`;
-              forceBottom(); // Jump to the bottom immediately
+              const contentHtml = `<div class="msg ${msgClass}">${m.message}</div>`;
+              const timeDiv = `<div class="msg-time">${new Date(m._createdDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>`;
+              const rowContent = isMe ? 
+                  `<div class="msg-col" style="justify-content: flex-end;">${contentHtml} ${timeDiv}</div>` :
+                  `<div class="msg-col" style="justify-content: flex-start;">${contentHtml} ${timeDiv}</div>`;
+              
+              chatContent.innerHTML += `<div class="msg-row ${rowClass}">${rowContent}</div>`;
+              forceBottom(); 
           }
       }
+
       
       // FIX: Capture all 8 Rules from CMS safely
       if (data.type === 'UPDATE_RULES') {
@@ -1296,20 +1314,32 @@
 
   
     function renderGallery() {
-        const pGrid = document.getElementById('pendingGrid');
         const hGrid = document.getElementById('historyGrid');
-        const pItems = galleryData.filter(i => i.status === 'pending' && i.proofUrl);
-        if(pGrid) pGrid.innerHTML = pItems.slice(0, pendingLimit).map(createPendingCardHTML).join('');
+        const pGrid = document.getElementById('pendingGrid');
+        
+        // Safety check for empty data
+        if (!galleryData || galleryData.length === 0) return;
+    
+        const hItems = galleryData.filter(i => i.status && i.status.toLowerCase() !== 'pending');
+        const pItems = galleryData.filter(i => i.status && i.status.toLowerCase() === 'pending');
+    
+        hGrid.innerHTML = hItems.map(item => `
+            <div class="gallery-item" onclick="openHistoryModal(${galleryData.indexOf(item)})" style="position:relative; aspect-ratio:1; background:#000; border-radius:8px; overflow:hidden; border:1px solid #333;">
+                <img src="${item.proofUrl}" style="width:100%; height:100%; object-fit:cover; opacity:0.6;">
+                ${item.sticker ? `<img src="${item.sticker}" style="position:absolute; top:2px; right:2px; width:20px; z-index:10;">` : ''}
+                <div style="position:absolute; bottom:5px; left:5px; font-size:0.5rem; background:rgba(0,0,0,0.8); padding:2px 5px; border-radius:3px; color: ${item.status.toLowerCase().includes('app') ? 'var(--neon-green)' : 'var(--neon-red)'}">${item.status.toUpperCase()}</div>
+            </div>`).join('');
+            
+        pGrid.innerHTML = pItems.map(item => `
+            <div onclick="openHistoryModal(${galleryData.indexOf(item)})" style="aspect-ratio:1.5; background:#111; border-radius:10px; overflow:hidden; position:relative; border:1px solid var(--neon-yellow);">
+                <img src="${item.proofUrl}" style="width:100%; height:100%; object-fit:cover; opacity:0.4;">
+                <div style="position:absolute; bottom:10px; left:10px; font-weight:bold; font-size:0.7rem; color:var(--neon-yellow);">PENDING REVIEW</div>
+            </div>`).join('');
+    
         document.getElementById('pendingSection').style.display = pItems.length > 0 ? 'block' : 'none';
-        const hItems = galleryData.filter(i => {
-          if (!i.status || !i.proofUrl) return false;
-          const s = i.status.toLowerCase();
-          return s.includes('approve') || s.includes('reject');
-      });
-        if(hGrid) hGrid.innerHTML = hItems.slice(0, historyLimit).map((item, index) => createGalleryItemHTML(item, index)).join('');
-        document.getElementById('historySection').style.display = (hItems.length > 0 || pItems.length === 0) ? 'block' : 'none';
-        document.getElementById('loadMoreBtn').style.display = hItems.length > historyLimit ? 'block' : 'none';
+        document.getElementById('historySection').style.display = 'block';
     }
+  
     function loadMoreHistory() { historyLimit += 25; renderGallery(); }
 
 
