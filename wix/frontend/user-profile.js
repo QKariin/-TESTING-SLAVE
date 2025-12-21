@@ -73,17 +73,62 @@ $w("#html2").onMessage(async (event) => {
     }
 
     if (data.type === "WORSHIP") {
-        const results = await wixData.query("Tasks").eq("memberId", currentUserEmail).find({suppressAuth: true});
+        const results = await wixData.query("Tasks")
+            .eq("memberId", currentUserEmail)
+            .find({ suppressAuth: true });
+
         if (results.items.length > 0) {
             let item = results.items[0];
-            item.lastWorship = new Date(); 
-            item.kneelCount = (item.kneelCount || 0) + 1;
-            item.score = (item.score || 0) + 100;
-            item.points = item.score;
-            await wixData.update("Tasks", item, {suppressAuth: true});
-            await insertMessage({ memberId: currentUserEmail, message: "*kneels in devotion*", sender: "user", read: false });
-            await syncProfileAndTasks();
-            await syncChat();
+
+            const now = Date.now();
+            const last = item.lastWorship ? new Date(item.lastWorship).getTime() : null;
+
+            // Ensure parameters object exists
+            item.parameters = item.parameters || {};
+            const params = item.parameters;
+
+            // Auto‑initialize KneelingCoins if missing
+            if (params.KneelingCoins == null) {
+                params.KneelingCoins = 100; // default value
+                await wixData.update("Tasks", item, { suppressAuth: true });
+            }
+
+            // Auto‑initialize KneelingCooldownHours if missing
+            if (params.KneelingCooldownHours == null) {
+                params.KneelingCooldownHours = 1; // default 1 hour
+                await wixData.update("Tasks", item, { suppressAuth: true });
+            }
+
+            // Convert hours → ms
+            const cooldownMs = params.KneelingCooldownHours * 60 * 60 * 1000;
+
+            const canWorship = !last || (now - last) > cooldownMs;
+
+            if (canWorship) {
+                item.lastWorship = now;
+                item.kneelCount = (item.kneelCount || 0) + 1;
+                item.score = (item.score || 0) + params.KneelingCoins;
+                item.points = item.score;
+
+                await wixData.update("Tasks", item, { suppressAuth: true });
+
+                await insertMessage({
+                    memberId: currentUserEmail,
+                    message: "*kneels in devotion*",
+                    sender: "user",
+                    read: false
+                });
+
+                await syncProfileAndTasks();
+                await syncChat();
+            } else {
+                await insertMessage({
+                    memberId: currentUserEmail,
+                    message: "You must wait before kneeling again.",
+                    sender: "system",
+                    read: false
+                });
+            }
         }
     }
 
