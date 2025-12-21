@@ -72,7 +72,7 @@ $w("#html2").onMessage(async (event) => {
         await checkDomOnlineStatus();
     }
 
-    if (data.type === "WORSHIP") {
+    else if (data.type === "WORSHIP") {
         const results = await wixData.query("Tasks")
             .eq("memberId", currentUserEmail)
             .find({ suppressAuth: true });
@@ -80,35 +80,53 @@ $w("#html2").onMessage(async (event) => {
         if (results.items.length > 0) {
             let item = results.items[0];
 
-            const now = Date.now();
-            const last = item.lastWorship ? new Date(item.lastWorship).getTime() : null;
-
             // Ensure parameters object exists
             item.parameters = item.parameters || {};
             const params = item.parameters;
 
-            // Auto‑initialize KneelingCoins if missing
+            // Auto‑initialize KneelingCoins (wallet)
             if (params.KneelingCoins == null) {
-                params.KneelingCoins = 100; // default value
+                params.KneelingCoins = 10;
                 await wixData.update("Tasks", item, { suppressAuth: true });
             }
 
-            // Auto‑initialize KneelingCooldownHours if missing
+            // Auto‑initialize KneelingPoints (score)
+            if (params.KneelingPoints == null) {
+                params.KneelingPoints = 100;
+                await wixData.update("Tasks", item, { suppressAuth: true });
+            }
+
+            // Auto‑initialize KneelingCooldownHours
             if (params.KneelingCooldownHours == null) {
-                params.KneelingCooldownHours = 1; // default 1 hour
+                params.KneelingCooldownHours = 1;
                 await wixData.update("Tasks", item, { suppressAuth: true });
             }
 
-            // Convert hours → ms
+            // Ensure stats object exists
+            item.stats = item.stats || {};
+
+            // Cooldown logic (readable)
+            const now = new Date();
+            const last = item.lastWorship ? new Date(item.lastWorship) : null;
             const cooldownMs = params.KneelingCooldownHours * 60 * 60 * 1000;
 
-            const canWorship = !last || (now - last) > cooldownMs;
+            const canWorship = !last || (now.getTime() - last.getTime()) > cooldownMs;
 
             if (canWorship) {
+                // Update kneeling timestamp
                 item.lastWorship = now;
+
+                // Wallet update
+                item.wallet = (item.wallet || 0) + params.KneelingCoins;
+
+                // Score update
+                item.score = (item.score || 0) + params.KneelingPoints;
+
+                // Kneel count (top-level)
                 item.kneelCount = (item.kneelCount || 0) + 1;
-                item.score = (item.score || 0) + params.KneelingCoins;
-                item.points = item.score;
+
+                // Kneel count inside stats
+                item.stats.kneelCount = (item.stats.kneelCount || 0) + 1;
 
                 await wixData.update("Tasks", item, { suppressAuth: true });
 
@@ -124,7 +142,7 @@ $w("#html2").onMessage(async (event) => {
             } else {
                 await insertMessage({
                     memberId: currentUserEmail,
-                    message: "You must wait before kneeling again.",
+                    message: "YOU MUST WAIT BEFORE KNEELING AGAIN.",
                     sender: "system",
                     read: false
                 });
