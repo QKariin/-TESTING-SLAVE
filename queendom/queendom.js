@@ -192,7 +192,7 @@ $w.onReady(function () {
 
 async function refreshDashboard() {
     try {
-        const usersResult = await wixData.query("Tasks").descending("lastSeen").limit(1000).find({ suppressAuth: true });
+        const usersResult = await wixData.query("Tasks").descending("joined").limit(100).find({ suppressAuth: true });
         const dailyTasksResult = await wixData.query("DailyTasks").limit(300).find({ suppressAuth: true });
         const dailyTasksList = dailyTasksResult.items.map(i => i.taskText || i.title || i.task); 
         

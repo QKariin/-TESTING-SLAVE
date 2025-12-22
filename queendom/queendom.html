@@ -1875,24 +1875,34 @@
             // -------------------------
 
             users.sort((a, b) => {
-                // 1. DETERMINE ONLINE STATUS
                 const now = Date.now();
-                const aOnline = (now - new Date(a.lastSeen || 0).getTime()) < 120000; 
-                const bOnline = (now - new Date(b.lastSeen || 0).getTime()) < 120000;
+                const FIVE_MIN = 5 * 60 * 1000;
 
-                // 2. PRIMARY SORT: ONLINE vs OFFLINE
-                if (aOnline && !bOnline) return -1; 
-                if (!aOnline && bOnline) return 1;  
+                // --- 1. ONLINE STATUS (5 min window) ---
+                const aOnline = (now - new Date(a.lastSeen || 0).getTime()) < FIVE_MIN;
+                const bOnline = (now - new Date(b.lastSeen || 0).getTime()) < FIVE_MIN;
 
-                // 3. SECONDARY SORT: LATEST MESSAGE
+                if (aOnline && !bOnline) return -1;
+                if (!aOnline && bOnline) return 1;
+
+                // --- 2. LAST MESSAGE TIME (only if difference > 5 min) ---
                 const aMsg = new Date(a.lastMessageTime || 0).getTime();
                 const bMsg = new Date(b.lastMessageTime || 0).getTime();
-                if (Math.abs(aMsg - bMsg) > 1000) { return bMsg - aMsg; }
 
-                // 4. TERTIARY SORT: STABILITY
-                const aJoin = new Date(a.joinedDate || 0).getTime();
-                const bJoin = new Date(b.joinedDate || 0).getTime();
-                return aJoin - bJoin; 
+                if (Math.abs(aMsg - bMsg) > FIVE_MIN) {
+                    return bMsg - aMsg; // more recent first
+                }
+
+                // --- 3. LAST SEEN (only if difference > 5 min) ---
+                const aSeen = new Date(a.lastSeen || 0).getTime();
+                const bSeen = new Date(b.lastSeen || 0).getTime();
+
+                if (Math.abs(aSeen - bSeen) > FIVE_MIN) {
+                    return bSeen - aSeen; // more recent first
+                }
+
+                // --- 4. FALLBACK: KEEP ORIGINAL ORDER (joinedDate pre-sort) ---
+                return 0;
             });
 
             let html = `
