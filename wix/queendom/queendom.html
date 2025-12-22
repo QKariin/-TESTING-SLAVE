@@ -829,6 +829,9 @@
     let mediaRecorder = null;
     let audioChunks = [];
 
+    let isInitialLoad = true;
+    let lastNotifiedMessageId = null;
+
     const ICONS = {
         check: `<svg viewBox="0 0 24 24" class="svg-icon active-icon" style="fill:var(--green)"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`,
         timer: `<svg viewBox="0 0 24 24" class="svg-icon active-icon" style="fill:var(--blue)"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42A8.962 8.962 0 0 0 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.48-1.01-4.73-2.67-6.39zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>`,
@@ -1008,6 +1011,16 @@
             setTimeout(forceBottom, 100);
             setTimeout(forceBottom, 500); // Wait for videos to init
         }
+
+        //Play sound for new messages
+        if (!isInitialLoad) {
+            const lastMsg = msgs[msgs.length-1];
+            if (lastMsg.sender === 'user' && lastMsg._id !== lastNotifiedMessageId) {
+                triggerSound('sfx-notify');
+                lastNotifiedMessageId = lastMsg._id;
+            }
+        }
+        isInitialLoad = false;
     }
 
     async function handleAdminUpload(input) {
@@ -1049,126 +1062,6 @@
             }
         }
     }
-
-/*    function renderSidebar() {
-        try {
-            const list = document.getElementById('userList');
-            if(!list) return;
-
-            // 1. FOCUS MODE (Dims others when one is selected)
-            if (currId) { list.classList.add('focus-mode'); } 
-            else { list.classList.remove('focus-mode'); }
-
-            // 2. SORTING (Online > Message > Joined Date)
-            users.sort((a, b) => {
-                const now = Date.now();
-                const aOnline = (now - new Date(a.lastSeen || 0).getTime()) < 120000; 
-                const bOnline = (now - new Date(b.lastSeen || 0).getTime()) < 120000;
-
-                // Priority 1: Online status
-                if (aOnline && !bOnline) return -1; 
-                if (!aOnline && bOnline) return 1;  
-
-                // Priority 2: Latest Message
-                const aMsg = new Date(a.lastMessageTime || 0).getTime();
-                const bMsg = new Date(b.lastMessageTime || 0).getTime();
-                if (Math.abs(aMsg - bMsg) > 1000) { return bMsg - aMsg; }
-
-                // Priority 3: Stability (Joined Date)
-                const aJoin = new Date(a.joinedDate || 0).getTime();
-                const bJoin = new Date(b.joinedDate || 0).getTime();
-                return aJoin - bJoin; 
-            });
-
-            // 3. RENDER LIST
-            let html = `
-                <div class="u-item queen-item" onclick="showProfile()">
-                    <div class="u-avatar-main" style="border-color:var(--yellow);box-shadow:0 0 5px var(--yellow);"><img src="https://static.wixstatic.com/media/ce3e5b_1bd27ba758ce465fa89a36d70a68f355~mv2.png"></div>
-                    <div class="u-info"><div class="u-name" style="color:var(--yellow);">QUEEN KARIN</div><div class="u-seen" style="color:#888;">MY PROFILE</div></div>
-                </div>`;
-            
-            html += users.map(u => {
-                const now = Date.now();
-                const ls = u.lastSeen ? new Date(u.lastSeen).getTime() : 0;
-                let diff = 999999;
-                if (ls > 0) diff = Math.floor((now - ls) / 60000);
-                
-                // Status Text
-                let status = "OFFLINE"; 
-                let isOnline = false;
-                if (ls > 0 && !isNaN(diff)) {
-                    if (diff < 2) { status = "ONLINE"; isOnline = true; } 
-                    else if (diff < 60) { status = diff + " MIN AGO"; } 
-                    else if (diff < 1440) { let h = Math.floor(diff/60); status = h + (h === 1 ? " HOUR AGO" : " HOURS AGO"); } 
-                    else { let d = Math.floor(diff/1440); status = d + (d === 1 ? " DAY AGO" : " DAYS AGO"); } 
-                }
-                
-                const hasPending = u.reviewQueue && u.reviewQueue.length > 0;
-                const isActive = u.activeTask && u.endTime > Date.now();
-                const lastRead = parseInt(localStorage.getItem('read_' + u.memberId) || 0);
-                const hasMsg = (u.lastMessageTime && new Date(u.lastMessageTime).getTime() > lastRead);
-                const mobileNotifClass = hasMsg ? "has-msg" : "";
-                
-                // --- COLOR LOGIC (THE MISSING PART) ---
-                let itemStyle = "border: 1px solid transparent;"; 
-                let avatarBorder = "#333"; 
-                let avatarShadow = "none";
-                let statusClass = "";
-
-                if (isOnline) {
-                    // GREEN (Online)
-                    itemStyle = "border: 1px solid var(--green); background: rgba(57,255,20,0.05);";
-                    avatarBorder = "var(--green)";
-                    avatarShadow = "0 0 5px var(--green)";
-                    statusClass = "online";
-                } 
-                else if (hasMsg) {
-                    // PINK (Unread Message)
-                    itemStyle = "border: 1px solid var(--pink); background: rgba(255,0,222,0.05);";
-                    avatarBorder = "var(--pink)";
-                    avatarShadow = "0 0 5px var(--pink)";
-                } 
-                else if (hasPending) {
-                    // RED (Pending Task)
-                    itemStyle = "border: 1px solid var(--red); background: rgba(255,0,60,0.05);";
-                    avatarBorder = "var(--red)";
-                    avatarShadow = "0 0 5px var(--red)";
-                } 
-                else if (isActive) {
-                    // BLUE (Working)
-                    itemStyle = "border: 1px solid var(--blue); background: rgba(0,243,255,0.05);";
-                    avatarBorder = "var(--blue)";
-                    avatarShadow = "0 0 5px var(--blue)";
-                }
-                // -------------------------------------
-                
-                let icons = "";
-                let checkClass = hasPending ? "active-icon" : "icon-dim";
-                icons += `<div class="icon-box" title="Pending">${ICONS.check.replace('class="svg-icon active-icon"', `class="svg-icon ${checkClass}"`)}</div>`;
-                let timerClass = isActive ? "active-icon" : "icon-dim";
-                icons += `<div class="icon-box" title="Working">${ICONS.timer.replace('class="svg-icon active-icon"', `class="svg-icon ${timerClass}"`)}</div>`;
-                
-                let mailIcon = ICONS.mail; 
-                if(hasMsg) mailIcon = mailIcon.replace('class="svg-icon"', 'class="svg-icon active-icon"');
-                else mailIcon = mailIcon.replace('class="svg-icon"', 'class="svg-icon icon-dim"');
-                icons += `<div class="icon-box">${mailIcon}</div>`;
-                
-                let imgTag = u.avatar && u.avatar.length > 5 ? `<img src="${u.avatar}">` : `<img src="https://api.dicebear.com/7.x/bottts/svg?seed=${u.memberId}&backgroundColor=1a1a1a">`;
-                
-                return `<div class="u-item ${currId === u.memberId ? 'active' : ''} ${mobileNotifClass}" style="${itemStyle}" onclick="selUser('${u.memberId}')">
-                            <div class="u-avatar-main" style="border-color:${avatarBorder}; box-shadow:${avatarShadow};">
-                                ${imgTag}
-                                <div class="notif-dot"></div>
-                            </div>
-                            <div class="u-info"><div class="u-name">${u.name}</div><div class="u-seen ${statusClass}">${status}</div></div>
-                            <div class="u-name-mob d-none">${u.name}</div>
-                            <div class="u-right-col">${icons}</div>
-                        </div>`;
-            }).join('');
-            
-            list.innerHTML = html;
-        } catch(e) { console.error(e); }
-    }*/
 
     function selUser(id) {
         if(typeof window.parent !== 'undefined') {
@@ -2081,6 +1974,22 @@
             } 
         } 
     }
+
+    function triggerSound(id) {
+        const el = document.getElementById(id);
+
+        // Ensure the element exists and is an <audio> element
+        if (!(el instanceof HTMLAudioElement)) return;
+
+        // Restart the sound from the beginning
+        el.currentTime = 0;
+
+        // Play safely (avoid autoplay errors)
+        el.play().catch(() => {
+            // Silently ignore play errors (browser restrictions)
+        });
+    }
+
 </script>
 </body>
 </html>
