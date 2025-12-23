@@ -1,3 +1,4 @@
+// Kneeling system - dedicated module for devotion mechanics
 import { 
     isLocked, lastWorshipTime, COOLDOWN_MINUTES, gameStats, ignoreBackendUpdates
 } from './state.js';
