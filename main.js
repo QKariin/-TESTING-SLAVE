@@ -21,6 +21,7 @@ import { getRandomTask, restorePendingUI, finishTask, cancelPendingTask, resetTa
 import { renderChat, sendChatMessage, handleChatKey, sendCoins, loadMoreChat, openChatPreview, closeChatPreview, forceBottom } from './chat.js';
 import { renderGallery, loadMoreHistory, initModalSwipeDetection, closeModal, toggleHistoryView, openHistoryModal, openModal } from './gallery.js';
 import { handleEvidenceUpload, handleProfileUpload, handleAdminUpload } from './uploads.js';
+import { handleHoldStart, handleHoldEnd, claimKneelReward, updateKneelingStatus } from './kneeling.js';
 
 // --- 2. INITIALIZATION ---
 document.addEventListener('click', () => {
@@ -207,7 +208,7 @@ function updateStats() {
         if (pb) pb.style.width = Math.min(100, Math.max(0, progress)) + "%";
     }
 
-    updateDevotionStatus(); 
+    updateKneelingStatus(); 
 }
 
 // --- TRIBUTE HUNT LOGIC ---
@@ -476,127 +477,6 @@ function finalizeSacrifice() {
 }
 
 
-// --- 5. HOLD-TO-KNEEL LOGIC ---
-let holdTimer = null;
-const REQUIRED_HOLD_TIME = 2000; 
-
-function handleHoldStart(e) {
-    if (isLocked) return;
-    
-    // STOP MOBILE TEXT SELECTION
-    if (e && e.type === 'touchstart' && e.cancelable) {
-        e.preventDefault();
-    }
-
-    const fill = document.getElementById('fill');
-    const txtMain = document.getElementById('txt-main');
-    
-    if (fill) {
-        fill.style.transition = "width 2s linear"; 
-        fill.style.width = "100%";
-    }
-    if (txtMain) txtMain.innerText = "KNEELING...";
-
-    holdTimer = setTimeout(() => {
-        completeKneelAction();
-    }, REQUIRED_HOLD_TIME);
-}
-
-function handleHoldEnd() {
-    // FIX: If we are already locked, do NOT reset the UI text to "KNEEL"
-    if (isLocked) {
-        if (holdTimer) clearTimeout(holdTimer);
-        holdTimer = null;
-        return; 
-    }
-
-    if (holdTimer) {
-        clearTimeout(holdTimer);
-        holdTimer = null;
-        const fill = document.getElementById('fill');
-        const txtMain = document.getElementById('txt-main');
-        if (fill) {
-            fill.style.transition = "width 0.3s ease"; 
-            fill.style.width = "0%";
-        }
-        if (txtMain) txtMain.innerText = "KNEEL";
-    }
-}
-
-function completeKneelAction() {
-    if (holdTimer) clearTimeout(holdTimer);
-    holdTimer = null; 
-
-    // 1. LOCK FIRST
-    const now = Date.now();
-    setLastWorshipTime(now); 
-    setIsLocked(true); 
-    setIgnoreBackendUpdates(true); 
-    updateDevotionStatus(); // Changes UI text to "LOCKED: 60m" immediately
-
-    // 2. TELL WIX: START THE 1hr CLOCK
-    window.parent.postMessage({ type: "FINISH_KNEELING" }, "*");
-
-    // 3. SHOW REWARD (Cherry on top)
-    const rewardMenu = document.getElementById('kneelRewardOverlay');
-    if (rewardMenu) rewardMenu.classList.remove('hidden');
-
-    triggerSound('msgSound');
-    setTimeout(() => { setIgnoreBackendUpdates(false); }, 15000);
-}
-
-function claimKneelReward(choice) {
-    const rewardMenu = document.getElementById('kneelRewardOverlay');
-    if (rewardMenu) rewardMenu.classList.add('hidden');
-
-    triggerSound('coinSound');
-    triggerCoinShower(); 
-
-    window.parent.postMessage({ 
-        type: "CLAIM_KNEEL_REWARD", 
-        rewardType: choice,
-        rewardValue: choice === 'coins' ? 10 : 50
-    }, "*");
-}
-
-// YOUR ORIGINAL HEARTBEAT FUNCTION - RESTORED FULLY
-function updateDevotionStatus() {
-    const now = Date.now();
-    const d = new Date();
-    const seed = d.getUTCFullYear() * 10000 + (d.getUTCMonth() + 1) * 100 + d.getUTCDate();
-    const code = Math.floor((Math.abs(Math.sin(seed)) * 9000)) + 1000;
-    if (document.getElementById('dailyRandomId')) document.getElementById('dailyRandomId').innerText = "#" + code;
-
-    const btn = document.getElementById('btn');
-    const txtMain = document.getElementById('txt-main');
-    const fill = document.getElementById('fill');
-    const txtSub = document.getElementById('txt-sub');
-    
-    if (!btn || !txtMain || !fill) return;
-
-    const diffMs = now - lastWorshipTime;
-    const cooldownMs = COOLDOWN_MINUTES * 60 * 1000;
-
-    if (lastWorshipTime > 0 && diffMs < cooldownMs) {
-        setIsLocked(true);
-        const minLeft = Math.ceil((cooldownMs - diffMs) / 60000);
-        txtMain.innerText = `LOCKED: ${minLeft}m`;
-        const progress = 100 - ((diffMs / cooldownMs) * 100);
-        fill.style.transition = "none"; 
-        fill.style.width = Math.max(0, progress) + "%";
-        btn.style.cursor = "not-allowed";
-    } else if (!holdTimer) {
-        setIsLocked(false);
-        txtMain.innerText = "KNEEL";
-        fill.style.width = "0%";
-        btn.style.cursor = "pointer";
-    }
-
-    if (txtSub) {
-        // gameStats is imported from state.js
-        txtSub.innerText = `TODAY KNEELING: ${gameStats.todayKneeling || 0}`;
-    }
-
 // --- OTHER UTILS ---
 function buyRealCoins(amount) {
     triggerSound('sfx-buy');
@@ -635,7 +515,7 @@ function submitSessionRequest() {
 }
 
 // --- 6. LOOPS & MANIFEST ---
-setInterval(updateDevotionStatus, 1000);
+setInterval(updateKneelingStatus, 1000);
 setInterval(() => { window.parent.postMessage({ type: "heartbeat", view: currentView }, "*"); }, 5000);
 
 // Navigation & Stats
@@ -667,7 +547,7 @@ window.loadMoreHistory = loadMoreHistory;
 window.handleHoldStart = handleHoldStart;
 window.handleHoldEnd = handleHoldEnd;
 window.claimKneelReward = claimKneelReward;
-window.updateDevotionStatus = updateDevotionStatus;
+window.updateKneelingStatus = updateKneelingStatus;
 window.handleProfileUpload = handleProfileUpload;
 
 // Tribute & Economy
