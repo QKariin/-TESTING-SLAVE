@@ -96,15 +96,6 @@ document.getElementById("installBtn").addEventListener("click", async () => {
 
 async function askNotificationPermission() {
     const permission = await Notification.requestPermission();
-    if (permission !== "granted") {
-        console.log("Permission denied");
-        return null;
-    }
-    return permission;
-}
-
-async function askNotificationPermission() {
-    const permission = await Notification.requestPermission();
     return permission
     /*if (permission !== "granted") {
         console.log("Notifications denied");

@@ -2,7 +2,6 @@
 const CACHE_NAME = "ecosystem-pwa-v1";
 
 // Files you want cached for offline use
-// Keep this minimal since your main content is an iframe to qkarin.com
 const OFFLINE_ASSETS = [
   "/",
   "/manifest.json",
@@ -48,7 +47,6 @@ self.addEventListener("fetch", event => {
       return (
         cached ||
         fetch(req).catch(() => {
-          // Offline fallback for root only
           if (req.mode === "navigate") {
             return caches.match("/");
           }
@@ -56,7 +54,9 @@ self.addEventListener("fetch", event => {
       );
     })
   );
+});
 
+// Push event
 self.addEventListener("push", event => {
   const data = event.data ? event.data.json() : {};
 
@@ -70,11 +70,10 @@ self.addEventListener("push", event => {
   );
 });
 
+// Notification click
 self.addEventListener("notificationclick", event => {
   event.notification.close();
   event.waitUntil(
     clients.openWindow(event.notification.data)
   );
-});
-
 });
