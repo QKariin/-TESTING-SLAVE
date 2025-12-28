@@ -3,7 +3,8 @@ import {
     users, globalQueue, globalTributes, availableDailyTasks, queenContent, 
     stickerConfig, broadcastPresets, timerInterval, currId,
     setUsers, setGlobalQueue, setGlobalTributes, setAvailableDailyTasks, 
-    setQueenContent, setStickerConfig, setBroadcastPresets, setTimerInterval
+    setQueenContent, setStickerConfig, setBroadcastPresets, setTimerInterval,
+    armoryTarget, setArmoryTarget // <--- ADD THESE TWO HERE
 } from './dashboard-state.js';
 import { unlockAudio } from './utils.js';   
 
@@ -218,6 +219,7 @@ function startTimerLoop() {
 // Admin task actions
 export function adminTaskAction(memberId, action) {
     if (action === 'send') {
+        // Set mode to 'active' so it skips the 1-10 picker
         setArmoryTarget("active");
         window.openTaskGallery("active");
     } 
@@ -225,7 +227,7 @@ export function adminTaskAction(memberId, action) {
         // 1. Tell Wix to clear the task (Free skip)
         window.parent.postMessage({ type: "adminTaskAction", memberId: memberId, action: "skip" }, "*");
         
-        // 2. Set mode and open the library
+        // 2. Set mode and open the library to pick the replacement
         setArmoryTarget("active");
         window.openTaskGallery("active");
     }
