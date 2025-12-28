@@ -277,11 +277,12 @@ export function toggleTaskExpansion(btn, taskText) {
 // --- 4. ENFORCE & PICKER LOGIC ---
 
 export function enforceDirectiveFromArmory(text) {
-    // 1. IF TARGETING ACTIVE SLOT (The SEND/SKIP Flow)
+    // --- NEW: THE ACTIVE INJECTION CHECK ---
     if (armoryTarget === "active") {
         const u = users.find(x => x.memberId === currId);
         if (!u) return;
 
+        // Tell Wix to force this task into the Active Monitor
         window.parent.postMessage({ 
             type: "forceActiveTask", 
             memberId: u.memberId, 
@@ -289,7 +290,7 @@ export function enforceDirectiveFromArmory(text) {
         }, "*");
 
         closeTaskGallery();
-        return; 
+        return; // STOP HERE (Skip the slot picker)
     }
 
     // 2. IF TARGETING QUEUE (The normal flow)
