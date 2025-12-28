@@ -13,6 +13,7 @@
 <body>
 
 <!-- SOUNDS -->
+<audio id="msgSound" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"></audio>
 <audio id="sfx-notify" src="https://static.wixstatic.com/mp3/ce3e5b_31aab32ecdf542e6b6fd01ef272d75bc.mp3"></audio>
 
 <!-- CMS DATALIST FOR AUTOCOMPLETE -->
@@ -301,6 +302,17 @@
             </div>
             <div id="glassTaskGrid" style="flex:1; overflow-y:auto; padding:20px; background:#050505;"></div>
         </div>
+    </div>
+</div>
+
+    <!-- CUSTOM SLOT PICKER OVERLAY -->
+<div id="slotPickerModal" class="modal" style="z-index: 10001;">
+    <div style="background: rgba(5,5,5,0.95); border: 1px solid var(--blue); padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 0 30px rgba(0,243,255,0.2);">
+        <div style="font-family: 'Orbitron'; color: white; font-size: 0.9rem; letter-spacing: 3px; margin-bottom: 20px;">SELECT TARGET SLOT</div>
+        <div id="slotGrid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px;">
+            <!-- Numbers 1-10 injected here -->
+        </div>
+        <button onclick="document.getElementById('slotPickerModal').classList.remove('active')" style="background: transparent; border: 1px solid #444; color: #666; font-family: 'Rajdhani'; font-size: 0.7rem; padding: 5px 15px; cursor: pointer; border-radius: 4px;">CANCEL</button>
     </div>
 </div>
     
