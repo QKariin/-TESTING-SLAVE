@@ -218,11 +218,18 @@ function startTimerLoop() {
 
 // Admin task actions
 export function adminTaskAction(memberId, action) {
-    window.parent.postMessage({ 
-        type: "adminTaskAction",
-        memberId: memberId,
-        action: action
-    }, "*");
+    if (action === 'send') {
+        setArmoryTarget("active"); 
+        window.openTaskGallery();
+    } 
+    else if (action === 'skip') {
+        // Free Skip: Tell Wix to clear current task without penalty
+        window.parent.postMessage({ type: "adminTaskAction", memberId: memberId, action: "skip" }, "*");
+        
+        // Open Armory to pick the replacement
+        setArmoryTarget("active");
+        window.openTaskGallery();
+    }
 }
 
 // Make functions available globally
