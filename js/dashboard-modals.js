@@ -6,7 +6,8 @@ import {
     messageImg, stickerConfig, availableDailyTasks, currId, users,
     setCurrTask, setPendingApproveTask, setSelectedStickerId, setPendingRewardMedia,
     setMessageImg, mediaRecorder, audioChunks, setMediaRecorder, setAudioChunks,
-    ACCOUNT_ID, API_KEY, dragSrcIndex, setDragSrcIndex
+    ACCOUNT_ID, API_KEY, dragSrcIndex, setDragSrcIndex,
+    armoryTarget, setArmoryTarget // <--- ADD THESE TWO HERE
 } from './dashboard-state.js';
 import { getOptimizedUrl, clean, raw } from './dashboard-utils.js';
 import { Bridge } from './bridge.js'; 
