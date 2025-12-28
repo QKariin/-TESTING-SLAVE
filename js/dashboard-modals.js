@@ -11,7 +11,11 @@ import {
 import { getOptimizedUrl, clean, raw } from './dashboard-utils.js';
 import { Bridge } from './bridge.js'; 
 
-let workshopExpandedTexts = new Set();
+// --- INTERNAL WORKSHOP STATE ---
+let pendingDirectiveText = ""; 
+let workshopFillers = [];
+let workshopUserId = null;
+const workshopExpandedTexts = new Set();
 
 // --- BIND TO WINDOW IMMEDIATELY (Prevents "Not Defined" errors) ---
 window.closeModal = closeModal;
@@ -30,14 +34,14 @@ window.closeTaskGallery = closeTaskGallery;
 window.filterTaskGallery = filterTaskGallery;
 window.toggleTaskExpansion = toggleTaskExpansion;
 window.enforceDirectiveFromArmory = enforceDirectiveFromArmory;
+window.executeManualEnforce = executeManualEnforce;
+window.fastTopEnforce = fastTopEnforce;
+window.workshopDeleteAction = workshopDeleteAction;
+
 window.handleDragStart = handleDragStart;
 window.handleDragOver = handleDragOver;
 window.handleDragEnd = handleDragEnd;
 window.handleDrop = handleDrop;
-
-// --- INTERNAL WORKSHOP CACHE (Prevents 4s shuffle) ---
-let workshopFillers = [];
-let workshopUserId = null;
 
 // --- 1. CORE REVIEW MODAL LOGIC (UNTOUCHED) ---
 
@@ -117,7 +121,6 @@ function openRewardProtocol() {
     const grid = document.getElementById('stickerGrid');
     if (!grid) return;
 
-    // Uses the stickerConfig (10, 20, 30, 40, 50, 100) synced in main.js
     const source = (stickerConfig && stickerConfig.length > 0) ? stickerConfig : [
         { id: 's10', name: '10 PTS', val: 10, url: '' }, 
         { id: 's50', name: '50 PTS', val: 50, url: '' }
@@ -125,22 +128,15 @@ function openRewardProtocol() {
     
     grid.innerHTML = source.map(s => `
         <div class="sticker-card" id="stk_${s.id}" onclick="selectSticker('${s.id}', ${s.val})">
-            ${s.url ? 
-                `<img src="${getOptimizedUrl(s.url, 100)}" class="stk-img">` : 
-                `<div style="font-size:0.7rem; color:#444; height:40px; display:flex; align-items:center; justify-content:center;">${s.val}</div>`
-            }
+            ${s.url ? `<img src="${getOptimizedUrl(s.url, 100)}" class="stk-img">` : `<div style="height:40px; display:flex; align-items:center;">IMG</div>`}
             <div class="stk-name">${s.name}</div>
-        </div>
-    `).join('');
+        </div>`).join('');
     
     document.getElementById('rewardBonus').value = 50;
     document.getElementById('rewardComment').value = "";
 }
 
-export function cancelReward() { 
-    document.getElementById('reviewNormalContent').style.display = 'flex'; 
-    document.getElementById('reviewRewardOverlay').style.display = 'none'; 
-}
+export function cancelReward() { document.getElementById('reviewNormalContent').style.display = 'flex'; document.getElementById('reviewRewardOverlay').style.display = 'none'; }
 
 export function selectSticker(id, val) {
     setSelectedStickerId(id);
@@ -159,9 +155,7 @@ export async function handleRewardFileUpload(input) {
             const d = await res.json();
             if (d.files?.[0]) {
                 let url = d.files[0].fileUrl;
-                if (file.type.startsWith('video') || file.name.match(/\.(mp4|mov)$/i)) {
-                    url += "#.mp4";
-                }
+                if (file.type.startsWith('video')) url += "#.mp4";
                 setPendingRewardMedia({ url: url, type: file.type });
                 showRewardPreview(url, file.type);
             }
@@ -171,32 +165,19 @@ export async function handleRewardFileUpload(input) {
 
 export function toggleRewardRecord() {
     const btn = document.getElementById("btnRecordReward");
-    if (mediaRecorder?.state === "recording") { 
-        mediaRecorder.stop(); 
-        btn.classList.remove("recording"); 
-    } else {
+    if (mediaRecorder?.state === "recording") { mediaRecorder.stop(); btn.classList.remove("recording"); } 
+    else {
         navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
             const recorder = new MediaRecorder(stream);
-            setMediaRecorder(recorder); 
-            recorder.start(); 
-            btn.classList.add("recording"); 
-            setAudioChunks([]);
+            setMediaRecorder(recorder); recorder.start(); btn.classList.add("recording"); setAudioChunks([]);
             recorder.ondataavailable = e => setAudioChunks([...audioChunks, e.data]);
             recorder.onstop = async () => {
                 const blob = new Blob(audioChunks, { type: "audio/mp3" }), fd = new FormData();
                 fd.append("file", blob);
                 try {
-                    const res = await fetch(`https://api.bytescale.com/v2/accounts/${ACCOUNT_ID}/uploads/form_data?path=/rewards/audio`, { 
-                        method: "POST", 
-                        headers: { "Authorization": `Bearer ${API_KEY}` }, 
-                        body: fd 
-                    });
+                    const res = await fetch(`https://api.bytescale.com/v2/accounts/${ACCOUNT_ID}/uploads/form_data?path=/rewards/audio`, { method: "POST", headers: { "Authorization": `Bearer ${API_KEY}` }, body: fd });
                     const d = await res.json();
-                    if (d.files?.[0]) { 
-                        const url = d.files[0].fileUrl + "#.mp3"; 
-                        setPendingRewardMedia({ url: url, type: "audio" }); 
-                        showRewardPreview(url, "audio"); 
-                    }
+                    if (d.files?.[0]) { const url = d.files[0].fileUrl + "#.mp3"; setPendingRewardMedia({ url: url, type: "audio" }); showRewardPreview(url, "audio"); }
                 } catch (err) { console.error(err); }
             };
         });
@@ -207,60 +188,30 @@ function showRewardPreview(url, type) {
     const box = document.getElementById('rewardMediaPreview');
     if (box) {
         box.classList.remove('d-none');
-        box.innerHTML = (type === 'video' || url.includes('.mp4')) ? 
-            `<video src="${url}" muted autoplay loop></video>` : 
-            `<img src="${url}">`;
+        box.innerHTML = (type === 'video' || url.includes('.mp4')) ? `<video src="${url}" muted autoplay loop></video>` : `<img src="${url}">`;
         box.innerHTML += `<span onclick="clearRewardMedia()" style="position:absolute;top:0;right:0;background:black;cursor:pointer;padding:0 4px;font-size:10px;color:white;z-index:10;">X</span>`;
     }
 }
 
-export function clearRewardMedia() { 
-    setPendingRewardMedia(null); 
-    const box = document.getElementById('rewardMediaPreview'); 
-    if (box) box.classList.add('d-none'); 
-}
+export function clearRewardMedia() { setPendingRewardMedia(null); const box = document.getElementById('rewardMediaPreview'); if (box) box.classList.add('d-none'); }
 
 export function confirmReward() {
     if (!pendingApproveTask) return;
-    
     let bonus = parseInt(document.getElementById('rewardBonus').value) || 50;
     const comment = document.getElementById('rewardComment').value.trim();
-    let finalSticker = null;
-    
-    if (selectedStickerId && selectedStickerId !== 'none') {
-        const sObj = stickerConfig.find(s => s.id === selectedStickerId);
-        if (sObj) finalSticker = sObj.url;
-    }
-    
-    window.parent.postMessage({ 
-        type: "reviewDecision", 
-        memberId: pendingApproveTask.memberId, 
-        taskId: pendingApproveTask.id, 
-        decision: 'approve',
-        bonusCoins: bonus,
-        sticker: finalSticker,
-        comment: comment,
-        media: pendingRewardMedia ? pendingRewardMedia.url : null
-    }, "*");
-    
-    Bridge.send("reviewDecisionSuccess", {
-        memberId: pendingApproveTask.memberId,
-        decision: 'approve'
-    });
-
+    let finalSticker = selectedStickerId ? stickerConfig.find(s => s.id === selectedStickerId)?.url : null;
+    window.parent.postMessage({ type: "reviewDecision", memberId: pendingApproveTask.memberId, taskId: pendingApproveTask.id, decision: 'approve', bonusCoins: bonus, sticker: finalSticker, comment: comment, media: pendingRewardMedia?.url }, "*");
+    Bridge.send("reviewDecisionSuccess", { memberId: pendingApproveTask.memberId, decision: 'approve' });
     closeModal();
 }
 
-// --- 3. DIRECTIVE WORKSHOP (FIXED DESIGN & ARROWS) ---
+// --- 3. DIRECTIVE WORKSHOP (MIRROR DESIGN) ---
 
 export function openTaskGallery() {
     const u = users.find(x => x.memberId === currId);
     if (!u) return;
-
-    // Sets header to: "NAME TASKS"
     const titleEl = document.getElementById('armoryTitle');
     if (titleEl) titleEl.innerText = `${u.name.toUpperCase()} TASKS`;
-
     renderWorkshopLiveQueue(u);
     renderWorkshopLibrary(availableDailyTasks);
     document.getElementById('taskGalleryModal').classList.add('active');
@@ -281,37 +232,34 @@ function renderWorkshopLibrary(tasks) {
 function renderWorkshopLiveQueue(u) {
     const list = document.getElementById('armoryLiveQueue');
     if (!list) return;
-
-    let personal = u.taskQueue || [];
+    let personal = (u.taskQueue || []).slice(0, 10);
     if (u.memberId !== workshopUserId) {
         workshopUserId = u.memberId;
         workshopFillers = availableDailyTasks.filter(t => !personal.includes(t)).sort(() => 0.5 - Math.random());
     }
-
     let fillers = workshopFillers.slice(0, 10 - personal.length);
     let fullList = [...personal, ...fillers];
-
     list.innerHTML = fullList.map((t, i) => createMirroredCard(t, i, i < personal.length)).join('');
 }
 
 function createMirroredCard(task, index, isActiveOrder, isLibrary = false) {
-    const niceText = clean(task);
-    const safeText = raw(niceText);
+    const niceText = clean(task), safeText = raw(niceText);
     const u = users.find(x => x.memberId === currId);
-    // Check if this specific task is expanded in the workshop memory
     const isExpanded = workshopExpandedTexts.has(niceText);
-
     return `
         <div class="q-item-line ${isActiveOrder ? 'direct-order' : (isLibrary ? '' : 'filler-task')} ${isExpanded ? 'is-expanded' : ''}">
             <div class="dr-card-header">
                 <span class="q-handle">${isActiveOrder ? '★' : ''}</span>
-                ${isActiveOrder ? `<span class="q-badge-queen">QUEEN</span>` : '<span style="font-size:0.4rem; color:#444;">SYSTEM</span>'}
-                ${!isLibrary && isActiveOrder ? `<span class="q-del" onclick="event.stopPropagation(); deleteQueueItem('${u.memberId}', ${index}); openTaskGallery()">&times;</span>` : '<span></span>'}
+                ${isActiveOrder ? `<span class="q-badge-queen">QUEEN</span>` : '<span style="font-size:0.4rem; color:#444; font-family:Orbitron;">SYSTEM</span>'}
+                ${!isLibrary && isActiveOrder ? `<span class="q-del" onclick="event.stopPropagation(); workshopDeleteAction('${u.memberId}', ${index})">&times;</span>` : '<span></span>'}
             </div>
             <div class="q-txt-line">${niceText}</div>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                ${isLibrary ? `<div class="dr-enforce-btn" onclick="enforceDirectiveFromArmory(this, '${safeText}')"><span>⚡</span> ENFORCE</div>` : '<div></div>'}
-                <div class="dr-mirror-arrow" onclick="toggleTaskExpansion(this, '${safeText}')">▼</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:5px;">
+                ${isLibrary ? `<div class="dr-enforce-btn" onclick="enforceDirectiveFromArmory('${safeText}')">⚡ ENFORCE</div>` : '<div></div>'}
+                <div style="display:flex; gap:8px; align-items:center;">
+                    ${isLibrary ? `<div class="dr-fast-top-btn" onclick="fastTopEnforce('${safeText}')">★ 1</div>` : ''}
+                    <div class="dr-mirror-arrow" onclick="toggleTaskExpansion(this, '${safeText}')">▼</div>
+                </div>
             </div>
         </div>`;
 }
@@ -319,45 +267,58 @@ function createMirroredCard(task, index, isActiveOrder, isLibrary = false) {
 export function toggleTaskExpansion(btn, taskText) {
     const card = btn.closest('.q-item-line');
     if (!card) return;
-
-    if (workshopExpandedTexts.has(taskText)) {
-        workshopExpandedTexts.delete(taskText);
-        card.classList.remove('is-expanded');
-    } else {
-        workshopExpandedTexts.add(taskText);
-        card.classList.add('is-expanded');
-    }
+    if (workshopExpandedTexts.has(taskText)) { workshopExpandedTexts.delete(taskText); card.classList.remove('is-expanded'); } 
+    else { workshopExpandedTexts.add(taskText); card.classList.add('is-expanded'); }
 }
 
-export function enforceDirectiveFromArmory(element, text) {
+// --- 4. ENFORCE & PICKER LOGIC ---
+
+export function enforceDirectiveFromArmory(text) {
+    pendingDirectiveText = text;
+    const grid = document.getElementById('slotGrid');
+    if (!grid) return;
+    grid.innerHTML = Array.from({length: 10}, (_, i) => i + 1).map(num => `<div class="slot-btn" onclick="executeManualEnforce(${num})">${num}</div>`).join('');
+    document.getElementById('slotPickerModal').classList.add('active');
+}
+
+export function executeManualEnforce(slot) {
     const u = users.find(x => x.memberId === currId);
     if (!u) return;
-
-    if (u.taskQueue && u.taskQueue.length >= 10) {
-        alert("Maximum load reached. Remove an order first.");
-        return;
-    }
-
     if (!u.taskQueue) u.taskQueue = [];
-    u.taskQueue.unshift(text); // Force to Priority #1 slot
-
-    element.innerText = "TRANSMITTING...";
+    u.taskQueue.splice(slot - 1, 0, pendingDirectiveText);
+    if (u.taskQueue.length > 10) u.taskQueue = u.taskQueue.slice(0, 10);
     syncTaskChanges(u);
-    setTimeout(() => { renderWorkshopLiveQueue(u); }, 400);
+    document.getElementById('slotPickerModal').classList.remove('active');
+    setTimeout(() => { renderWorkshopLiveQueue(u); }, 300);
 }
 
-export function closeTaskGallery() { document.getElementById('taskGalleryModal').classList.remove('active'); }
+export function fastTopEnforce(text) {
+    const u = users.find(x => x.memberId === currId);
+    if (!u) return;
+    if (!u.taskQueue) u.taskQueue = [];
+    u.taskQueue.unshift(text);
+    if (u.taskQueue.length > 10) u.taskQueue = u.taskQueue.slice(0, 10);
+    syncTaskChanges(u);
+    renderWorkshopLiveQueue(u);
+}
 
-// --- 4. SYNC & DRAG LOGIC (UNTOUCHED) ---
+export function workshopDeleteAction(memberId, index) {
+    if (window.deleteQueueItem) {
+        window.deleteQueueItem(memberId, index);
+        const u = users.find(x => x.memberId === memberId);
+        if (u) renderWorkshopLiveQueue(u);
+    }
+}
+
+// --- 5. SYNC & DRAG LOGIC ---
 
 function syncTaskChanges(user) {
     window.parent.postMessage({ type: "updateTaskQueue", memberId: user.memberId, queue: user.taskQueue }, "*");
     Bridge.send("updateTaskQueue", { memberId: user.memberId, queue: user.taskQueue });
-    
-    // Update local Detail view if users.js is loaded
-    import('./dashboard-users.js').then(m => m.updateDetail(user));
+    if (window.updateDetail) window.updateDetail(user);
 }
 
+export function closeTaskGallery() { document.getElementById('taskGalleryModal').classList.remove('active'); }
 export function handleDragStart(e, idx) { setDragSrcIndex(idx); e.dataTransfer.effectAllowed = 'move'; e.target.style.opacity = '0.4'; }
 export function handleDragOver(e) { if (e.preventDefault) e.preventDefault(); e.dataTransfer.dropEffect = 'move'; return false; }
 export function handleDragEnd(e) { e.target.style.opacity = '1'; }
