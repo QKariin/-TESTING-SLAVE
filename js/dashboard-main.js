@@ -217,21 +217,17 @@ function startTimerLoop() {
 
 // Admin task actions
 export function adminTaskAction(memberId, action) {
-    // Note: Use 'window.openTaskGallery' to ensure it's found
     if (action === 'send') {
-        import('./dashboard-state.js').then(({ setArmoryTarget }) => {
-            setArmoryTarget("active");
-            window.openTaskGallery("active");
-        });
+        setArmoryTarget("active");
+        window.openTaskGallery("active");
     } 
     else if (action === 'skip') {
-        // Clear current task (Free skip)
+        // 1. Tell Wix to clear the task (Free skip)
         window.parent.postMessage({ type: "adminTaskAction", memberId: memberId, action: "skip" }, "*");
         
-        import('./dashboard-state.js').then(({ setArmoryTarget }) => {
-            setArmoryTarget("active");
-            window.openTaskGallery("active");
-        });
+        // 2. Set mode and open the library
+        setArmoryTarget("active");
+        window.openTaskGallery("active");
     }
 }
 
