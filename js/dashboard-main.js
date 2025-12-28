@@ -86,7 +86,7 @@ window.addEventListener("message", async (event) => {
             }));
             setStickerConfig(newConfig);
         }
-
+        window.currId = data.currId || currId; 
         renderMainDashboard();
         
         // Update current user if viewing one
@@ -98,40 +98,39 @@ window.addEventListener("message", async (event) => {
     
     else if (data.type === "updateChat") {
         renderChat(data.messages || []);
+        
         const u = users.find(x => x.memberId === data.memberId);
         
+        // Ensure we have a user and messages before doing math
         if (u && data.messages && data.messages.length > 0) {
             const lastMsg = data.messages[data.messages.length - 1];
-            const msgTime = new Date(lastMsg._createdDate).getTime();
+            // DECLARE IT HERE
+            const realMsgTime = new Date(lastMsg._createdDate).getTime();
 
-            // --- THE NEW TRIGGER ---
-            if (msgTime > (u.lastMessageTime || 0) && 
+            // --- THE SOUND TRIGGER ---
+            if (realMsgTime > (u.lastMessageTime || 0) && 
                 lastMsg.sender !== 'admin' && 
                 data.memberId !== currId) {
                 
-                const sfx = document.getElementById('msgSound'); // Updated ID
+                const sfx = document.getElementById('msgSound');
                 if (sfx) {
                     sfx.currentTime = 0;
-                    sfx.volume = 0.5; // Set volume to 50%
-                    sfx.play().catch(e => console.error("Sound failed", e));
+                    sfx.play().catch(e => console.log("Audio waiting for first click..."));
                 }
             }
             
-            // 3. Update the state with the real time
             u.lastMessageTime = realMsgTime;
 
-            // 4. THE HANDSHAKE: If I am currently looking at this guy, mark as "Read" instantly
             if (data.memberId === currId) {
                 localStorage.setItem('read_' + data.memberId, Date.now().toString());
             }
 
-            // 5. Only redraw sidebar (for icons/jumps) if it's NOT the person on screen
             if (u.memberId !== currId) {
                 renderSidebar(); 
             }
         }
     }
-    
+        
     else if (data.type === "stickerConfig") {
         // Handle manual config updates if sent separately
         setStickerConfig(data.stickers || []);
@@ -218,17 +217,21 @@ function startTimerLoop() {
 
 // Admin task actions
 export function adminTaskAction(memberId, action) {
+    // Note: Use 'window.openTaskGallery' to ensure it's found
     if (action === 'send') {
-        setArmoryTarget("active"); 
-        window.openTaskGallery();
+        import('./dashboard-state.js').then(({ setArmoryTarget }) => {
+            setArmoryTarget("active");
+            window.openTaskGallery("active");
+        });
     } 
     else if (action === 'skip') {
-        // Free Skip: Tell Wix to clear current task without penalty
+        // Clear current task (Free skip)
         window.parent.postMessage({ type: "adminTaskAction", memberId: memberId, action: "skip" }, "*");
         
-        // Open Armory to pick the replacement
-        setArmoryTarget("active");
-        window.openTaskGallery();
+        import('./dashboard-state.js').then(({ setArmoryTarget }) => {
+            setArmoryTarget("active");
+            window.openTaskGallery("active");
+        });
     }
 }
 
@@ -236,6 +239,8 @@ export function adminTaskAction(memberId, action) {
 window.renderMainDashboard = renderMainDashboard;
 window.adminTaskAction = adminTaskAction;
 window.toggleMobStats = toggleMobStats;
+window.currId = currId;
+
 
 // Send ready signal to parent
 if (window.parent) {
