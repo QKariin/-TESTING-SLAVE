@@ -208,8 +208,9 @@ export function confirmReward() {
 
 // --- 3. DIRECTIVE WORKSHOP (MIRROR DESIGN) ---
 
-export function openTaskGallery(mode = "queue") {
-    setArmoryTarget(mode); // Sets to 'queue' or 'active' based on what clicked it
+export function openTaskGallery() {
+    // If you click the "TASK QUEUE" title, it defaults to queue mode.
+    // If you click SEND/SKIP, the mode was already set to active by main.js.
     const u = users.find(x => x.memberId === currId);
     if (!u) return;
 
@@ -278,32 +279,45 @@ export function toggleTaskExpansion(btn, taskText) {
 // --- 4. ENFORCE & PICKER LOGIC ---
 
 export function enforceDirectiveFromArmory(text) {
-    // --- NEW: THE ACTIVE INJECTION CHECK ---
-    if (armoryTarget === "active") {
+    // --- IF MODE IS ACTIVE: DIRECT INJECTION ---
+    if (armoryTargetMode === "active") {
         const u = users.find(x => x.memberId === currId);
         if (!u) return;
 
-        // Tell Wix to force this task into the Active Monitor
+        // Tell Wix: "Clear everything and make THIS the task right now"
+        // We set the endTime to 24 hours from THIS second
+        const newEndTime = Date.now() + (24 * 60 * 60 * 1000);
+
         window.parent.postMessage({ 
             type: "forceActiveTask", 
             memberId: u.memberId, 
-            taskText: text 
+            taskText: text,
+            endTime: newEndTime
         }, "*");
 
+        // Instant visual update for your dashboard
+        u.activeTask = { text: text };
+        u.endTime = newEndTime;
+        
+        import('./dashboard-users.js').then(m => m.updateDetail(u));
         closeTaskGallery();
-        return; // STOP HERE (Skip the slot picker)
+        
+        // Reset mode back to default
+        setArmoryTargetMode("queue");
+        return; 
     }
 
-    // 2. IF TARGETING QUEUE (The normal flow)
+    // --- IF MODE IS QUEUE: SHOW SLOT PICKER (Original Logic) ---
     pendingDirectiveText = text;
     const grid = document.getElementById('slotGrid');
     if (!grid) return;
+
     grid.innerHTML = Array.from({length: 10}, (_, i) => i + 1).map(num => 
         `<div class="slot-btn" onclick="executeManualEnforce(${num})">${num}</div>`
     ).join('');
+
     document.getElementById('slotPickerModal').classList.add('active');
 }
-
 export function executeManualEnforce(slot) {
     const u = users.find(x => x.memberId === currId);
     if (!u) return;
