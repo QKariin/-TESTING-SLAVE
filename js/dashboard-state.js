@@ -84,3 +84,6 @@ export function setAudioChunks(chunks) { audioChunks = chunks; }
 // --- ARMORY STATE ---
 export let armorySearchQuery = "";
 export function setArmorySearchQuery(q) { armorySearchQuery = q; }
+
+export let armoryTarget = "queue"; 
+export function setArmoryTarget(val) { armoryTarget = val; }
