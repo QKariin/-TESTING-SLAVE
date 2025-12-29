@@ -163,17 +163,25 @@ window.addEventListener("message", (event) => {
             memberId: data.profile.memberId || "",
             joined: data.profile.joined
         });
-        // --- SYNC REWARD SYSTEM ---
+        // --- SYNC REWARD SYSTEM (SAFE VERSION) ---
         if (data.profile.activeRevealMap) {
-            // Convert the string from Wix into a real array [1, 5, 8]
             let map = [];
-            try { map = JSON.parse(data.profile.activeRevealMap); } catch(e) { map = []; }
+            try { 
+                // ONLY parse if Wix sent a string. If it's already an object, just use it.
+                map = (typeof data.profile.activeRevealMap === 'string') 
+                      ? JSON.parse(data.profile.activeRevealMap) 
+                      : data.profile.activeRevealMap; 
+            } catch(e) { map = []; }
             setActiveRevealMap(map);
         }
         
         if (data.profile.rewardVault) {
             let vault = [];
-            try { vault = JSON.parse(data.profile.rewardVault); } catch(e) { vault = []; }
+            try { 
+                vault = (typeof data.profile.rewardVault === 'string') 
+                        ? JSON.parse(data.profile.rewardVault) 
+                        : data.profile.rewardVault; 
+            } catch(e) { vault = []; }
             setVaultItems(vault);
         }
 
