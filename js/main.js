@@ -71,10 +71,24 @@ function initDomProfile() {
 }
 initDomProfile();
 
-// Listen to the Ecosystem Bridge (The Radio)
-// This forwards Dashboard commands directly into the Profile logic
+// --- THE DOUBLE MESSAGE FIX ---
+// js/main.js (Slave Side)
 Bridge.listen((data) => {
-    console.log("Bridge Message Received:", data.type);
+    // IGNORE these so they don't show up twice
+    const ignoreList = [
+        "CHAT_ECHO", 
+        "UPDATE_CHAT", 
+        "UPDATE_FULL_DATA", 
+        "UPDATE_DOM_STATUS", 
+        "instantUpdate", 
+        "instantReviewSuccess"
+    ];
+
+    if (ignoreList.includes(data.type)) {
+        return; // Stop the echo
+    }
+
+    // Only let through commands like "updateTaskQueue" or "forceActiveTask"
     window.postMessage(data, "*"); 
 });
 
