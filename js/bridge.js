@@ -1,6 +1,12 @@
 // js/bridge.js
 const channel = new BroadcastChannel('ecosystem_link');
 
+const channel = new BroadcastChannel('ecosystem_link');
+export const Bridge = {
+    send: (type, data) => channel.postMessage({ type, ...data }),
+    listen: (callback) => channel.onmessage = (e) => callback(e.data)
+};
+
 export const Bridge = {
     // 1. SAVE to the Shared Brain
     saveState: (data) => {
