@@ -103,7 +103,15 @@ export function setIsLocked(val) { isLocked = val; }
 export function setCurrentHistoryIndex(val) { currentHistoryIndex = val; }
 export function setTouchStartX(val) { touchStartX = val; }
 
-export function setActiveRevealMap(val) { activeRevealMap = val || []; }
-export function setVaultItems(val) { vaultItems = val || []; }
-export function setCurrentLibraryMedia(val) { currentLibraryMedia = val || ""; }
-export function setLibraryProgressIndex(val) { libraryProgressIndex = val || 1; }
+// js/state.js - FIX FOR THE DISCONNECT
+export function setGameStats(newStats) {
+    Object.assign(gameStats, newStats); // This updates the object main.js is already holding
+}
+
+export function setStats(newStats) {
+    Object.assign(stats, newStats);
+}
+
+export function setUserProfile(newProfile) {
+    Object.assign(userProfile, newProfile);
+}
