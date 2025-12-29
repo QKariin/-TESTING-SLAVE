@@ -64,17 +64,17 @@ export let touchStartX = 0;
 
 // This matches the "setGameStats" import in your main.js
 export function setGameStats(newStats) {
-    gameStats = { ...gameStats, ...newStats };
+    Object.assign(gameStats, newStats);
 }
 
 // This matches the "setStats" importY
-export function setStats(newStats) {
-    stats = { ...stats, ...newStats };
+export function setUserProfile(newProfile) {
+    userProfile = { ...userProfile, ...newProfile };
 }
 
 // This matches the "setUserProfile" import
 export function setUserProfile(newProfile) {
-    userProfile = { ...userProfile, ...newProfile };
+    Object.assign(userProfile, newProfile);
 }
 
 export function setCurrentTask(task) { currentTask = task; }
