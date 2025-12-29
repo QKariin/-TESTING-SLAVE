@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { BYTESCALE_CONFIG } from "../js/config";
 
 export default function handler(req, res) {
   const { filePath } = req.query;
@@ -7,19 +8,28 @@ export default function handler(req, res) {
     return res.status(400).json({ error: "Missing filePath" });
   }
 
-  const accountId = process.env.BYTESCALE_ACCOUNT_ID;
-  const secretKey = process.env.BYTESCALE_SECRET_KEY;
+  const subject = filePath.split("/")[0];
 
-  const expires = Date.now() + 1000 * 60 * 5; // 5 minutes
+  // Default to admin if unknown
+  const account = BYTESCALE_CONFIG[subject] || BYTESCALE_CONFIG["admin"];
 
-  const url = `https://upcdn.io/${accountId}/raw/${filePath}?expires=${expires}`;
+  const { ACCOUNT_ID, SECRET_KEY_ENV } = account;
+
+  // ✔ Load secret key from Vercel environment
+  const secretKey = process.env[SECRET_KEY_ENV];
+
+  if (!secretKey) {
+    return res.status(500).json({ error: "Missing secret key in environment" });
+  }
+
+  const expires = Date.now() + 1000 * 60 * 5;
+
+  const url = `https://upcdn.io/${ACCOUNT_ID}/raw/${filePath}?expires=${expires}`;
 
   const signature = crypto
     .createHmac("sha256", secretKey)
     .update(url)
     .digest("hex");
 
-  const signedUrl = `${url}&signature=${signature}`;
-
-  res.status(200).json({ url: signedUrl });
+  res.status(200).json({ url: `${url}&signature=${signature}` });
 }

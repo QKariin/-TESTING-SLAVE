@@ -1,48 +1,34 @@
-// bytescale-upload.js
+import { BYTESCALE_CONFIG } from "./config";
 
-const BS1_ACCOUNT_ID = "kW2K8hR";
-const BS1_API_KEY = "public_kW2K8hR6YbQXStTvMf5ZDYbVf1fQ"; // safe for frontend
-
-// Generate a safe filename
 function generateFilename(originalFile) {
   const ext = originalFile.name.split(".").pop();
   return `${crypto.randomUUID()}.${ext}`;
 }
 
-// Upload to Bytescale
 export async function uploadToBytescale(subject, file) {
+  const account = BYTESCALE_CONFIG[subject] || BYTESCALE_CONFIG["admin"];
+  if (!account) throw new Error("Unknown Bytescale account");
+
+  const { ACCOUNT_ID, PUBLIC_KEY } = account;
+
   const filename = generateFilename(file);
 
   const fd = new FormData();
   fd.append("file", file, filename);
 
-  // Create a YYYY-MM-DD folder
-  const now = new Date();
-  const dateFolder = now.toISOString().split("T")[0]; // "2025-01-28"
-
-  // Path: members/{location}/{date}
+  const dateFolder = new Date().toISOString().split("T")[0];
   const path = `${subject}/${dateFolder}`;
-
-  if (subject === "admin") {
-    ACCOUNT_ID  = BS1_ACCOUNT_ID
-    API_KEY     = BS1_API_KEY
-  } else {
-    ACCOUNT_ID  = BS1_ACCOUNT_ID
-    API_KEY     = BS1_API_KEY
-  }
 
   const res = await fetch(
     `https://api.bytescale.com/v2/accounts/${ACCOUNT_ID}/uploads/form_data?path=${path}`,
     {
       method: "POST",
-      headers: { "Authorization": `Bearer ${API_KEY}` },
+      headers: { Authorization: `Bearer ${PUBLIC_KEY}` },
       body: fd
     }
   );
 
-  if (!res.ok) {
-    throw new Error("Bytescale upload failed");
-  }
+  if (!res.ok) throw new Error("Bytescale upload failed");
 
   const data = await res.json();
   return data.files?.[0]?.fileUrl || null;
@@ -52,9 +38,7 @@ export async function getPrivateFile(filePath) {
   const res = await fetch(`/api/get-private-file?filePath=${encodeURIComponent(filePath)}`);
   const data = await res.json();
 
-  if (!res.ok) {
-    throw new Error(data.error || "Failed to retrieve file");
-  }
+  if (!res.ok) throw new Error(data.error || "Failed to retrieve file");
 
-  return data.url; // signed URL
+  return data.url;
 }
