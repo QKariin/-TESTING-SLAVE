@@ -127,13 +127,7 @@
             
             <!-- VIEW 1: HOME (TASKS & CHAT) -->
             <div id="viewServingTop" style="display:flex; flex-direction:column; gap:15px;">
-              <!-- THE REVEAL TARGET (3x3 Grid) -->
-                <div id="revealSection" style="margin-bottom: 20px;">
-                    <div id="revealLevelLabel" style="font-family:'Orbitron'; font-size:0.6rem; color:#444; text-align:center; letter-spacing:3px; margin-bottom:5px;">LEVEL 1 CONTENT</div>
-                    <div id="revealGridContainer">
-                        <!-- Injected via js/reward.js -->
-                    </div>
-                </div>
+              
                 <!-- Task Card -->
                 <div id="taskCard" class="glass-card">
                     <div id="activeBadge">ACTIVE TASK</div>
@@ -176,7 +170,13 @@
                     <div id="chatBody" style="position: relative; flex-grow: 1; overflow: hidden; display: flex; flex-direction: column;">
                         
                         <!-- BLESSING REWARD OVERLAY (Existing) -->
-                        <!-- REWARD SELECTION OVERLAY -->
+                        <!-- THE REVEAL TARGET (3x3 Grid) -->
+                        <div id="revealSection" style="margin-bottom: 20px;">
+                            <div id="revealLevelLabel" style="font-family:'Orbitron'; font-size:0.6rem; color:#444; text-align:center; letter-spacing:3px; margin-bottom:5px;">LEVEL 1 CONTENT</div>
+                            <div id="revealGridContainer">
+                                <!-- Injected via js/reward.js -->
+                            </div>
+                        </div>
                         <div id="kneelRewardOverlay" class="hidden" style="position: absolute; inset: 0; background: rgba(0,0,0,0.92); z-index: 500; backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: center;">
                             <div style="text-align: center; width: 100%; padding: 20px;">
                                 <h2 style="font-family:'Orbitron'; font-weight: 900; color: white; font-size: 1.1rem; letter-spacing: 5px; margin-bottom: 30px;">RECOGNITION GRANTED</h2>
