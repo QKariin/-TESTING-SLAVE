@@ -166,12 +166,12 @@
                     </div>
                     
                     <!-- NEW: TOGGLE ICON FOR REWARD GRID -->
-                    <div style="display: flex; gap: 15px; align-items: center;">
-                        <div id="toggleGridBtn" onclick="toggleRewardGrid()" style="cursor:pointer; opacity: 0.6; transition: 0.3s;" title="Toggle Reward View">
-                            <svg style="width:20px; height:20px; fill:var(--neon-blue);"><use href="#icon-sparkles"></use></svg>
-                        </div>
-                        <button id="chatSessionBtn" onclick="openSessionUI()">📅</button>
-                    </div>
+                    <!-- Changed fill to neon-green for maximum visibility -->
+                  <div id="toggleGridBtn" onclick="toggleRewardGrid()" style="cursor:pointer; opacity: 0.8; transition: 0.3s;" title="Toggle Reward View">
+                      <svg style="width:22px; height:22px; fill:var(--neon-green); filter: drop-shadow(0 0 5px var(--neon-green));">
+                          <use href="#icon-sparkles"></use>
+                      </svg>
+                  </div>
                 </div>
                 
                     <!-- Chat Body -->
