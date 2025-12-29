@@ -12,7 +12,7 @@ import {
     setLastChatJson, setLastGalleryJson, setIsInitialLoad, setChatLimit, 
     setLastNotifiedMessageId, setHistoryLimit, setCurrentView, setResetUiTimer, 
     setTaskQueue, setCmsHierarchyData, setWishlistItems, setLastWorshipTime, 
-    setCurrentHistoryIndex, setTouchStartX, setIsLocked, setCooldownInterval
+    setCurrentHistoryIndex, setTouchStartX, setIsLocked, setCooldownInterval, setActiveRevealMap, setVaultItems, setCurrentLibraryMedia, setLibraryProgressIndex 
 } from './state.js';
 
 import { getOptimizedUrl, SafeStorage, triggerSound, migrateGameStatsToStats, cleanHTML } from './utils.js';
@@ -163,6 +163,25 @@ window.addEventListener("message", (event) => {
             memberId: data.profile.memberId || "",
             joined: data.profile.joined
         });
+        // --- SYNC REWARD SYSTEM ---
+        if (data.profile.activeRevealMap) {
+            // Convert the string from Wix into a real array [1, 5, 8]
+            let map = [];
+            try { map = JSON.parse(data.profile.activeRevealMap); } catch(e) { map = []; }
+            setActiveRevealMap(map);
+        }
+        
+        if (data.profile.rewardVault) {
+            let vault = [];
+            try { vault = JSON.parse(data.profile.rewardVault); } catch(e) { vault = []; }
+            setVaultItems(vault);
+        }
+
+        setLibraryProgressIndex(data.profile.libraryProgressIndex || 1);
+        setCurrentLibraryMedia(data.profile.currentLibraryMedia || "");
+
+        // DRAW THE GRID IMMEDIATELY
+        renderRewardGrid();
         if (data.profile.lastWorship) setLastWorshipTime(new Date(data.profile.lastWorship).getTime());
         setStats(migrateGameStatsToStats(data.profile, stats));
         if(data.profile.profilePicture) document.getElementById('profilePic').src = getOptimizedUrl(data.profile.profilePicture, 150);
