@@ -60,10 +60,18 @@ export let lastWorshipTime = 0;
 export let currentHistoryIndex = 0;
 export let touchStartX = 0;
 
-// This matches the "setGameStats" import in your main.js
-export function setGameStats(newStats) { Object.assign(gameStats, newStats); }
-export function setStats(newStats) { Object.assign(stats, newStats); }
-export function setUserProfile(newProfile) { Object.assign(userProfile, newProfile); }
+// js/state.js - THE ONLY WAY TO RECONNECT DATA
+export function setGameStats(newStats) {
+    Object.assign(gameStats, newStats); // Correct: Updates the existing brain
+}
+
+export function setStats(newStats) {
+    Object.assign(stats, newStats);
+}
+
+export function setUserProfile(newProfile) {
+    Object.assign(userProfile, newProfile);
+}
 
 export function setCurrentTask(task) { currentTask = task; }
 export function setPendingTaskState(state) { pendingTaskState = state; }
