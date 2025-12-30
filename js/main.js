@@ -196,22 +196,27 @@ window.addEventListener("message", (event) => {
         updateStats(); // RECONNECTS THE VISUALS
     }
 
-        // C. INSTANT REVEAL SYNC (The Roulette Trigger)
-    // C. INSTANT REVEAL SYNC (The Roulette Trigger)
+      // C. INSTANT REVEAL SYNC (The Roulette Trigger)
     if (data.type === "INSTANT_REVEAL_SYNC") {
-        console.log("Slave: System Identifying Target...");
+        console.log("Slave: System Targeting Initiated...");
 
-        // 1. First, make sure the grid is visible and drawn (even if it's the old one)
-        if (data.currentLibraryMedia) setCurrentLibraryMedia(data.currentLibraryMedia);
+        // 1. Ensure the grid is physically on the screen before animating
+        if (data.currentLibraryMedia) {
+            setCurrentLibraryMedia(data.currentLibraryMedia);
+        }
         renderRewardGrid(); 
 
-        // 2. Now that the squares exist, start the animation
+        // 2. Identify which square Wix just picked
         const winnerId = data.activeRevealMap[data.activeRevealMap.length - 1];
 
+        // 3. START THE SCANNING
         runTargetingAnimation(winnerId, () => {
-            // 3. Once animation finishes, update the final state and reveal
+            // This runs ONLY after the blue light finishes jumping and flashing:
+            
+            // Update the map and do the final reveal
             setActiveRevealMap(data.activeRevealMap || []);
             renderRewardGrid();
+            
             console.log("Slave: Target Synchronized.");
         });
     }
