@@ -47,6 +47,8 @@ html, body {
     background: transparent;
 }
 
+.hidden { display: none !important; }
+
 .dr-fast-top-btn:hover {
     background: var(--pink);
     color: black;
