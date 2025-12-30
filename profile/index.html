@@ -205,9 +205,25 @@
                                     <div style="margin: 15px 0; color: #444; font-size: 0.6rem; letter-spacing: 2px;">— OR —</div>
                         
                                     <!-- OPTION 3: THE FRAGMENT GAMBLE -->
-                                    <button onclick="handleRevealFragment()" class="action-btn" style="background:transparent; border:1px solid var(--neon-blue); color:var(--neon-blue); box-shadow: 0 0 15px rgba(0,243,255,0.1);">
-                                        REVEAL FRAGMENT
-                                    </button>
+                                    <!-- OPTION 3: REVEAL MODES -->
+                                    <div style="display:flex; flex-direction:column; gap:10px; width:100%; margin-top:10px;">
+                                        
+                                        <!-- FREE: KNEELING REWARD -->
+                                        <button onclick="handleRevealFragment()" class="action-btn" style="background:transparent; border:1px solid var(--neon-blue); color:var(--neon-blue); font-size:0.7rem;">
+                                            REVEAL FRAGMENT (FREE)
+                                        </button>
+                                    
+                                        <!-- PAID: SINGLE FRAGMENT (100 COINS) -->
+                                        <button onclick="buyRewardFragment(100)" class="action-btn" style="background:rgba(255,215,0,0.05); border:1px solid var(--neon-yellow); color:var(--neon-yellow); font-size:0.7rem;">
+                                            BUY FRAGMENT (100 🪙)
+                                        </button>
+                                    
+                                        <!-- PAID: FULL UNLOCK (500 COINS) -->
+                                        <button onclick="buyRewardFragment(500)" class="action-btn" style="background:rgba(255,215,0,0.1); border:2px solid var(--neon-yellow); color:var(--neon-yellow); font-weight:900; font-size:0.75rem; box-shadow: 0 0 15px rgba(255,215,0,0.2);">
+                                            INSTANT FULL REVEAL (500 🪙)
+                                        </button>
+                                    
+                                    </div>
                                 </div>
                             </div>
                         </div>
