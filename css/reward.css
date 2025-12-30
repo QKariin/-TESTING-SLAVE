@@ -70,12 +70,15 @@
    SNAPS ONLY TO MEDIA - NOT THE BOX. */
 .reveal-grid-overlay {
     position: absolute !important;
-    inset: 0 !important; /* Physically glued to the photo's top, bottom, left, right */
+    inset: 0 !important;
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
     grid-template-rows: repeat(3, 1fr) !important;
     z-index: 2;
+    /* --- THE FIX --- */
+    pointer-events: none !important; 
 }
+
 
 /* 6. THE FROSTED GLASS SQUARES */
 .reveal-square {
@@ -156,14 +159,35 @@
 
 /* --- INTEGRATED COMMAND BLOCK --- */
 .reveal-market-row {
+    position: absolute !important;
+    inset: 0 !important;
     display: flex !important;
-    flex-direction: column !important; /* Stacks them in the center */
     align-items: center !important;
-    gap: 6px;
-    width: 100%;
-    margin-top: 10px;
-    z-index: 2010;
+    justify-content: center !important;
+    z-index: 5050 !important;
+    /* --- THE FIX --- */
+    pointer-events: none !important; 
 }
+
+.market-menu-group {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 240px !important;
+    padding: 25px !important;
+    
+    /* THE HIGH-CLASS LOOK */
+    background: rgba(0, 0, 0, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 1) !important;
+    backdrop-filter: blur(15px) !important;
+    -webkit-backdrop-filter: blur(15px) !important;
+    
+    pointer-events: auto !important; 
+    z-index: 6000 !important;
+}
+
 
 /* Base style for all buttons in the block */
 .reveal-market-row .dr-enforce-btn {
@@ -215,6 +239,18 @@
     border: 2px solid white !important;
     z-index: 101 !important;
 }
+
+.market-menu-group .dr-enforce-btn {
+    font-size: 0.65rem !important;
+    padding: 10px !important;
+    letter-spacing: 2px !important;
+    text-transform: uppercase !important;
+    background: transparent !important;
+}
+
+.market-btn { border-color: var(--neon-yellow) !important; color: var(--neon-yellow) !important; }
+.close-btn { border-color: #444 !important; color: #888 !important; }
+.back-btn { border-color: #222 !important; color: #444 !important; font-size: 0.5rem !important; }
 
 /* 3. Smooth Melt for the Winner */
 .reveal-square.clear {

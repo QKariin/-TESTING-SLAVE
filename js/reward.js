@@ -39,7 +39,12 @@ export function renderRewardGrid() {
     }
     gridHtml += '</div>';
 
-    gridContainer.innerHTML = mediaHtml + gridHtml;
+    // 1. Manually clear only the old image/grid
+        const oldElements = gridContainer.querySelectorAll('.reveal-bg-media, .reveal-grid-overlay');
+        oldElements.forEach(el => el.remove());
+        
+        // 2. Add the new image/grid WITHOUT deleting the buttons
+        gridContainer.insertAdjacentHTML('afterbegin', mediaHtml + gridHtml);
     
     const label = document.getElementById('revealLevelLabel');
     if (label) label.innerText = `LEVEL ${libraryProgressIndex} CONTENT`;
@@ -268,13 +273,21 @@ export function toggleRewardSubMenu(show) {
     if (!mainMenu || !buyMenu) return;
 
     if (show) {
-        // Hide Main, Show Buy
-        mainMenu.style.display = 'none';
-        buyMenu.style.display = 'flex';
+        // HIDE MAIN
+        mainMenu.style.setProperty('display', 'none', 'important');
+        mainMenu.classList.add('hidden');
+
+        // SHOW BUY
+        buyMenu.classList.remove('hidden');
+        buyMenu.style.setProperty('display', 'flex', 'important');
     } else {
-        // Show Main, Hide Buy
-        mainMenu.style.display = 'flex';
-        buyMenu.style.display = 'none';
+        // SHOW MAIN
+        mainMenu.classList.remove('hidden');
+        mainMenu.style.setProperty('display', 'flex', 'important');
+
+        // HIDE BUY
+        buyMenu.style.setProperty('display', 'none', 'important');
+        buyMenu.classList.add('hidden');
     }
 }
 
