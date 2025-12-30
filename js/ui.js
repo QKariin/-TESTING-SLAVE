@@ -1,8 +1,9 @@
-// UI management functions - FULL LOGIC WITH WISHLIST
+// UI management functions - FULL LOGIC WITH WISHLIST & VAULT SYNC
 import { currentView, cmsHierarchyData, setCurrentView, WISHLIST_ITEMS, gameStats } from './state.js';
 import { CMS_HIERARCHY } from './config.js';
 import { renderGallery } from './gallery.js';
 import { getOptimizedUrl } from './utils.js';
+import { renderVault } from './reward.js';
 
 export function switchTab(mode) {
     // 1. Update the buttons
@@ -34,22 +35,26 @@ export function switchTab(mode) {
         });
     }
     
-    // 4. Hide all views
-    ['viewServingTop', 'viewTribute', 'viewSession', 'viewRewards', 'viewHierarchy', 'viewNews', 'viewBuy', 'viewProtocol'].forEach(id => {
+    // 4. Hide all views - Including the old ones for safety, but removing from logic
+    const allViews = [
+        'viewServingTop', 'viewNews', 'viewSession', 
+        'viewVault', 'viewProtocol', 'viewBuy', 
+        'viewTribute', 'viewHierarchy', 'viewRewards'
+    ];
+    
+    allViews.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
     });
 
-    // 5. Show the correct view
+    // 5. THE CLEAN VIEW MAP
     const viewMap = {
         'serve': 'viewServingTop',
-        'tribute': 'viewTribute',
+        'news': 'viewNews',
         'session': 'viewSession',
-        'rewards': 'viewRewards',
-        'hierarchy': 'viewHierarchy',
-        'buy': 'viewBuy',
+        'rewards': 'viewVault',    // MAPS TO THE NEW VAULT
         'protocol': 'viewProtocol',
-        'news': 'viewNews'
+        'buy': 'viewBuy'
     };
 
     const targetId = viewMap[mode];
@@ -58,21 +63,21 @@ export function switchTab(mode) {
         if (targetEl) targetEl.classList.remove('hidden');
     }
        
+    // 6. TRIGGER RENDERS & MESSAGES
     if (mode === 'news') {
         window.parent.postMessage({ type: "LOAD_Q_FEED" }, "*");
     }
     
-    // 6. Trigger Renders
-    if (mode === 'hierarchy') {
-        if (window.renderHierarchy) window.renderHierarchy(cmsHierarchyData || CMS_HIERARCHY);
+    if (mode === 'rewards') {
+        renderVault(); // Draws the collected prizes
     }
-    if (mode === 'tribute') {
-        renderWishlist(); // Call the missing function
+
+    if (mode === 'serve') {
+        renderGallery(); // Draws the history/pending
     }
-    if (mode === 'serve') renderGallery();
 }
 
-// --- NEW: THE WISHLIST RENDERER ---
+// --- THE WISHLIST RENDERER ---
 export function renderWishlist(maxBudget = 999999) {
     const grid = document.getElementById('storeGrid');
     if (!grid) return;
