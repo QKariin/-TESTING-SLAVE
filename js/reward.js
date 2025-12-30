@@ -82,14 +82,13 @@ export function toggleRewardGrid() {
     const btn = document.getElementById('toggleGridBtn');
     if (!section || !btn) return;
 
-    if (section.style.display === 'none') {
-        section.style.display = 'flex'; // Use flex for centering
+    // FIX: Check for empty string "" as well
+    if (section.style.display === 'none' || section.style.display === "") {
+        section.style.display = 'flex'; 
         btn.style.opacity = '1';
     } else {
         section.style.display = 'none';
         btn.style.opacity = '0.6';
-        
-        // --- THE RESET: Move back to Tier 1 menu on close ---
         toggleRewardSubMenu(false);
     }
 }
@@ -273,21 +272,21 @@ export function toggleRewardSubMenu(show) {
     if (!mainMenu || !buyMenu) return;
 
     if (show) {
-        // HIDE MAIN
-        mainMenu.style.setProperty('display', 'none', 'important');
+        // 1. Hide main
         mainMenu.classList.add('hidden');
+        mainMenu.style.display = 'none';
 
-        // SHOW BUY
+        // 2. Show buy (Remove the 'hidden' class physically)
         buyMenu.classList.remove('hidden');
-        buyMenu.style.setProperty('display', 'flex', 'important');
+        buyMenu.style.display = 'flex';
     } else {
-        // SHOW MAIN
+        // 1. Show main
         mainMenu.classList.remove('hidden');
-        mainMenu.style.setProperty('display', 'flex', 'important');
+        mainMenu.style.display = 'flex';
 
-        // HIDE BUY
-        buyMenu.style.setProperty('display', 'none', 'important');
+        // 2. Hide buy
         buyMenu.classList.add('hidden');
+        buyMenu.style.display = 'none';
     }
 }
 
