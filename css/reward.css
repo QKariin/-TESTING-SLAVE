@@ -118,3 +118,48 @@
 .slider-gold .slider-fill { background: rgba(255, 215, 0, 0.15); }
 
 @keyframes scanline { 0% { top: 0%; } 100% { top: 100%; } }
+
+/* --- STEP 3: MOBILE PRECISION --- */
+
+@media (max-width: 768px) {
+    #revealGridContainer {
+        width: 95% !important;
+        max-width: 320px !important; /* Shrunk for phone screens */
+        margin: 10px auto !important;
+    }
+
+    #revealLevelLabel {
+        font-size: 0.8rem !important; /* Smaller text for mobile */
+        margin-top: 20px;
+    }
+
+    #revealSection {
+        padding: 10px !important;
+    }
+}
+
+/* Pulse effect for the Sparkle Icon so they know it's active */
+#toggleGridBtn:hover svg {
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 8px var(--neon-pink));
+}
+
+/* Style for the "Close" link inside the glass */
+.dr-close-glass {
+    margin-top: 20px;
+    background: transparent;
+    border: 1px solid #333;
+    color: #444;
+    font-family: 'Rajdhani';
+    font-size: 0.6rem;
+    padding: 5px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: 0.3s;
+}
+
+.dr-close-glass:hover {
+    border-color: #666;
+    color: #888;
+}
