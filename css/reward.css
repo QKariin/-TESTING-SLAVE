@@ -1,7 +1,7 @@
-/* --- TACTICAL REVEAL SYSTEM: ELITE MOBILE & DESKTOP --- */
+/* --- TACTICAL REVEAL SYSTEM: PROPORTIONAL MAX HEIGHT --- */
 
 /* 1. THE MASTER OVERLAY
-   Covers the entire chat card (header to footer) without pushing anything. */
+   Trapped inside #chatCard, covers everything from header to footer. */
 #revealSection {
     position: absolute !important;
     inset: 0 !important;
@@ -15,47 +15,52 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 0 !important; /* Remove padding to maximize space */
+    padding: 0 !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
 }
 
 /* 2. THE HEADER LABEL
-   Floats over the top of the glass. */
+   Floats at the top of the glass. */
 #revealLevelLabel {
-    position: absolute;
-    top: 20px;
     font-family: 'Georgia', serif !important;
     font-style: italic;
     font-weight: bold;
     font-size: 1.1rem !important;
     color: var(--neon-pink) !important;
     text-shadow: 0 0 10px rgba(255, 0, 222, 0.5);
-    z-index: 5010;
-    text-transform: uppercase;
+    margin-top: 15px;
+    margin-bottom: 10px;
     letter-spacing: 3px;
-    pointer-events: none;
+    text-transform: uppercase;
+    text-align: center;
+    flex-shrink: 0;
 }
 
 /* 3. THE MASTER GRID CONTAINER
-   This is the "Jail" that shrinks to the photo width. */
+   This is the "Stage" that shrinks to the photo width.
+   HEIGHT is set to 85% to give the photo MAX space while leaving room for the button. */
 #revealGridContainer {
     position: relative !important;
-    height: 80% !important; /* MASTER HEIGHT AS REQUESTED */
-    width: fit-content !important; /* CRITICAL: SNAPS TO PHOTO WIDTH */
+    height: 85% !important; /* THE MAX HEIGHT COMMAND */
+    width: fit-content !important; /* SNAPS TO MEDIA WIDTH */
     max-width: 95% !important;
     margin: 0 auto !important;
-    display: block !important;
     background: transparent !important;
+    border: 1px solid #222;
+    border-radius: 6px;
     overflow: hidden;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
 }
 
 /* 4. THE MEDIA (The Photo)
-   Master of proportions. High covers container, Width is auto. */
+   Master of the height. Proportions stay 100% original. */
 .reveal-bg-media {
     position: relative !important;
-    height: 100% !important; /* Fills the container height */
-    width: auto !important;   /* Proportions stay perfect */
+    height: 100% !important; /* Fills the 85% stage */
+    width: auto !important;   /* THE AUTO WIDTH COMMAND */
     display: block !important;
     object-fit: contain !important;
     z-index: 1;
@@ -65,10 +70,7 @@
    SNAPS ONLY TO MEDIA - NOT THE BOX. */
 .reveal-grid-overlay {
     position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important; /* Matches the auto-width of the image */
-    height: 100% !important; /* Matches the 100% height of the image */
+    inset: 0 !important; /* Physically glued to the photo's top, bottom, left, right */
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
     grid-template-rows: repeat(3, 1fr) !important;
@@ -81,45 +83,42 @@
     box-sizing: border-box;
     border: 0.5px solid rgba(255, 255, 255, 0.1) !important;
 }
-
 .reveal-square.frosted {
     background: rgba(255, 255, 255, 0.03) !important; 
     backdrop-filter: blur(60px) !important;
     -webkit-backdrop-filter: blur(60px) !important;
 }
-
 .reveal-square.clear {
     background: transparent !important;
     backdrop-filter: blur(0px) !important;
     -webkit-backdrop-filter: blur(0px) !important;
-    transition: backdrop-filter 1.2s ease, background 1.2s ease !important;
+    transition: backdrop-filter 1s ease !important;
 }
 
 /* 7. THE NUMBERS */
 .sq-num {
     font-family: 'Share Tech Mono', monospace !important;
     font-size: 0.7rem !important;
-    color: rgba(255, 255, 255, 0.15) !important;
+    color: rgba(255, 255, 255, 0.1);
     position: absolute;
     top: 50%; left: 50%; transform: translate(-50%, -50%);
+    pointer-events: none;
 }
 
-/* 8. IPHONE SLIDERS */
+/* 8. IPHONE STYLE SLIDERS */
 .reward-slider-container { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 400px; padding: 20px; }
-.iphone-slider { position: relative; width: 100%; height: 55px; background: rgba(255, 255, 255, 0.05); border: 1px solid #333; border-radius: 30px; overflow: hidden; cursor: pointer; }
+.iphone-slider { position: relative; width: 100%; height: 55px; background: rgba(255, 255, 255, 0.05); border: 1px solid #333; border-radius: 30px; overflow: hidden; }
 .slider-track-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Georgia', serif; font-size: 0.8rem; color: #555; pointer-events: none; z-index: 2; }
-.slider-knob { position: absolute; left: 4px; top: 4px; bottom: 4px; aspect-ratio: 1 / 1; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 3; }
+.slider-knob { position: absolute; left: 4px; top: 4px; bottom: 4px; aspect-ratio: 1 / 1; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 3; background: #222; }
 .slider-pink .slider-knob { background: var(--neon-pink); }
 .slider-gold .slider-knob { background: var(--neon-yellow); }
 .slider-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; z-index: 1; }
 .slider-pink .slider-fill { background: rgba(255, 0, 222, 0.15); }
 .slider-gold .slider-fill { background: rgba(255, 215, 0, 0.15); }
 
-/* 9. THE CLOSE BUTTON
-   Floats at the very bottom. */
+/* 9. THE CLOSE BUTTON */
 .dr-close-glass {
-    position: absolute;
-    bottom: 20px;
+    margin: 10px 0 20px 0;
     background: transparent;
     border: 1px solid #333;
     color: #444;
@@ -129,16 +128,8 @@
     border-radius: 20px;
     cursor: pointer;
     letter-spacing: 2px;
-    z-index: 5010;
+    flex-shrink: 0;
 }
 .dr-close-glass:hover { border-color: #666; color: #888; }
 
-/* 10. MOBILE PRECISION (FIXED) */
-@media (max-width: 768px) {
-    #revealGridContainer {
-        height: 70vh !important; /* Use vertical space for portrait photos */
-        width: fit-content !important;
-    }
-    #revealLevelLabel { font-size: 0.9rem !important; top: 10px; }
-    .dr-close-glass { bottom: 10px; font-size: 0.55rem; }
-}
+/* 10. NO SPECIAL MEDIA QUERIES - THE ABOVE LOGIC WORKS FOR BOTH */
