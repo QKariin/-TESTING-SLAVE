@@ -1,5 +1,5 @@
 // js/reward.js - THE REVEAL ENGINE
-import { activeRevealMap, currentLibraryMedia, libraryProgressIndex } from './state.js';
+import { activeRevealMap, currentLibraryMedia, libraryProgressIndex, gameStats } from './state.js';
 import { getOptimizedUrl, triggerSound } from './utils.js';
 
 // --- 1. THE GRID RENDERER (Draws the 3x3 frosted glass) ---
@@ -44,6 +44,34 @@ export function renderRewardGrid() {
     const label = document.getElementById('revealLevelLabel');
     if (label) label.innerText = `LEVEL ${libraryProgressIndex} CONTENT`;
 }
+
+// --- STEP 2: PURCHASE LOGIC ---
+export function buyRewardFragment(cost) {
+    // 1. Check if the slave can afford it
+    if (gameStats.coins < cost) {
+        triggerSound('sfx-deny');
+        alert("SYSTEM ERROR: INSUFFICIENT COINS (" + cost + " required).");
+        return;
+    }
+
+    // 2. Tell Wix to subtract the coins and pick the squares
+    // cost will be 100 or 500
+    window.parent.postMessage({ 
+        type: "PURCHASE_REVEAL", 
+        cost: cost 
+    }, "*");
+
+    // 3. Close the choice menu so they see the animation/result
+    const rewardMenu = document.getElementById('kneelRewardOverlay');
+    if (rewardMenu) rewardMenu.classList.add('hidden');
+    
+    // 4. Force the grid view to open
+    const section = document.getElementById('revealSection');
+    if (section) section.style.display = 'flex';
+
+    triggerSound('coinSound');
+}
+
 
 export function toggleRewardGrid() {
     const section = document.getElementById('revealSection');
@@ -201,6 +229,8 @@ export function runTargetingAnimation(winnerId, finalCallback) {
     }, 50); // Speed: 80ms is a fast "Digital" jump
 }
 
+// Global binding
+window.buyRewardFragment = buyRewardFragment;
 // Bind to window
 window.runTargetingAnimation = runTargetingAnimation;
 
