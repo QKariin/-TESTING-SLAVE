@@ -1,30 +1,25 @@
-/* --- TACTICAL REVEAL SYSTEM: FULL FIXED MASTER --- */
+/* --- TACTICAL REVEAL SYSTEM: MASTER CSS --- */
 
-/* 1. THE OVERLAY (The Boss)
-   This covers the ENTIRE chat card (header to footer) without pushing elements. */
+/* 1. THE OVERLAY (The Boss) */
 #revealSection {
     position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
+    inset: 0 !important;
     width: 100% !important;
-    height: 100% !important; /* Forces it to match the 600px height */
-    
-    background: rgba(0, 0, 0, 0.9) !important;
+    height: 100% !important;
+    background: rgba(0, 0, 0, 0.95) !important;
     backdrop-filter: blur(25px) !important;
     -webkit-backdrop-filter: blur(25px) !important;
-    
-    z-index: 5000 !important; /* Puts it on top of EVERYTHING inside the chat */
-    display: none; /* Toggled to 'flex' by JS */
+    z-index: 5000 !important;
+    display: none; 
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: center; /* Centers the photo vertically */
     padding: 10px !important;
     box-sizing: border-box !important;
+    overflow: hidden !important;
 }
 
-/* 2. THE HEADER LABEL (High-Class Serif) */
+/* 2. THE HEADER LABEL */
 #revealLevelLabel {
     font-family: 'Georgia', serif !important;
     font-style: italic;
@@ -38,39 +33,38 @@
     text-align: center;
 }
 
-/* 3. THE MASTER GRID CONTAINER (Hero Sizing)
-   Unlocked height so it never crops your photos. */
+/* 3. THE MASTER GRID CONTAINER
+   Uses fit-content so the BLUR SNAPS to the photo edges. */
 #revealGridContainer {
     position: relative !important;
-    width: fit-content !important; /* Snaps to the image width */
-    height: 100% !important;
-    max-width: 100% !important;
+    width: fit-content !important; /* SNAPS TO PHOTO WIDTH */
+    height: 75% !important; /* Leaves room for the close button */
     margin: 0 auto !important;
+    border: 1px solid #222;
+    border-radius: 8px;
+    overflow: hidden;
     background: transparent !important;
-    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column;
 }
 
 /* 4. THE MEDIA (Photo or Video)
-   Forced to show its actual size without cropping. */
+   Sets the width for the container. */
 .reveal-bg-media {
     position: relative !important;
-    height: 80% !important; /* Leaves 20% for the button area */
-    width: auto !important;   /* Proportions stay perfect */
+    height: 100% !important; /* Fills the container height */
+    width: auto !important;   /* Keeps proportions perfect */
     max-width: 100% !important;
-    display: block !important;
-    margin: 0 auto !important; /* Centers the narrow photo */
     object-fit: contain !important;
+    display: block !important;
     z-index: 1;
 }
 
-/* 5. THE 3x3 GRID OVERLAY
-   Stretches perfectly to match the image height. */
+/* 5. THE 3x3 GRID OVERLAY 
+   Pinned exactly to the photo. */
 .reveal-grid-overlay {
     position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    height: 80% !important; /* Sits exactly on top of the 80% media */
+    inset: 0 !important;
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
     grid-template-rows: repeat(3, 1fr) !important;
@@ -111,7 +105,7 @@
     pointer-events: none;
 }
 
-/* 9. IPHONE STYLE SLIDERS (Reward Menu) */
+/* 9. IPHONE STYLE SLIDERS */
 .reward-slider-container { display: flex; flex-direction: column; gap: 15px; width: 100%; padding: 10px; max-width: 400px; }
 .iphone-slider { position: relative; width: 100%; height: 55px; background: rgba(255, 255, 255, 0.05); border: 1px solid #333; border-radius: 30px; overflow: hidden; cursor: pointer; }
 .slider-track-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Georgia', serif; font-size: 0.8rem; color: #555; pointer-events: none; z-index: 2; }
@@ -122,11 +116,14 @@
 .slider-pink .slider-fill { background: rgba(255, 0, 222, 0.15); }
 .slider-gold .slider-fill { background: rgba(255, 215, 0, 0.15); }
 
-/* 10. MOBILE PRECISION */
+/* --- 10. MOBILE PRECISION (FIXED: NO MORE BOX BLUR) --- */
 @media (max-width: 768px) {
-    #revealGridContainer { width: 100% !important; max-width: none !important; margin: 0 auto !important; border-radius: 0; }
-    #revealLevelLabel { font-size: 1rem !important; margin-top: 10px; }
-    .dr-close-glass { margin-top: 15px; font-size: 0.55rem; }
+    #revealGridContainer { 
+        width: fit-content !important; /* SNAP TO PHOTO */
+        max-width: 95% !important; /* Prevent going off-screen */
+        height: 70% !important; /* Smaller height to ensure button is visible */
+    }
+    #revealLevelLabel { font-size: 0.9rem !important; margin-top: 10px; }
 }
 
 .dr-close-glass {
