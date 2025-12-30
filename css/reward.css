@@ -158,33 +158,34 @@
 }
 
 /* --- INTEGRATED COMMAND BLOCK --- */
+/* 1. THE ROW: Covers the photo but lets clicks pass through the empty spaces */
 .reveal-market-row {
     position: absolute !important;
     inset: 0 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    z-index: 5050 !important;
-    /* --- THE FIX --- */
+    /* THIS IS THE KEY: High Z-index and PASS-THROUGH events */
+    z-index: 5050 !important; 
     pointer-events: none !important; 
 }
 
+/* 2. THE MENU BOX: This is the solid box that CATCHES the click */
 .market-menu-group {
     display: flex !important;
     flex-direction: column !important;
     gap: 12px !important;
-    width: 240px !important;
-    padding: 25px !important;
+    /* THIS IS THE KEY: Re-enable touch only for the buttons and their background */
+    pointer-events: auto !important; 
+    z-index: 5051 !important;
     
-    /* THE HIGH-CLASS LOOK */
+    /* Keep your existing look */
     background: rgba(0, 0, 0, 0.85) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     border-radius: 12px !important;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 1) !important;
+    padding: 25px !important;
     backdrop-filter: blur(15px) !important;
     -webkit-backdrop-filter: blur(15px) !important;
-    
-    pointer-events: auto !important; /* ALLOWS CLICKS ON BUTTONS */
 }
 
 
