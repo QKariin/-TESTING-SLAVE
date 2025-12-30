@@ -273,12 +273,20 @@ export function toggleRewardSubMenu(show) {
     if (!mainMenu || !buyMenu) return;
 
     if (show) {
-        // Hide Main, Show Buy
+        // 1. Hide main
+        mainMenu.classList.add('hidden');
         mainMenu.style.display = 'none';
+        
+        // 2. Show buy (Remove the class wall)
+        buyMenu.classList.remove('hidden');
         buyMenu.style.display = 'flex';
     } else {
-        // Show Main, Hide Buy
+        // 1. Show main
+        mainMenu.classList.remove('hidden');
         mainMenu.style.display = 'flex';
+        
+        // 2. Hide buy
+        buyMenu.classList.add('hidden');
         buyMenu.style.display = 'none';
     }
 }
