@@ -28,10 +28,10 @@ export async function uploadToBytescale(subject, file) {
     }
   );
 
-  if (!res.ok) throw new Error("Bytescale upload failed");
+  if (!res.ok) return "failed";
 
   const data = await res.json();
-  return data.files?.[0]?.fileUrl || null;
+  return data.files?.[0]?.fileUrl || "failed";
 }
 
 export async function getPrivateFile(filePath) {
