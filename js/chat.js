@@ -64,7 +64,7 @@ export async function renderChat(messages) {
             if (parts.length === 2) {
                 const filePath = '/' + parts[1];
                 try {
-                    m.message = await getPrivateFile(filePath);
+                    m.mediaUrl = await getPrivateFile(filePath);
                 } catch (e) {
                     console.error('Failed to sign URL', e);
                 }
@@ -107,8 +107,8 @@ export async function renderChat(messages) {
         let contentHtml = `<div class="msg ${msgClass}">${txt}</div>`;
 
         // MEDIA DETECTION
-        if (m.message && m.message.startsWith('http')) {
-            const url = m.message.toLowerCase();
+        if (m.message && (m.message.startsWith('http') || m.mediaUrl)) {
+            const url = (m.mediaUrl || m.message).toLowerCase();
 
             const isVideo = url.match(/\.(mp4|webm|mov)(\?|$)/);
             const isImage = url.match(/\.(jpg|jpeg|png|gif|webp|avif|bmp|svg)(\?|$)/);
@@ -117,10 +117,10 @@ export async function renderChat(messages) {
                 contentHtml = `
                     <div class="msg ${msgClass}" style="padding:0; background:black;">
                         <video 
-                            src="${m.message}" 
+                            src="${m.mediaUrl || m.message}" 
                             controls 
                             style="max-width:100%; border-radius:8px; display:block; cursor:pointer;"
-                            onclick="openChatPreview('${encodeURIComponent(m.message)}', true)">
+                            onclick="openChatPreview('${encodeURIComponent(m.mediaUrl || m.message)}', true)">
                         </video>
                     </div>`;
             } 
@@ -128,16 +128,16 @@ export async function renderChat(messages) {
                 contentHtml = `
                     <div class="msg ${msgClass}" style="padding:0;">
                         <img 
-                            src="${m.message}" 
+                            src="${m.mediaUrl || m.message}" 
                             style="max-width:100%; border-radius:8px; display:block; cursor:pointer;"
-                            onclick="openChatPreview('${encodeURIComponent(m.message)}', false)">
+                            onclick="openChatPreview('${encodeURIComponent(m.mediaUrl || m.message)}', false)">
                     </div>`;
             } 
             else {
                 // Normal link
                 contentHtml = `
                     <div class="msg ${msgClass}">
-                        <a href="${m.message}" target="_blank" rel="noopener noreferrer">${m.message}</a>
+                        <a href="${m.mediaUrl || m.message}" target="_blank" rel="noopener noreferrer">${m.mediaUrl || m.message}</a>
                     </div>`;
             }
         }
