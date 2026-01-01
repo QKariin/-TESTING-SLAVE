@@ -108,19 +108,20 @@ export async function renderChat(messages) {
 
         // MEDIA DETECTION
         if (m.message && (m.message.startsWith('http') || m.mediaUrl)) {
-            const url = (m.mediaUrl || m.message).toLowerCase();
+            const originalUrl = m.message.toLowerCase();
+            const srcUrl = m.mediaUrl || m.message;
 
-            const isVideo = url.match(/\.(mp4|webm|mov)(\?|$)/);
-            const isImage = url.match(/\.(jpg|jpeg|png|gif|webp|avif|bmp|svg)(\?|$)/);
+            const isVideo = originalUrl.match(/\.(mp4|webm|mov)(\?|$)/);
+            const isImage = originalUrl.match(/\.(jpg|jpeg|png|gif|webp|avif|bmp|svg)(\?|$)/);
 
             if (isVideo) {
                 contentHtml = `
                     <div class="msg ${msgClass}" style="padding:0; background:black;">
                         <video 
-                            src="${m.mediaUrl || m.message}" 
+                            src="${srcUrl}" 
                             controls 
                             style="max-width:100%; border-radius:8px; display:block; cursor:pointer;"
-                            onclick="openChatPreview('${encodeURIComponent(m.mediaUrl || m.message)}', true)">
+                            onclick="openChatPreview('${encodeURIComponent(srcUrl)}', true)">
                         </video>
                     </div>`;
             } 
@@ -128,16 +129,16 @@ export async function renderChat(messages) {
                 contentHtml = `
                     <div class="msg ${msgClass}" style="padding:0;">
                         <img 
-                            src="${m.mediaUrl || m.message}" 
+                            src="${srcUrl}" 
                             style="max-width:100%; border-radius:8px; display:block; cursor:pointer;"
-                            onclick="openChatPreview('${encodeURIComponent(m.mediaUrl || m.message)}', false)">
+                            onclick="openChatPreview('${encodeURIComponent(srcUrl)}', false)">
                     </div>`;
             } 
             else {
                 // Normal link
                 contentHtml = `
                     <div class="msg ${msgClass}">
-                        <a href="${m.mediaUrl || m.message}" target="_blank" rel="noopener noreferrer">${m.mediaUrl || m.message}</a>
+                        <a href="${srcUrl}" target="_blank" rel="noopener noreferrer">${srcUrl}</a>
                     </div>`;
             }
         }
