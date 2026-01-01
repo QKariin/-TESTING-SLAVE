@@ -17,10 +17,10 @@ export async function uploadToBytescale(subject, file) {
   fd.append("file", file, filename);
 
   const dateFolder = new Date().toISOString().split("T")[0];
-  const path = `${subject}/${dateFolder}`;
+  const path = `/${subject}/${dateFolder}`;
 
   const res = await fetch(
-    `https://api.bytescale.com/v2/accounts/${ACCOUNT_ID}/uploads/form_data?path=${path}`,
+    `https://api.bytescale.com/v2/accounts/${ACCOUNT_ID}/uploads/form_data?path=${folderPath}`,
     {
       method: "POST",
       headers: { Authorization: `Bearer ${PUBLIC_KEY}` },
