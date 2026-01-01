@@ -7,8 +7,9 @@ import {
 } from './state.js'; // IMPORT THE SETTERS
 import { URLS } from './config.js';
 import { triggerSound } from './utils.js';
+import { getPrivateFile } from './bytescale.js';
 
-export function renderChat(messages) {
+export async function renderChat(messages) {
     const chatBoxContainer = document.getElementById('chatBox');
     const chatContent = document.getElementById('chatContent');
     const loadMoreBtn = document.getElementById('chatLoadMoreBtn');
@@ -55,6 +56,21 @@ export function renderChat(messages) {
     const visibleMessages = sortedMessages.slice(
         Math.max(sortedMessages.length - chatLimit, 0)
     );
+
+    // Sign Bytescale URLs
+    for (let m of visibleMessages) {
+        if (m.message && m.message.startsWith('https://upcdn.io/')) {
+            const parts = m.message.split('/raw/');
+            if (parts.length === 2) {
+                const filePath = '/' + parts[1];
+                try {
+                    m.message = await getPrivateFile(filePath);
+                } catch (e) {
+                    console.error('Failed to sign URL', e);
+                }
+            }
+        }
+    }
 
     // 4. RENDER HTML
     chatContent.innerHTML = visibleMessages.map(m => {
