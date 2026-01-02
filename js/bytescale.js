@@ -163,7 +163,19 @@ observer.observe(document.body, {
 
 }
 
+export async function signUpcdnUrl(url) {
+  if (!url || !url.startsWith("https://upcdn.io/")) return url;
 
-// Run
-//scanExisting();
-//observeNewElements();
+  const parts = url.split("/raw/");
+  if (parts.length !== 2) return url;
+
+  const filePath = "/" + parts[1];
+
+  try {
+    const result = await getPrivateFile(filePath);
+    return result?.signedUrl || url;
+  } catch (err) {
+    console.error("Failed to sign Upcdn URL:", url, err);
+    return url;
+  }
+}

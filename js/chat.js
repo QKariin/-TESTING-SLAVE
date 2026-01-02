@@ -7,7 +7,7 @@ import {
 } from './state.js'; // IMPORT THE SETTERS
 import { URLS } from './config.js';
 import { triggerSound } from './utils.js';
-import { getPrivateFile } from './bytescale.js';
+import { signUpcdnUrl } from './bytescale.js';
 
 export async function renderChat(messages) {
     const chatBoxContainer = document.getElementById('chatBox');
@@ -58,7 +58,7 @@ export async function renderChat(messages) {
     );
 
     // Proxy Bytescale URLs for private access (in parallel)
-    const signingPromises = visibleMessages.map(async (m) => {
+    /*const signingPromises = visibleMessages.map(async (m) => {
         if (m.message && m.message.startsWith('https://upcdn.io/')) {
             const parts = m.message.split('/raw/');
             if (parts.length === 2) {
@@ -69,6 +69,12 @@ export async function renderChat(messages) {
                     console.error('Failed to proxy URL', e);
                 }
             }
+        }
+    });
+    await Promise.all(signingPromises);*/
+    const signingPromises = visibleMessages.map(async (m) => {
+        if (m.message?.startsWith("https://upcdn.io/")) {
+            m.mediaUrl = await signUpcdnUrl(m.message);
         }
     });
     await Promise.all(signingPromises);
