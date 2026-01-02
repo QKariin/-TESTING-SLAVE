@@ -714,5 +714,9 @@ if (window.self === window.top) {
     }, 2000); 
 }
 
-scanExisting();
+//scanExisting();
 //observeNewElements();
+
+window.addEventListener("load", () => {
+  scanExisting();
+});
