@@ -86,7 +86,7 @@ function extractFilePath(url) {
 }*/
 
 async function processMediaElement(el) {
-  const attrs = ["src", "poster"];
+  const attrs = ["src"];
 
   for (const attr of attrs) {
     const original = el.getAttribute(attr);
@@ -118,50 +118,42 @@ export async function scanExisting() {
 }
 
 export function observeNewElements() {
-  const observer = new MutationObserver(mutations => {
-    for (const mutation of mutations) {
-      console.log("MUTATION:", mutation);
-      if (mutation.type !== "attributes") continue;
-      if (mutation.attributeName !== "src" && mutation.attributeName !== "data-src") continue;
+const observer = new MutationObserver(mutations => {
+  for (const mutation of mutations) {
 
-      const el = mutation.target;
-      const url = el.getAttribute(mutation.attributeName);
+    // 1. Handle newly added nodes
+    if (mutation.type === "childList") {
+      mutation.addedNodes.forEach(node => {
+        if (node.nodeType !== 1) return; // element only
 
-      // Skip null/empty
-      if (!url || typeof url !== "string") continue;
-
-      // Skip already-signed URLs
-      if (url.includes("&sig=") || url.includes("?sig=")) continue;
-
-      // Skip non-Upcdn URLs
-      if (!url.includes("upcdn.io")) continue;
-
-      // Prevent feedback loop
-      observer.disconnect();
-
-      signUrl(url).then(signedUrl => {
-        // Only update if still the same unsigned URL
-        const current = el.getAttribute(mutation.attributeName);
-        if (current === url) {
-          el.setAttribute(mutation.attributeName, signedUrl);
+        // If the node itself is an <img> or <video>
+        if (node.tagName === "IMG" || node.tagName === "VIDEO") {
+          processMediaElement(node);
         }
 
-        // Reconnect observer
-        observer.observe(document.body, {
-          subtree: true,
-          attributes: true,
-          attributeFilter: ["src", "data-src"]
-        });
+        // If the node contains images/videos inside it
+        node.querySelectorAll?.("img, video").forEach(processMediaElement);
       });
     }
-  });
 
-  observer.observe(document.body, {
-    subtree: true,
-    attributes: true,
-    attributeFilter: ["src", "data-src"]
-  });
+    // 2. Handle attribute changes (fallback)
+    if (mutation.type === "attributes") {
+      if (mutation.target.tagName === "IMG" || mutation.target.tagName === "VIDEO") {
+        processMediaElement(mutation.target);
+      }
+    }
+  }
+});
+
+observer.observe(document.body, {
+  subtree: true,
+  childList: true,
+  attributes: true,
+  attributeFilter: ["src"]
+});
+
 }
+
 
 // Run
 //scanExisting();
