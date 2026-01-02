@@ -6,7 +6,7 @@ import {
 import { 
     setHistoryLimit, setCurrentHistoryIndex, setTouchStartX 
 } from './state.js';
-import { getOptimizedUrl, cleanHTML, triggerSound } from './utils.js';
+import { cleanHTML, triggerSound } from './utils.js';
 import { signUpcdnUrl } from './bytescale.js';
 
 // YOUR STICKER LINKS
@@ -76,7 +76,7 @@ function createPendingCardHTML(item) {
 }
 
 function createGalleryItemHTML(item, index) {
-    let thumbUrl = getOptimizedUrl(item.proofUrl, 300);
+    let thumbUrl = item.proofUrlThumb || item.proofUrl;
     const s = (item.status || "").toLowerCase();
     const statusSticker = s.includes('app') ? STICKER_APPROVE : STICKER_DENIED;
 
