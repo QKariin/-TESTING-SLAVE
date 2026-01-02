@@ -715,4 +715,4 @@ if (window.self === window.top) {
 }
 
 scanExisting();
-observeNewElements();
+//observeNewElements();
