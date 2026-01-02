@@ -7,6 +7,7 @@ import {
     setHistoryLimit, setCurrentHistoryIndex, setTouchStartX 
 } from './state.js';
 import { getOptimizedUrl, cleanHTML, triggerSound } from './utils.js';
+import { signUpcdnUrl } from './bytescale.js';
 
 // YOUR STICKER LINKS
 const STICKER_APPROVE = "https://static.wixstatic.com/media/ce3e5b_a19d81b7f45c4a31a4aeaf03a41b999f~mv2.png";
