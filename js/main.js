@@ -331,29 +331,103 @@ function updateStats() {
 }
 
 // --- TRIBUTE HUNT LOGIC ---
-let selectedReason = "";
-let selectedItem = null;
+let currentHuntIndex = 0;
+let filteredItems = [];
 
 function toggleTributeHunt() {
+    const chatContainer = document.querySelector('.app-container') || document.body;
     const overlay = document.getElementById('tributeHuntOverlay');
-    const mainBtn = document.getElementById('tributeHuntBtn');
-    if (!overlay || !mainBtn) return;
-
+    
     if (overlay.classList.contains('hidden')) {
         overlay.classList.remove('hidden');
-        mainBtn.style.border = "none";
-        mainBtn.style.background = "transparent";
-        mainBtn.style.color = "#666";
-        mainBtn.innerHTML = `<svg style="width:22px; height:10px; fill:#666;"><use href="#icon-close"></use></svg> ABORT SACRIFICE`;
+        overlay.classList.add('tinder-focus'); // Adds the full-screen layout
+        chatContainer.classList.add('tribute-focus-mode'); // Hides everything else
         showHuntStep(1);
     } else {
         overlay.classList.add('hidden');
-        mainBtn.style.border = "1px solid var(--neon-yellow)";
-        mainBtn.style.background = "#000";
-        mainBtn.style.color = "var(--neon-yellow)";
-        mainBtn.innerHTML = `<svg style="width:22px; height:15px; fill:var(--neon-yellow);"><use href="#icon-coin"></use></svg> TRIBUTE`;
+        overlay.classList.remove('tinder-focus');
+        chatContainer.classList.remove('tribute-focus-mode');
         resetTributeFlow();
     }
+}
+
+function renderHuntStore(budget) {
+    const grid = document.getElementById('huntStoreGrid');
+    const items = window.WISHLIST_ITEMS || [];
+    filteredItems = items.filter(item => Number(item.price || item.Price || 0) <= budget);
+    currentHuntIndex = 0;
+    showTinderCard();
+}
+
+function showTinderCard() {
+    const grid = document.getElementById('huntStoreGrid');
+    const item = filteredItems[currentHuntIndex];
+
+    if (!item) {
+        grid.innerHTML = `<div style="text-align:center;"><p>NO MORE ITEMS</p><button class="action-btn" onclick="toggleTributeHunt()">EXIT</button></div>`;
+        return;
+    }
+
+    grid.innerHTML = `
+        <div class="tinder-focus-wrapper">
+            <div id="tinderCard" class="tinder-card-main">
+                <div id="likeLabel" class="swipe-indicator like">SACRIFICE</div>
+                <div id="nopeLabel" class="swipe-indicator nope">SKIP</div>
+                <div class="card-image-container" style="flex:1; display:flex; align-items:center; justify-content:center; padding:20px;">
+                    <img src="${item.img || item.image}" style="max-width:100%; max-height:100%; object-fit:contain;" draggable="false">
+                </div>
+                <div style="padding:20px; text-align:center; background:#000;">
+                    <div style="color:var(--neon-yellow); font-size:1.8rem; font-weight:900;">${item.price} 🪙</div>
+                    <div style="color:white; letter-spacing:2px; font-size:0.8rem;">${item.name.toUpperCase()}</div>
+                </div>
+            </div>
+        </div>
+    `;
+    initSwipeEvents(document.getElementById('tinderCard'), item);
+}
+
+function initSwipeEvents(card, item) {
+    let startX = 0;
+    let currentX = 0;
+
+    const handleStart = (e) => {
+        startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        card.style.transition = 'none';
+    };
+
+    const handleMove = (e) => {
+        if (!startX) return;
+        currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        const diff = currentX - startX;
+        card.style.transform = `translateX(${diff}px) rotate(${diff / 15}deg)`;
+        document.getElementById('likeLabel').style.opacity = diff > 0 ? (diff / 100) : 0;
+        document.getElementById('nopeLabel').style.opacity = diff < 0 ? (Math.abs(diff) / 100) : 0;
+    };
+
+    const handleEnd = () => {
+        const diff = currentX - startX;
+        if (diff > 120) { // BUY
+            card.style.transform = `translateX(600px) rotate(45deg)`;
+            selectedItem = item;
+            setTimeout(() => { showHuntStep(4); }, 200);
+        } else if (diff < -120) { // SKIP
+            card.style.transform = `translateX(-600px) rotate(-45deg)`;
+            currentHuntIndex++;
+            setTimeout(() => { showTinderCard(); }, 200);
+        } else { // RESET
+            card.style.transform = `translateX(0) rotate(0)`;
+            document.getElementById('likeLabel').style.opacity = 0;
+            document.getElementById('nopeLabel').style.opacity = 0;
+        }
+        startX = 0;
+    };
+
+    card.addEventListener('mousedown', handleStart);
+    card.addEventListener('touchstart', handleStart);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('touchmove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+    window.addEventListener('touchend', handleEnd);
 }
 
 function showHuntStep(step) {
