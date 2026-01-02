@@ -20,6 +20,8 @@ export async function renderGallery() {
     const signingPromises = galleryData.map(async (item) => {
     if (item.proofUrl?.startsWith("https://upcdn.io/")) {
         item.proofUrl = await signUpcdnUrl(item.proofUrl);
+        item.proofUrlThumb = await signUpcdnUrl(item.proofUrl.replace("/raw/", "/thumbnail/"));
+
         console.log("Signed gallery proof URL:", item.proofUrl);
     }
     });
@@ -56,7 +58,7 @@ export function loadMoreHistory() {
 function createPendingCardHTML(item) {
     const cleanText = cleanHTML(item.text).replace(/"/g, '&quot;');
     const isVideo = item.proofUrl.match(/\.(mp4|webm|mov)$/i);
-    let thumb = getOptimizedUrl(item.proofUrl, 400);
+    let thumb = item.proofUrlThumb || item.proofUrl;
     
     const encUrl = encodeURIComponent(item.proofUrl || "");
     const encText = encodeURIComponent(item.text || "");

@@ -166,7 +166,8 @@ observer.observe(document.body, {
 export async function signUpcdnUrl(url) {
   if (!url || !url.startsWith("https://upcdn.io/")) return url;
 
-  const parts = url.split("/raw/");
+  //const parts = url.split("/raw/");
+  const parts = url.split(/\/raw\/|\/thumbnail\//);
   if (parts.length !== 2) return url;
 
   const filePath = "/" + parts[1];
