@@ -15,7 +15,14 @@ const STICKER_DENIED = "https://static.wixstatic.com/media/ce3e5b_63a0c8320e2941
 // 1. Remember if the user is in "Proof Mode" or "Menu Mode"
 let isInProofMode = false; 
 
-export function renderGallery() {
+export async function renderGallery() {
+    const signingPromises = galleryData.map(async (item) => {
+    if (item.proofUrl?.startsWith("https://upcdn.io/")) {
+        item.ProofUrl = await signUpcdnUrl(item.proofUrl);
+    }
+    });
+    await Promise.all(signingPromises);
+
     const pGrid = document.getElementById('pendingGrid');
     const hGrid = document.getElementById('historyGrid');
     

@@ -73,9 +73,9 @@ export async function renderChat(messages) {
     });
     await Promise.all(signingPromises);*/
     const signingPromises = visibleMessages.map(async (m) => {
-        if (m.message?.startsWith("https://upcdn.io/")) {
-            m.mediaUrl = await signUpcdnUrl(m.message);
-        }
+    if (m.message?.startsWith("https://upcdn.io/")) {
+        m.mediaUrl = await signUpcdnUrl(m.message);
+    }
     });
     await Promise.all(signingPromises);
 
