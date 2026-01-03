@@ -303,7 +303,7 @@ function toggleTributeHunt() {
 
 function showHuntStep(step) {
     document.querySelectorAll('.hunt-step').forEach(el => el.classList.add('hidden'));
-    const target = document.getElementById('huntStep' + step);
+    const target = document.getElementById('tributeStep' + step);
     if (target) {
         target.classList.remove('hidden');
     }
