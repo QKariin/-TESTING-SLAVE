@@ -197,6 +197,40 @@ window.addEventListener("message", (event) => {
     }
 });
 
+let sacrificeHoldTimer = null;
+let sacrificeHoldPercent = 0;
+
+export function startSacrificeHold() {
+    const ring = document.getElementById('sacrificeFill');
+    if (!ring) return;
+
+    sacrificeHoldPercent = 0;
+    sacrificeHoldTimer = setInterval(() => {
+        sacrificeHoldPercent += 2; // Takes 2-3 seconds to fill
+        
+        // Calculate SVG Dash Offset (Circumference is ~283)
+        const offset = 283 - (283 * (sacrificeHoldPercent / 100));
+        ring.style.strokeDashoffset = offset;
+
+        if (sacrificeHoldPercent >= 100) {
+            clearInterval(sacrificeHoldTimer);
+            finalizeSacrifice(); // Trigger the purchase
+        }
+    }, 40); // Smooth update
+}
+
+export function endSacrificeHold() {
+    clearInterval(sacrificeHoldTimer);
+    const ring = document.getElementById('sacrificeFill');
+    if (ring) {
+        ring.style.strokeDashoffset = 283; // Reset the ring
+    }
+}
+
+// Add these to your window global assignments at the bottom of main.js
+window.startSacrificeHold = startSacrificeHold;
+window.endSacrificeHold = endSacrificeHold;
+
 // --- 4. LOGIC FUNCTIONS ---
 function updateStats() {
     const subName = document.getElementById('subName');
