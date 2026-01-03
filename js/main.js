@@ -309,7 +309,7 @@ function showTributeStep(step) {
     if (target) {
         target.classList.remove('hidden');
     }
-    const labels = ["", "INTENTION", "SACRIFICE", "THE HUNT", "CONFESSION"];
+    const labels = ["", "INTENTION", "THE HUNT", "CONFESSION"];
     //const labels = ["", "INTENTION", "CONFESSION", "SACRIFICE", "GIFT"];
     const progressEl = document.getElementById('huntProgress');
     if (progressEl) progressEl.innerText = labels[step] || "";
