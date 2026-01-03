@@ -2153,42 +2153,47 @@ html, body {
 }
 
 /* The Relic Card */
+/* Ensure the Stage doesn't allow scrolling */
+#huntStoreGrid {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* SHRINK THE CARD TO FIT THE CHAT BOX */
 .tinder-card-main {
-    width: 260px;
-    height: 400px;
+    width: 240px; /* Small enough for chat box */
+    height: 380px; 
     background: #0a0a0a;
-    border: 0.5px solid rgba(197, 160, 89, 0.3); /* Thin Gold Line */
-    border-radius: 0; /* Sharp corners look more expensive */
-    box-shadow: 0 0 40px rgba(0,0,0,1), inset 0 0 20px rgba(197, 160, 89, 0.05);
+    border: 1px solid #333;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,1);
+    position: relative;
+    overflow: hidden;
 }
 
 .tinder-card-main img {
-    filter: sepia(0.5) brightness(0.8); /* Makes images look like relics */
-    transition: 0.5s ease;
+    width: 100%;
+    height: 250px; /* Fixed height for image area */
+    object-fit: contain;
+    background: #000;
 }
 
-.tribute-title {
-    font-family: 'Orbitron'; /* Ditch the glitch font */
-    font-weight: 400;
-    letter-spacing: 8px;
-    text-transform: uppercase;
-    color: #C5A059;
-    font-size: 0.9rem;
+/* Correct Swiping Labels */
+.swipe-indicator {
+    position: absolute;
+    top: 30px;
+    padding: 5px 15px;
+    border: 3px solid;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 900;
+    opacity: 0;
+    z-index: 100;
+    pointer-events: none;
 }
-
-/* Premium Buttons */
-.tribute-options .tab-btn {
-    background: transparent;
-    border: 0.5px solid rgba(197, 160, 89, 0.4);
-    color: #C5A059;
-    border-radius: 0;
-    font-family: 'Orbitron';
-    font-size: 0.7rem;
-    letter-spacing: 3px;
-    transition: 0.4s;
-}
-
-.tribute-options .tab-btn:hover {
-    background: rgba(197, 160, 89, 0.1);
-    border-color: #C5A059;
-}
+.swipe-indicator.like { left: 10px; color: var(--neon-green); border-color: var(--neon-green); transform: rotate(-15deg); }
+.swipe-indicator.nope { right: 10px; color: var(--neon-pink); border-color: var(--neon-pink); transform: rotate(15deg); }
