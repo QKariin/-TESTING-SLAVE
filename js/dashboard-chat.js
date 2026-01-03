@@ -65,7 +65,10 @@ export async function renderChat(msgs) {
             } else if (m.message.includes('Task Verified') || m.message.includes('Task Rejected')) {
                 contentHtml = renderSystemMessage(m.message, m.message.includes('Verified') ? 'green' : 'red');
             } else {
-                contentHtml = `<div class="msg ${isMe ? 'm-out' : 'm-in'}">${m.message}</div>`;
+                let safeHtml = DOMPurify.sanitize(m.message);
+                // Convert newlines to <br>
+                safeHtml = safeHtml.replace(/\n/g, "<br>");
+                contentHtml = `<div class="msg ${isMe ? 'm-out' : 'm-in'}">${safeHtml}</div>`;
             }
         }
         
