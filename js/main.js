@@ -342,13 +342,13 @@ let selectedReason = "";
 let selectedItem = null;
 
 function toggleTributeHunt() {
-    const chatContainer = document.querySelector('.app-container');
+    const chatContainer = document.querySelector('.app-container') || document.body;
     const overlay = document.getElementById('tributeHuntOverlay');
     
     if (overlay.classList.contains('hidden')) {
         overlay.classList.remove('hidden');
-        overlay.classList.add('tinder-focus');
-        chatContainer.classList.add('tribute-focus-mode');
+        overlay.classList.add('tinder-focus'); // Adds the full-screen layout
+        chatContainer.classList.add('tribute-focus-mode'); // Hides everything else
         showHuntStep(1);
     } else {
         overlay.classList.add('hidden');
@@ -359,6 +359,7 @@ function toggleTributeHunt() {
 }
 
 function renderHuntStore(budget) {
+    const grid = document.getElementById('huntStoreGrid');
     const items = window.WISHLIST_ITEMS || [];
     filteredItems = items.filter(item => Number(item.price || item.Price || 0) <= budget);
     currentHuntIndex = 0;
@@ -370,18 +371,19 @@ function showTinderCard() {
     const item = filteredItems[currentHuntIndex];
 
     if (!item) {
-        grid.innerHTML = `<div style="text-align:center; color:#666;"><p>TIER EMPTY</p><button class="action-btn" onclick="showHuntStep(2)">BACK</button></div>`;
+        grid.innerHTML = `<div style="text-align:center;"><p>NO MORE ITEMS</p><button class="action-btn" onclick="toggleTributeHunt()">EXIT</button></div>`;
         return;
     }
 
-    // We clear the grid and inject the Stage + Card
     grid.innerHTML = `
-        <div class="tinder-stage">
+        <div class="tinder-focus-wrapper">
             <div id="tinderCard" class="tinder-card-main">
                 <div id="likeLabel" class="swipe-indicator like">SACRIFICE</div>
                 <div id="nopeLabel" class="swipe-indicator nope">SKIP</div>
-                <img src="${item.img || item.image}" draggable="false">
-                <div style="padding:20px; text-align:center;">
+                <div class="card-image-container" style="flex:1; display:flex; align-items:center; justify-content:center; padding:20px;">
+                    <img src="${item.img || item.image}" style="max-width:100%; max-height:100%; object-fit:contain;" draggable="false">
+                </div>
+                <div style="padding:20px; text-align:center; background:#000;">
                     <div style="color:var(--neon-yellow); font-size:1.8rem; font-weight:900;">${item.price} 🪙</div>
                     <div style="color:white; letter-spacing:2px; font-size:0.8rem;">${item.name.toUpperCase()}</div>
                 </div>
@@ -458,6 +460,137 @@ function selectTributeReason(reason) {
 function filterByBudget(max) {
     renderHuntStore(max); 
     showHuntStep(3);
+}
+
+function renderHuntStore(budget) {
+    const grid = document.getElementById('huntStoreGrid');
+    if (!grid) return;
+
+    // 1. Filter items by budget
+    const items = window.WISHLIST_ITEMS || [];
+    filteredItems = items.filter(item => Number(item.price || item.Price || 0) <= budget);
+    currentHuntIndex = 0; // Start at the first item
+
+    if (filteredItems.length === 0) {
+        grid.innerHTML = '<div style="color:#666; text-align:center; padding:40px;">NO TRIBUTES IN THIS TIER...</div>';
+        return;
+    }
+
+    showTinderCard();
+}
+
+function showTinderCard() {
+    const grid = document.getElementById('huntStoreGrid');
+    const item = filteredItems[currentHuntIndex];
+
+    if (!item) {
+        grid.innerHTML = `
+            <div style="text-align:center; padding:40px;">
+                <div style="font-size:2rem; margin-bottom:10px;">💨</div>
+                <div style="color:#666; font-size:0.7rem;">NO MORE ITEMS IN THIS TIER</div>
+                <button class="tab-btn" onclick="showHuntStep(2)" style="margin-top:15px; width:auto; padding:5px 15px;">CHANGE BUDGET</button>
+            </div>`;
+        return;
+    }
+
+    grid.style.perspective = "1000px";
+    grid.innerHTML = `
+        <div class="tinder-wrapper" style="position:relative; width:100%; height:300px; display:flex; align-items:center; justify-content:center;">
+            
+            <!-- Instructions Overlay -->
+            <div id="swipeHint" style="position:absolute; top:-20px; width:100%; text-align:center; font-size:0.6rem; color:var(--neon-yellow); opacity:0.8; font-family:'Orbitron';">
+                <i class="fas fa-arrow-left"></i> SKIP | BUY <i class="fas fa-arrow-right"></i>
+            </div>
+
+            <!-- The Card -->
+            <div id="tinderCard" class="tinder-card" style="width:220px; background:#111; border:2px solid #333; border-radius:15px; padding:15px; text-align:center; transition: transform 0.1s ease, opacity 0.1s ease; cursor:grab; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                
+                <!-- Indicators that appear on swipe -->
+                <div id="likeLabel" style="position:absolute; top:20px; left:10px; border:3px solid var(--neon-green); color:var(--neon-green); padding:5px 10px; border-radius:5px; font-weight:900; transform:rotate(-15deg); opacity:0; pointer-events:none;">SACRIFICE</div>
+                <div id="nopeLabel" style="position:absolute; top:20px; right:10px; border:3px solid var(--neon-pink); color:var(--neon-pink); padding:5px 10px; border-radius:5px; font-weight:900; transform:rotate(15deg); opacity:0; pointer-events:none;">SKIP</div>
+
+                <div style="height:140px; display:flex; align-items:center; justify-content:center; margin-bottom:15px;">
+                    <img src="${item.img || item.image}" style="max-height:100%; max-width:100%; border-radius:8px; pointer-events:none;">
+                </div>
+                <div style="font-family:'Orbitron'; color:white; font-size:0.8rem; font-weight:bold; margin-bottom:5px;">${item.name.toUpperCase()}</div>
+                <div style="color:var(--neon-yellow); font-size:1rem; font-weight:bold;">${item.price} 🪙</div>
+                
+                <div style="margin-top:15px; font-size:0.6rem; color:#666;">${currentHuntIndex + 1} / ${filteredItems.length}</div>
+            </div>
+        </div>
+    `;
+
+    initSwipeEvents(document.getElementById('tinderCard'), item);
+}
+
+function initSwipeEvents(card, item) {
+    let startX = 0;
+    let currentX = 0;
+    const threshold = 100; // Pixels needed to trigger a swipe
+
+    const handleStart = (e) => {
+        startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        card.style.transition = 'none';
+    };
+
+    const handleMove = (e) => {
+        if (!startX) return;
+        currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        const diff = currentX - startX;
+        const rotation = diff / 10;
+        const opacity = Math.min(Math.abs(diff) / 50, 1);
+
+        card.style.transform = `translateX(${diff}px) rotate(${rotation}deg)`;
+
+        // Show "SACRIFICE" or "SKIP" labels based on direction
+        const likeLabel = document.getElementById('likeLabel');
+        const nopeLabel = document.getElementById('nopeLabel');
+        
+        if (diff > 0) { // Swiping Right
+            likeLabel.style.opacity = opacity;
+            nopeLabel.style.opacity = 0;
+        } else { // Swiping Left
+            nopeLabel.style.opacity = opacity;
+            likeLabel.style.opacity = 0;
+        }
+    };
+
+    const handleEnd = () => {
+        const diff = currentX - startX;
+        card.style.transition = 'transform 0.4s ease, opacity 0.4s ease';
+
+        if (diff > threshold) {
+            // SWIPE RIGHT: PURCHASE
+            card.style.transform = `translateX(500px) rotate(30deg)`;
+            card.style.opacity = '0';
+            setTimeout(() => {
+                selectedItem = item;
+                showHuntStep(4); // Go to confession/note step
+            }, 300);
+        } else if (diff < -threshold) {
+            // SWIPE LEFT: NEXT
+            card.style.transform = `translateX(-500px) rotate(-30deg)`;
+            card.style.opacity = '0';
+            setTimeout(() => {
+                currentHuntIndex++;
+                showTinderCard();
+            }, 300);
+        } else {
+            // RESET
+            card.style.transform = `translateX(0) rotate(0)`;
+            document.getElementById('likeLabel').style.opacity = 0;
+            document.getElementById('nopeLabel').style.opacity = 0;
+        }
+        startX = 0;
+        currentX = 0;
+    };
+
+    card.addEventListener('mousedown', handleStart);
+    card.addEventListener('touchstart', handleStart);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('touchmove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+    window.addEventListener('touchend', handleEnd);
 }
 
 function toggleHuntNote(show) {
@@ -651,11 +784,70 @@ function triggerCoinShower() {
     }
 }
 
+function renderHuntStore(budget) {
+    const items = window.WISHLIST_ITEMS || [];
+    // Reset indices
+    currentHuntIndex = 0;
+    // Filter by price
+    filteredItems = items.filter(item => Number(item.price || item.Price || 0) <= budget);
+    
+    // Jump to the Tinder Step
+    showHuntStep(3);
+    // Draw the first card
+    showTinderCard();
+}
+
+function showTinderCard() {
+    const grid = document.getElementById('huntStoreGrid');
+    const item = filteredItems[currentHuntIndex];
+
+    if (!item) {
+        grid.innerHTML = `<div style="text-align:center;"><p style="color:#666;">VAULT EMPTY</p><button class="action-btn" onclick="showHuntStep(2)">BACK</button></div>`;
+        return;
+    }
+
+    grid.innerHTML = `
+        <div id="tinderCard" class="tinder-card-main">
+            <div id="likeLabel" class="swipe-indicator like">SACRIFICE</div>
+            <div id="nopeLabel" class="swipe-indicator nope">SKIP</div>
+            <img src="${item.img || item.image}" draggable="false">
+            <div class="tinder-card-info">
+                <div style="color:var(--neon-yellow); font-size:2rem; font-weight:900;">${item.price} 🪙</div>
+                <div style="color:white; letter-spacing:3px; font-weight:bold; font-size:0.9rem;">${item.name.toUpperCase()}</div>
+            </div>
+        </div>
+    `;
+    initSwipeEvents(document.getElementById('tinderCard'), item);
+}
+
 function breakGlass(e) {
     if (e && e.stopPropagation) e.stopPropagation();
     const overlay = document.getElementById('specialGlassOverlay');
     if (overlay) overlay.classList.remove('active');
     window.parent.postMessage({ type: "GLASS_BROKEN" }, "*");
+}
+
+function showTinderCard() {
+    const grid = document.getElementById('huntStoreGrid');
+    const item = filteredItems[currentHuntIndex];
+
+    if (!item) {
+        grid.innerHTML = `<div style="text-align:center;"><p style="color:#666;">VAULT EMPTY</p><button class="action-btn" onclick="showHuntStep(2)">BACK</button></div>`;
+        return;
+    }
+
+    grid.innerHTML = `
+        <div id="tinderCard" class="tinder-card-main">
+            <div id="likeLabel" class="swipe-indicator like">SACRIFICE</div>
+            <div id="nopeLabel" class="swipe-indicator nope">SKIP</div>
+            <img src="${item.img || item.image}" draggable="false">
+            <div class="tinder-card-info">
+                <div style="color:var(--neon-yellow); font-size:2rem; font-weight:900;">${item.price} 🪙</div>
+                <div style="color:white; letter-spacing:3px; font-weight:bold; font-size:0.9rem;">${item.name.toUpperCase()}</div>
+            </div>
+        </div>
+    `;
+    initSwipeEvents(document.getElementById('tinderCard'), item);
 }
 
 function renderHierarchy(data) {
@@ -674,47 +866,73 @@ function submitSessionRequest() {
 setInterval(updateKneelingStatus, 1000);
 setInterval(() => { window.parent.postMessage({ type: "heartbeat", view: currentView }, "*"); }, 5000);
 
-// --- 6. LOOPS & HANDSHAKE ---
-setInterval(updateKneelingStatus, 1000);
-setInterval(() => { window.parent.postMessage({ type: "heartbeat", view: currentView }, "*"); }, 5000);
+// Tribute functions
+window.toggleTributeHunt = toggleTributeHunt;
+window.selectTributeReason = selectTributeReason;
+window.filterByBudget = filterByBudget;
+window.showHuntStep = showHuntStep;
+window.toggleHuntNote = toggleHuntNote;
+window.finalizeSacrifice = finalizeSacrifice;
+window.showTinderCard = showTinderCard;
+window.renderHuntStore = renderHuntStore;
+window.resetTributeFlow = resetTributeFlow;
 
-// EXPORT TO WINDOW (Fixes the "Not Defined" errors)
+// Navigation & Stats
 window.switchTab = switchTab;
 window.toggleStats = toggleStats;
 window.toggleSection = toggleSection;
+
+// Kneeling functions (imported from kneeling.js)
+window.handleHoldStart = handleHoldStart;
+window.handleHoldEnd = handleHoldEnd;
+window.claimKneelReward = claimKneelReward;
+window.updateKneelingStatus = updateKneelingStatus;
+
+// Tasks & Evidence
 window.getRandomTask = getRandomTask;
 window.cancelPendingTask = cancelPendingTask;
 window.handleEvidenceUpload = handleEvidenceUpload;
+
+// Chat & Preview
 window.sendChatMessage = sendChatMessage;
 window.handleChatKey = handleChatKey;
 window.loadMoreChat = loadMoreChat;
 window.openChatPreview = openChatPreview;
 window.closeChatPreview = closeChatPreview;
 window.breakGlass = breakGlass;
+
+// History & Modal
 window.openHistoryModal = openHistoryModal;
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.toggleHistoryView = toggleHistoryView;
 window.loadMoreHistory = loadMoreHistory;
+
+// Profile & Devotion
 window.handleHoldStart = handleHoldStart;
 window.handleHoldEnd = handleHoldEnd;
 window.claimKneelReward = claimKneelReward;
 window.updateKneelingStatus = updateKneelingStatus;
 window.handleProfileUpload = handleProfileUpload;
-window.toggleTributeHunt = toggleTributeHunt;
-window.toggleHuntNote = toggleHuntNote;
-window.sendCoins = sendCoins;
-window.buyRealCoins = buyRealCoins;
-window.triggerCoinShower = triggerCoinShower;
-window.selectTributeReason = selectTributeReason;
-window.filterByBudget = filterByBudget;
-window.finalizeSacrifice = finalizeSacrifice;
-window.showHuntStep = showHuntStep;
+
+// Sessions & Admin
 window.openSessionUI = openSessionUI;
 window.closeSessionUI = closeSessionUI;
 window.updateSessionCost = updateSessionCost;
 window.submitSessionRequest = submitSessionRequest;
 window.handleAdminUpload = handleAdminUpload;
+
+window.WISHLIST_ITEMS = WISHLIST_ITEMS;
+window.gameStats = gameStats;
+
+// --- 8. THE HANDSHAKE ---
+window.parent.postMessage({ type: "UI_READY" }, "*");
+
+window.WISHLIST_ITEMS = WISHLIST_ITEMS;
+window.gameStats = gameStats;
+
+// --- 8. THE HANDSHAKE ---
+window.parent.postMessage({ type: "UI_READY" }, "*");
 
 window.resetTributeFlow = function() {
     selectedReason = "";
@@ -723,11 +941,7 @@ window.resetTributeFlow = function() {
     if (note) note.value = "";
     showHuntStep(1);
 };
-
-// Final Handshake
-window.parent.postMessage({ type: "UI_READY" }, "*");
-
-// Standalone Test
+// --- 7. STANDALONE TEST ---
 if (window.self === window.top) {
     setTimeout(() => {
         window.postMessage({
@@ -740,3 +954,8 @@ if (window.self === window.top) {
         }, "*");
     }, 2000); 
 }
+
+/*window.addEventListener("load", () => {
+  scanExisting();
+  observeNewElements();
+});*/
