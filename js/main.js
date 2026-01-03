@@ -212,7 +212,7 @@ function showHuntStep(step) {
 
 function selectTributeReason(reason) { 
     selectedReason = reason; 
-    renderHuntStore(999999); // JUMP DIRECTLY TO STEP 3
+    renderHuntStore(999999); 
 }
 
 function renderHuntStore(budget) {
@@ -224,8 +224,7 @@ function renderHuntStore(budget) {
         if(grid) grid.innerHTML = `<div style="text-align:center;"><p style="color:#666;">VAULT EMPTY</p></div>`;
         return;
     }
-    showHuntStep(3); // SHOW THE GRID
-    showTinderCard();
+    showHuntStep(3); showTinderCard();
 }
 
 function showTinderCard() {
@@ -267,10 +266,8 @@ function initSwipeEvents(card, item) {
             if(document.getElementById('huntSelectedPrice')) document.getElementById('huntSelectedPrice').innerText = item.price + " 🪙";
             setTimeout(() => { showHuntStep(4); }, 200);
         } else if (diff < -100) { // SKIP: FIX TO SHOW NEXT ITEM
-            card.style.transform = `translateX(-600px) rotate(-45deg)`; 
-            card.style.opacity = "0";
-            currentHuntIndex++; 
-            setTimeout(() => { showTinderCard(); }, 300);
+            card.style.transform = `translateX(-600px) rotate(-45deg)`; card.style.opacity = "0";
+            currentHuntIndex++; setTimeout(() => { showTinderCard(); }, 300);
         } else {
             card.style.transform = `translateX(0) rotate(0)`;
             if(document.getElementById('likeLabel')) document.getElementById('likeLabel').style.opacity = 0;
@@ -338,7 +335,7 @@ function resetTributeFlow() { selectedReason = ""; selectedItem = null; if (docu
 setInterval(updateKneelingStatus, 1000);
 setInterval(() => { window.parent.postMessage({ type: "heartbeat", view: currentView }, "*"); }, 5000);
 
-// GLOBAL BINDINGS
+// GLOBAL ATTACHMENTS
 window.toggleTributeHunt = toggleTributeHunt; window.selectTributeReason = selectTributeReason; window.showHuntStep = showHuntStep;
 window.finalizeSacrifice = finalizeSacrifice; window.resetTributeFlow = resetTributeFlow; window.toggleHuntNote = toggleHuntNote;
 window.switchTab = switchTab; window.toggleStats = toggleStats; window.toggleSection = toggleSection;
