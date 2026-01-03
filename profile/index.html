@@ -88,10 +88,7 @@
                                     <span id="txt-sub" style="font-size: 0.35rem; color: #888; font-family: 'Rajdhani';">HOLD FOR 2 SECONDS</span>
                                 </div>
                             </div>
-                          <div class="daily-id-display" style="color: #888; text-shadow: none !important; filter: none !important;">
-                            DAILY ID: <span id="dailyRandomId" class="did-val" style="color: #888; text-shadow: none !important; filter: none !important;">#----</span>
-                        </div>
-                      </div>
+                       </div>
                    </div>
                 </div>
                 <div class="pc-stats-grid">
@@ -100,7 +97,13 @@
                 </div>
                 <div class="stats-toggle-btn" onclick="toggleStats()" style="color: #888 !important; text-shadow: none !important; border-color: #444 !important;">STATS ▾</div>
                 <div id="statsContent">
-                  <div class="stat-row-group">
+                    <!-- NEW LOCATION: CENTERED AT TOP -->
+                    <div style="text-align: center; padding: 10px 0; color: #888; text-shadow: none !important; font-size: 0.75rem; border-bottom: 1px solid #222;">
+                        DAILY ID: <span id="dailyRandomId" style="color: #888; text-shadow: none !important;">#----</span>
+                    </div>
+                
+                    <div class="stat-row-group">
+
                       <div class="stat-line"><span>Task Streak</span> <strong id="statStreak">0</strong></div>
                       <div class="stat-line"><span>Total Tasks</span> <strong id="statTotal">0</strong></div>
                       <div class="stat-line"><span>Completed</span> <strong id="statCompleted">0</strong></div>
