@@ -44,7 +44,6 @@ document.addEventListener('click', () => {
     }
 }, { once: true });
 
-
 const resizer = new ResizeObserver(() => { 
     if(window.parent) window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, '*'); 
 });
@@ -53,17 +52,7 @@ resizer.observe(document.body);
 function initDomProfile() {
     const frame = document.getElementById('twitchFrame');
     if(frame && !frame.src) {
-        const parents = [
-            "qkarin.com", 
-            "www.qkarin.com", 
-            "entire-ecosystem.vercel.app", 
-            "html-components.wixusercontent.com", 
-            "filesusr.com", 
-            "editor.wix.com", 
-            "manage.wix.com", 
-            "localhost"
-        ];
-        
+        const parents = ["qkarin.com", "www.qkarin.com", "entire-ecosystem.vercel.app", "html-components.wixusercontent.com", "filesusr.com", "editor.wix.com", "manage.wix.com", "localhost"];
         let parentString = "";
         parents.forEach(p => parentString += `&parent=${p}`);
         frame.src = `https://player.twitch.tv/?channel=${CONFIG.TWITCH_CHANNEL}${parentString}&muted=true&autoplay=true`;
@@ -71,21 +60,9 @@ function initDomProfile() {
 }
 initDomProfile();
 
-// --- THE DOUBLE MESSAGE FIX ---
 Bridge.listen((data) => {
-    const ignoreList = [
-        "CHAT_ECHO", 
-        "UPDATE_CHAT", 
-        "UPDATE_FULL_DATA", 
-        "UPDATE_DOM_STATUS", 
-        "instantUpdate", 
-        "instantReviewSuccess"
-    ];
-
-    if (ignoreList.includes(data.type)) {
-        return; 
-    }
-
+    const ignoreList = ["CHAT_ECHO", "UPDATE_CHAT", "UPDATE_FULL_DATA", "UPDATE_DOM_STATUS", "instantUpdate", "instantReviewSuccess"];
+    if (ignoreList.includes(data.type)) return;
     window.postMessage(data, "*"); 
 });
 
@@ -147,31 +124,18 @@ window.addEventListener("message", (event) => {
     if (payload) {
         if (data.profile && !ignoreBackendUpdates) {
             setGameStats(data.profile);
-            setUserProfile({
-                name: data.profile.name || "Slave",
-                hierarchy: data.profile.hierarchy || "HallBoy",
-                memberId: data.profile.memberId || "",
-                joined: data.profile.joined
-            });
-            
+            setUserProfile({ name: data.profile.name || "Slave", hierarchy: data.profile.hierarchy || "HallBoy", memberId: data.profile.memberId || "", joined: data.profile.joined });
             if (data.profile.taskQueue) setTaskQueue(data.profile.taskQueue);
-            
             if (data.profile.activeRevealMap) {
                 let map = [];
-                try { 
-                    map = (typeof data.profile.activeRevealMap === 'string') ? JSON.parse(data.profile.activeRevealMap) : data.profile.activeRevealMap;
-                } catch(e) { map = []; }
+                try { map = (typeof data.profile.activeRevealMap === 'string') ? JSON.parse(data.profile.activeRevealMap) : data.profile.activeRevealMap; } catch(e) { map = []; }
                 setActiveRevealMap(map);
             }
-            
             if (data.profile.rewardVault) {
                 let vault = [];
-                try { 
-                    vault = (typeof data.profile.rewardVault === 'string') ? JSON.parse(data.profile.rewardVault) : data.profile.rewardVault; 
-                } catch(e) { vault = []; }
+                try { vault = (typeof data.profile.rewardVault === 'string') ? JSON.parse(data.profile.rewardVault) : data.profile.rewardVault; } catch(e) { vault = []; }
                 setVaultItems(vault);
             }
-
             setLibraryProgressIndex(data.profile.libraryProgressIndex || 1);
             setCurrentLibraryMedia(data.profile.currentLibraryMedia || "");
             renderRewardGrid();
@@ -234,32 +198,21 @@ window.addEventListener("message", (event) => {
 });
 
 // --- 4. LOGIC FUNCTIONS ---
-
 function updateStats() {
     const subName = document.getElementById('subName');
     if (!subName || !userProfile || !gameStats) return; 
-
     subName.textContent = userProfile.name || "Slave";
     document.getElementById('subHierarchy').textContent = userProfile.hierarchy || "HallBoy";
     document.getElementById('coins').textContent = gameStats.coins ?? 0;
     document.getElementById('points').textContent = gameStats.points ?? 0;
-
-    const setVal = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = val ?? 0;
-    };
-
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val ?? 0; };
     setVal('statStreak', gameStats.taskdom_streak || gameStats.currentStreak);
     setVal('statTotal', gameStats.taskdom_total_tasks || gameStats.totalTasks);
     setVal('statCompleted', gameStats.taskdom_completed_tasks || gameStats.completedTasks);
     setVal('statSkipped', gameStats.skippedTasks || stats.skippedTasks);
     setVal('statTotalKneels', gameStats.kneelCount || gameStats.totalKneels);
-
     const sinceEl = document.getElementById('slaveSinceDate');
-    if (sinceEl && userProfile.joined) {
-        try { sinceEl.textContent = new Date(userProfile.joined).toLocaleDateString(); } catch(e) { sinceEl.textContent = "--/--/--"; }
-    }
-
+    if (sinceEl && userProfile.joined) { try { sinceEl.textContent = new Date(userProfile.joined).toLocaleDateString(); } catch(e) { sinceEl.textContent = "--/--/--"; } }
     if (typeof LEVELS !== 'undefined' && LEVELS.length > 0) {
         let nextLevel = LEVELS.find(l => l.min > gameStats.points) || LEVELS[LEVELS.length - 1];
         document.getElementById('nextLevelName').innerText = nextLevel.name;
@@ -273,45 +226,36 @@ function updateStats() {
     updateKneelingStatus(); 
 }
 
-// --- TRIBUTE HUNT LOGIC (CLEANED) ---
+// --- TRIBUTE HUNT LOGIC (ELEGANT MODE) ---
 let currentHuntIndex = 0;
 let filteredItems = [];
 let selectedReason = "";
 let selectedItem = null;
 
 export function toggleTributeHunt() {
-    const chatContainer = document.querySelector('.app-container') || document.body;
     const overlay = document.getElementById('tributeHuntOverlay');
-    
     if (overlay.classList.contains('hidden')) {
+        selectedReason = ""; selectedItem = null;
+        if(document.getElementById('huntNote')) document.getElementById('huntNote').value = "";
         overlay.classList.remove('hidden');
-        chatContainer.classList.add('tribute-focus-mode');
-        showHuntStep(1);
+        showHuntStep(1); 
     } else {
         overlay.classList.add('hidden');
-        chatContainer.classList.remove('tribute-focus-mode');
-        resetTributeFlow();
     }
 }
 
 export function showHuntStep(step) {
     document.querySelectorAll('.hunt-step').forEach(el => el.classList.add('hidden'));
     const target = document.getElementById('huntStep' + step);
-    if (target) {
-        target.classList.remove('hidden');
-    }
-    const labels = ["", "INTENTION", "SACRIFICE", "THE HUNT", "CONFESSION"];
+    if (target) target.classList.remove('hidden');
+    const labels = ["", "INTENTION", "SEARCHING", "THE HUNT", "CONFESSION"];
     const progressEl = document.getElementById('huntProgress');
     if (progressEl) progressEl.innerText = labels[step] || "";
 }
 
 export function selectTributeReason(reason) {
     selectedReason = reason;
-    showHuntStep(2);
-}
-
-export function filterByBudget(max) {
-    renderHuntStore(max); 
+    renderHuntStore(999999); // SKIP BUDGET STEP
 }
 
 export function renderHuntStore(budget) {
@@ -320,10 +264,10 @@ export function renderHuntStore(budget) {
     currentHuntIndex = 0;
     if (filteredItems.length === 0) {
         const grid = document.getElementById('huntStoreGrid');
-        if(grid) grid.innerHTML = `<div style="text-align:center; padding:40px;"><p style="color:#666;">VAULT EMPTY</p><button class="action-btn" onclick="showHuntStep(2)">BACK</button></div>`;
+        if(grid) grid.innerHTML = `<div style="text-align:center;"><p style="color:#666;">VAULT EMPTY</p></div>`;
         return;
     }
-    showHuntStep(3);
+    showHuntStep(3); 
     showTinderCard();
 }
 
@@ -331,56 +275,46 @@ export function showTinderCard() {
     const grid = document.getElementById('huntStoreGrid');
     if (!grid) return;
     const item = filteredItems[currentHuntIndex];
-
     if (!item) {
-        grid.innerHTML = `<div style="text-align:center; padding:40px;"><p style="color:#666;">END OF LIST</p><button class="action-btn" onclick="showHuntStep(2)">BACK</button></div>`;
+        grid.innerHTML = `<div style="text-align:center;"><p style="color:#666;">END OF LIST</p><button class="action-btn" onclick="showHuntStep(1)">RESTART</button></div>`;
         return;
     }
-
     grid.innerHTML = `
         <div id="tinderCard" class="tinder-card-main">
             <div id="likeLabel" class="swipe-indicator like">SACRIFICE</div>
             <div id="nopeLabel" class="swipe-indicator nope">SKIP</div>
             <img src="${item.img || item.image}" draggable="false">
             <div class="tinder-card-info">
-                <div style="color:var(--neon-yellow); font-size:2rem; font-weight:900;">${item.price} 🪙</div>
-                <div style="color:white; letter-spacing:3px; font-weight:bold; font-size:0.9rem;">${item.name.toUpperCase()}</div>
+                <div style="color:var(--neon-yellow); font-size:1.8rem; font-weight:900;">${item.price} 🪙</div>
+                <div style="color:white; letter-spacing:2px; font-weight:bold; font-size:0.8rem;">${item.name.toUpperCase()}</div>
             </div>
-        </div>
-    `;
+        </div>`;
     initSwipeEvents(document.getElementById('tinderCard'), item);
 }
 
 function initSwipeEvents(card, item) {
-    let startX = 0;
-    let currentX = 0;
-
-    const handleStart = (e) => {
-        startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-        card.style.transition = 'none';
-    };
-
+    let startX = 0; let currentX = 0;
+    const handleStart = (e) => { startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX; card.style.transition = 'none'; };
     const handleMove = (e) => {
         if (!startX) return;
         currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
         const diff = currentX - startX;
         card.style.transform = `translateX(${diff}px) rotate(${diff / 15}deg)`;
-        const likeLabel = document.getElementById('likeLabel');
-        const nopeLabel = document.getElementById('nopeLabel');
-        if(likeLabel) likeLabel.style.opacity = diff > 0 ? Math.min(diff / 100, 1) : 0;
-        if(nopeLabel) nopeLabel.style.opacity = diff < 0 ? Math.min(Math.abs(diff) / 100, 1) : 0;
+        const like = document.getElementById('likeLabel'); const nope = document.getElementById('nopeLabel');
+        if(like) like.style.opacity = diff > 0 ? Math.min(diff / 100, 1) : 0;
+        if(nope) nope.style.opacity = diff < 0 ? Math.min(Math.abs(diff) / 100, 1) : 0;
     };
-
     const handleEnd = () => {
-        const diff = currentX - startX;
-        card.style.transition = 'transform 0.4s ease, opacity 0.4s ease';
-        if (diff > 120) {
-            card.style.transform = `translateX(600px) rotate(45deg)`;
+        const diff = currentX - startX; card.style.transition = 'transform 0.4s ease, opacity 0.4s ease';
+        if (diff > 120) { // PURCHASE - POPULATE STEP 4 SUMMARY
+            card.style.transform = `translateX(600px) rotate(45deg)`; 
             selectedItem = item;
+            if(document.getElementById('huntSelectedImg')) document.getElementById('huntSelectedImg').src = item.img || item.image;
+            if(document.getElementById('huntSelectedName')) document.getElementById('huntSelectedName').innerText = item.name.toUpperCase();
+            if(document.getElementById('huntSelectedPrice')) document.getElementById('huntSelectedPrice').innerText = item.price + " 🪙";
             setTimeout(() => { showHuntStep(4); }, 200);
         } else if (diff < -120) {
-            card.style.transform = `translateX(-600px) rotate(-45deg)`;
-            currentHuntIndex++;
+            card.style.transform = `translateX(-600px) rotate(-45deg)`; currentHuntIndex++;
             setTimeout(() => { showTinderCard(); }, 200);
         } else {
             card.style.transform = `translateX(0) rotate(0)`;
@@ -389,121 +323,62 @@ function initSwipeEvents(card, item) {
         }
         startX = 0;
     };
-
-    card.addEventListener('mousedown', handleStart);
-    card.addEventListener('touchstart', handleStart);
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('touchmove', handleMove);
-    window.addEventListener('mouseup', handleEnd);
-    window.addEventListener('touchend', handleEnd);
+    card.addEventListener('mousedown', handleStart); card.addEventListener('touchstart', handleStart);
+    window.addEventListener('mousemove', handleMove); window.addEventListener('touchmove', handleMove);
+    window.addEventListener('mouseup', handleEnd); window.addEventListener('touchend', handleEnd);
 }
 
-export function toggleHuntNote(show) {
-    const container = document.getElementById('huntNoteContainer');
-    const btn = document.getElementById('btnShowNote');
-    if (show) {
-        container.classList.remove('hidden');
-        btn.classList.add('hidden');
-        document.getElementById('huntNote').focus();
-    } else {
-        container.classList.add('hidden');
-        btn.classList.remove('hidden');
-    }
+export function finalizeSacrifice() {
+    const note = document.getElementById('huntNote') ? document.getElementById('huntNote').value.trim() : "";
+    if (!selectedItem || !selectedReason) return;
+    if (gameStats.coins < selectedItem.price) { triggerSound('sfx-deny'); alert('Insufficient coins!'); return; }
+    const tributeMessage = `💝 TRIBUTE: ${selectedReason}\n🎁 ITEM: ${selectedItem.name}\n💰 COST: ${selectedItem.price}\n💌 "${note || "A silent tribute."}"`;
+    window.parent.postMessage({ type: "PURCHASE_ITEM", itemName: selectedItem.name, cost: selectedItem.price, messageToDom: tributeMessage }, "*");
+    triggerSound('sfx-buy'); triggerCoinShower(); toggleTributeHunt();
 }
 
 export function styleTributeMessages() {
-    const chatContent = document.getElementById('chatContent');
-    if (!chatContent) return;
-    const messages = chatContent.querySelectorAll('.msg');
-    messages.forEach(msg => {
+    const chatContent = document.getElementById('chatContent'); if (!chatContent) return;
+    chatContent.querySelectorAll('.msg').forEach(msg => {
         const text = msg.textContent || msg.innerHTML;
         if (text.includes('💝 TRIBUTE:') && !msg.classList.contains('tribute-styled')) {
             msg.classList.add('tribute-styled');
             const lines = text.split('\n');
-            const tributeLine = lines.find(line => line.includes('💝 TRIBUTE:'));
-            const messageLine = lines.find(line => line.includes('💌'));
+            const tributeLine = lines.find(l => l.includes('💝 TRIBUTE:'));
+            const messageLine = lines.find(l => l.includes('💌'));
             if (tributeLine && messageLine) {
                 const reason = tributeLine.replace('💝 TRIBUTE:', '').trim();
                 const message = messageLine.replace('💌', '').replace(/"/g, '').trim();
-                const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const msgRow = msg.closest('.msg-row');
                 if (msgRow) {
-                    msgRow.innerHTML = `<div class="tribute-system-container"><div class="tribute-timestamp">${timeStr}</div><div class="tribute-card"><svg class="tribute-card-icon"><use href="#icon-gift"></use></svg><div class="tribute-card-content"><div class="tribute-card-left"><div class="tribute-card-title">TRIBUTE SENT</div><div class="tribute-card-reason">${reason}</div><div class="tribute-card-message">"${message}"</div></div><div class="tribute-card-right"><div class="tribute-card-footer">For Queen Karin</div><svg class="tribute-card-footer-icon"><use href="#icon-crown"></use></svg></div></div></div></div>`;
-                    msgRow.style.justifyContent = 'center';
-                    msgRow.style.margin = '15px 0';
-                    msgRow.classList.add('tribute-system-row');
+                    msgRow.innerHTML = `<div class="tribute-system-container"><div class="tribute-timestamp">${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div><div class="tribute-card"><svg class="tribute-card-icon"><use href="#icon-gift"></use></svg><div class="tribute-card-content"><div class="tribute-card-left"><div class="tribute-card-title">TRIBUTE SENT</div><div class="tribute-card-reason">${reason}</div><div class="tribute-card-message">"${message}"</div></div><div class="tribute-card-right"><div class="tribute-card-footer">For Queen Karin</div><svg class="tribute-card-footer-icon"><use href="#icon-crown"></use></svg></div></div></div></div>`;
+                    msgRow.style.justifyContent = 'center'; msgRow.style.margin = '15px 0'; msgRow.classList.add('tribute-system-row');
                 }
             }
         }
     });
 }
 
-export function finalizeSacrifice() {
-    const noteEl = document.getElementById('huntNote');
-    const note = noteEl ? noteEl.value.trim() : "";
-    if (!selectedItem || !selectedReason) { triggerSound('sfx-deny'); return; }
-    if (gameStats.coins < selectedItem.price) { triggerSound('sfx-deny'); alert('Insufficient coins!'); return; }
-    
-    const tributeMessage = `💝 TRIBUTE: ${selectedReason}\n🎁 ITEM: ${selectedItem.name}\n💰 COST: ${selectedItem.price}\n💌 "${note || "A silent tribute."}"`;
-    window.parent.postMessage({ type: "PURCHASE_ITEM", itemName: selectedItem.name, cost: selectedItem.price, messageToDom: tributeMessage }, "*");
-    triggerSound('sfx-buy');
-    triggerCoinShower();
-    toggleTributeHunt();
-}
-
-export function resetTributeFlow() {
-    selectedReason = "";
-    selectedItem = null;
-    const note = document.getElementById('huntNote');
-    if (note) note.value = "";
-    showHuntStep(1);
-}
-
-// --- OTHER UTILS ---
-export function buyRealCoins(amount) {
-    triggerSound('sfx-buy');
-    window.parent.postMessage({ type: "INITIATE_STRIPE_PAYMENT", amount: amount }, "*");
-}
-
+// --- UTILS & HANDLERS ---
+export function buyRealCoins(amount) { triggerSound('sfx-buy'); window.parent.postMessage({ type: "INITIATE_STRIPE_PAYMENT", amount: amount }, "*"); }
 function triggerCoinShower() {
     for (let i = 0; i < 40; i++) {
-        const coin = document.createElement('div');
-        coin.className = 'coin-particle';
-        coin.innerHTML = `<svg style="width:100%; height:100%; fill:gold;"><use href="#icon-coin"></use></svg>`;
-        coin.style.setProperty('--tx', `${Math.random() * 200 - 100}vw`);
-        coin.style.setProperty('--ty', `${-(Math.random() * 80 + 20)}vh`);
-        document.body.appendChild(coin);
-        setTimeout(() => coin.remove(), 2000);
+        const coin = document.createElement('div'); coin.className = 'coin-particle';
+        coin.innerHTML = `<svg style="width:100%;height:100%;fill:gold;"><use href="#icon-coin"></use></svg>`;
+        coin.style.setProperty('--tx', `${Math.random() * 200 - 100}vw`); coin.style.setProperty('--ty', `${-(Math.random() * 80 + 20)}vh`);
+        document.body.appendChild(coin); setTimeout(() => coin.remove(), 2000);
     }
 }
+export function breakGlass(e) { if (e && e.stopPropagation) e.stopPropagation(); const overlay = document.getElementById('specialGlassOverlay'); if (overlay) overlay.classList.remove('active'); window.parent.postMessage({ type: "GLASS_BROKEN" }, "*"); }
+export function submitSessionRequest() { const checked = document.querySelector('input[name="sessionType"]:checked'); if (!checked) return; window.parent.postMessage({ type: "SESSION_REQUEST", sessionType: checked.value, cost: checked.getAttribute('data-cost') }, "*"); }
+export function resetTributeFlow() { selectedReason = ""; selectedItem = null; if (document.getElementById('huntNote')) document.getElementById('huntNote').value = ""; showHuntStep(1); }
 
-export function breakGlass(e) {
-    if (e && e.stopPropagation) e.stopPropagation();
-    const overlay = document.getElementById('specialGlassOverlay');
-    if (overlay) overlay.classList.remove('active');
-    window.parent.postMessage({ type: "GLASS_BROKEN" }, "*");
-}
-
-export function renderHierarchy(data) {
-    const grid = document.getElementById('hierarchyGrid');
-    if (grid) grid.innerHTML = data.map(item => `<div class="rank-card">${item.Title}</div>`).join('');
-}
-
-export function submitSessionRequest() {
-    const checked = document.querySelector('input[name="sessionType"]:checked');
-    if (!checked) return;
-    window.parent.postMessage({ type: "SESSION_REQUEST", sessionType: checked.value, cost: checked.getAttribute('data-cost') }, "*");
-}
-
-// --- 6. LOOPS & GLOBAL ASSIGNMENTS ---
 setInterval(updateKneelingStatus, 1000);
 setInterval(() => { window.parent.postMessage({ type: "heartbeat", view: currentView }, "*"); }, 5000);
 
 window.toggleTributeHunt = toggleTributeHunt;
 window.selectTributeReason = selectTributeReason;
-window.filterByBudget = filterByBudget;
 window.showHuntStep = showHuntStep;
-window.toggleHuntNote = toggleHuntNote;
 window.finalizeSacrifice = finalizeSacrifice;
 window.resetTributeFlow = resetTributeFlow;
 window.switchTab = switchTab;
@@ -535,18 +410,4 @@ window.submitSessionRequest = submitSessionRequest;
 window.handleAdminUpload = handleAdminUpload;
 window.WISHLIST_ITEMS = WISHLIST_ITEMS;
 window.gameStats = gameStats;
-
-// --- 8. THE HANDSHAKE ---
 window.parent.postMessage({ type: "UI_READY" }, "*");
-
-if (window.self === window.top) {
-    setTimeout(() => {
-        window.postMessage({
-            type: "UPDATE_FULL_DATA",
-            profile: { 
-                name: "DEV_TEST", coins: 5000, points: 1000, hierarchy: "HallBoy",
-                joined: new Date().toISOString()
-            }
-        }, "*");
-    }, 2000); 
-}
