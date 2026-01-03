@@ -294,32 +294,33 @@ function toggleTributeHunt() {
         selectedItem = null;
         if(document.getElementById('huntNote')) document.getElementById('huntNote').value = "";
         overlay.classList.remove('hidden');
-        showHuntStep(1);
+        showTributeStep(1);
     } else {
         overlay.classList.add('hidden');
         resetTributeFlow();
     }
 }
 
-function showHuntStep(step) {
+function showTributeStep(step) {
     document.querySelectorAll('.tribute-step').forEach(el => el.classList.add('hidden'));
     const target = document.getElementById('tributeStep' + step);
     if (target) {
         target.classList.remove('hidden');
     }
-    const labels = ["", "INTENTION", "SACRIFICE", "THE HUNT", "CONFESSION"];
+    //const labels = ["", "INTENTION", "SACRIFICE", "THE HUNT", "CONFESSION"];
+    const labels = ["", "INTENTION", "CONFESSION", "SACRIFICE", "GIFT"];
     const progressEl = document.getElementById('huntProgress');
     if (progressEl) progressEl.innerText = labels[step] || "";
 }
 
 function selectTributeReason(reason) {
     selectedReason = reason;
-    showHuntStep(2);
+    showTributeStep(2);
 }
 
 function filterByBudget(max) {
     renderHuntStore(max); 
-    showHuntStep(3);
+    showTributeStep(3);
 }
 
 function renderHuntStore(budget) {
@@ -346,7 +347,7 @@ function showTinderCard() {
             <div style="text-align:center; padding:40px;">
                 <div style="font-size:2rem; margin-bottom:10px;">💨</div>
                 <div style="color:#666; font-size:0.7rem;">NO MORE ITEMS IN THIS TIER</div>
-                <button class="tab-btn" onclick="showHuntStep(2)" style="margin-top:15px; width:auto; padding:5px 15px;">CHANGE BUDGET</button>
+                <button class="tab-btn" onclick="showTributeStep(2)" style="margin-top:15px; width:auto; padding:5px 15px;">CHANGE BUDGET</button>
             </div>`;
         return;
     }
@@ -397,7 +398,7 @@ function initSwipeEvents(card, item) {
             if(document.getElementById('huntSelectedImg')) document.getElementById('huntSelectedImg').src = item.img || item.image;
             if(document.getElementById('huntSelectedName')) document.getElementById('huntSelectedName').innerText = item.name.toUpperCase();
             if(document.getElementById('huntSelectedPrice')) document.getElementById('huntSelectedPrice').innerText = item.price + " 🪙";
-            setTimeout(() => { showHuntStep(4); }, 200);
+            setTimeout(() => { showTributeStep(4); }, 200);
         } else if (diff < -120) {
             card.style.transform = `translateX(-600px) rotate(-45deg)`;
             card.style.opacity = "0";
@@ -530,7 +531,7 @@ function resetTributeFlow() {
     selectedItem = null;
     const note = document.getElementById('huntNote');
     if (note) note.value = "";
-    showHuntStep(1);
+    showTributeStep(1);
 }
 
 setInterval(updateKneelingStatus, 1000);
@@ -539,7 +540,7 @@ setInterval(() => { window.parent.postMessage({ type: "heartbeat", view: current
 window.toggleTributeHunt = toggleTributeHunt;
 window.selectTributeReason = selectTributeReason;
 window.filterByBudget = filterByBudget;
-window.showHuntStep = showHuntStep;
+window.showTributeStep = showTributeStep;
 window.toggleHuntNote = toggleHuntNote;
 window.finalizeSacrifice = finalizeSacrifice;
 window.resetTributeFlow = resetTributeFlow;
