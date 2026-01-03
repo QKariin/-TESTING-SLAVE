@@ -279,46 +279,47 @@
 
                     <!-- THE BLACKOUT TRIBUTE OVERLAY (MOVED HERE TO COVER HEADER AND FOOTER) -->
                     <div id="tributeHuntOverlay" class="hidden" style="position: absolute; inset: 0; background: rgba(0,0,0,0.98); z-index: 5000; backdrop-filter: blur(20px); display: flex; flex-direction: column; overflow: hidden;">
-                    <div class="tribute-moment-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #111; flex-shrink:0;">
-                        <div id="huntProgress" style="font-family:'Orbitron'; font-size:0.7rem; color:var(--neon-yellow); letter-spacing:3px;">INTENTION</div>
-                        <div onclick="toggleTributeHunt()" style="color:#444; cursor:pointer; font-size:1.8rem;">&times;</div>
-                    </div>
-                
-                    <div class="tribute-moment-body" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; position: relative; overflow: hidden;">
-                        <!-- STEP 1 -->
-                        <div id="huntStep1" class="hunt-step">
-                            <div style="display: flex; flex-direction: column; gap: 12px; width: 220px;">
-                                <button class="tab-btn" onclick="selectTributeReason('Love & Adoration')">LOVE & ADORATION</button>
-                                <button class="tab-btn" onclick="selectTributeReason('Seeking Forgiveness')">FORGIVENESS</button>
-                                <button class="tab-btn" onclick="selectTributeReason('Pure Devotion')">PURE DEVOTION</button>
-                            </div>
+                        <div class="tribute-moment-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid #111; flex-shrink:0;">
+                            <div id="huntProgress" style="font-family:'Orbitron'; font-size:0.7rem; color:var(--neon-yellow); letter-spacing:3px;">INTENTION</div>
+                            <div onclick="toggleTributeHunt()" style="color:#444; cursor:pointer; font-size:1.8rem;">&times;</div>
                         </div>
                 
-                        <!-- STEP 3: THE HUNT -->
-                        <div id="huntStep3" class="hunt-step hidden" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
-                            <div id="huntStoreGrid"></div>
-                        </div>
-                
-                        <!-- STEP 4: CONFESSION (FINAL CARD) -->
-                        <div id="huntStep4" class="hunt-step hidden" style="width: 90%; text-align: center;">
-                            <div id="huntSummary" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid #222; margin-bottom: 15px;">
-                                <img id="huntSelectedImg" src="" style="max-height: 80px; margin-bottom: 10px; object-fit: contain;">
-                                <div id="huntSelectedName" style="font-size: 0.7rem; font-weight: bold; color: white;">ITEM NAME</div>
-                                <div id="huntSelectedPrice" style="font-size: 0.9rem; color: var(--neon-yellow);">0 🪙</div>
+                        <div class="tribute-moment-body" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 10px; position: relative; overflow: hidden;">
+                            <!-- STEP 1 -->
+                            <div id="huntStep1" class="hunt-step">
+                                <div style="display: flex; flex-direction: column; gap: 12px; width: 220px;">
+                                    <button class="tab-btn" onclick="selectTributeReason('Love & Adoration')">LOVE & ADORATION</button>
+                                    <button class="tab-btn" onclick="selectTributeReason('Seeking Forgiveness')">FORGIVENESS</button>
+                                    <button class="tab-btn" onclick="selectTributeReason('Pure Devotion')">PURE DEVOTION</button>
+                                </div>
                             </div>
+                
+                            <!-- STEP 3: THE HUNT -->
+                            <div id="huntStep3" class="hunt-step hidden" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                                <div id="huntStoreGrid"></div>
+                            </div>
+                
+                            <!-- STEP 4: CONFESSION (FINAL CARD) -->
+                            <div id="huntStep4" class="hunt-step hidden" style="width: 90%; text-align: center;">
+                                <div id="huntSummary" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid #222; margin-bottom: 15px;">
+                                    <img id="huntSelectedImg" src="" style="max-height: 80px; margin-bottom: 10px; object-fit: contain;">
+                                    <div id="huntSelectedName" style="font-size: 0.7rem; font-weight: bold; color: white;">ITEM NAME</div>
+                                    <div id="huntSelectedPrice" style="font-size: 0.9rem; color: var(--neon-yellow);">0 🪙</div>
+                                </div>
                             
-                            <textarea id="huntNote" placeholder="Write your words..." maxlength="200" style="width: 100%; height: 80px; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-pink); border-radius: 10px; color: white; padding: 10px; font-family: 'Rajdhani'; resize: none; outline: none; margin-bottom: 15px;"></textarea>
-                            
-                            <button class="action-btn" onclick="finalizeSacrifice()" style="background: var(--neon-pink); color: black; font-weight: 900; margin-bottom: 10px;">SUBMIT SACRIFICE</button>
-                            
-                            <div style="display: flex; gap: 10px;">
-                                <button class="tab-btn" onclick="showHuntStep(3)" style="font-size: 0.6rem; border-color: #444;">GO BACK</button>
-                                <button class="tab-btn" onclick="toggleTributeHunt()" style="font-size: 0.6rem; border-color: var(--neon-red); color: var(--neon-red);">CLOSE</button>
+                                <textarea id="huntNote" placeholder="Write your words..." maxlength="200" style="width: 100%; height: 80px; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-pink); border-radius: 10px; color: white; padding: 10px; font-family: 'Rajdhani'; resize: none; outline: none; margin-bottom: 15px;"></textarea>
+                                
+                                <button class="action-btn" onclick="finalizeSacrifice()" style="background: var(--neon-pink); color: black; font-weight: 900; margin-bottom: 10px;">SUBMIT SACRIFICE</button>
+                                
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="tab-btn" onclick="showHuntStep(3)" style="font-size: 0.6rem; border-color: #444;">GO BACK</button>
+                                    <button class="tab-btn" onclick="toggleTributeHunt()" style="font-size: 0.6rem; border-color: var(--neon-red); color: var(--neon-red);">CLOSE</button>
+                                </div>
                             </div> <!-- Closes huntStep4 -->
-                          </div> <!-- Closes tribute-moment-body -->
-                      </div> <!-- Closes tributeHuntOverlay -->
-                  </div> <!-- ADD THIS: Closes chatCard -->
-              </div> <!-- ADD THIS: Closes viewServingTop -->
+                        </div> <!-- Closes tribute-moment-body -->
+                    </div> <!-- Closes tributeHuntOverlay -->
+                </div> <!-- ADD THIS: Closes chatCard -->
+            </div> <!-- ADD THIS: Closes viewServingTop -->
             <!-- VIEW 7: QKARIN (NEW SOCIAL PROFILE) -->
               
             <div id="viewNews" class="hidden">
