@@ -1,21 +1,16 @@
 // Utility functions - FULL LOGIC RESTORED & PROTECTED
 export function getOptimizedUrl(url, width) {
     if (!url) return "";
-    // If it's already a full URL or base64, don't mess with it
     if (url.startsWith('data:')) return url;
 
-    // 1. KILL CLOUDINARY (Stops the 401 errors from your logs)
-    if (url.includes("cloudinary.com")) return "";
-
-    /*if (url.includes("cloudinary.com") && url.includes("/upload/")) {
-        let cleanUrl = url.replace(/\.(mp4|webm|mov)$/i, ".jpg");
-        return cleanUrl.replace("/upload/", `/upload/f_auto,q_auto,dpr_auto,c_limit,w_${width}/`);
-    }*/
+    // REMOVED THE CLOUDINARY KILL SWITCH THAT WAS BREAKING YOUR LOGS
     if (url.includes("upcdn.io")) {
         let cleanUrl = url.replace(/\.(mp4|webm|mov)$/i, ".jpg");
         const sep = cleanUrl.includes("?") ? "&" : "?";
         return `${cleanUrl}${sep}width=${width}&format=auto&quality=auto&dpr=auto`;
     }
+    
+    // Allow Wix/Cloudinary images to pass through
     return url;
 }
 
