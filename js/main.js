@@ -314,6 +314,7 @@ function showTributeStep(step) {
 }
 
 function selectTributeReason(reason) {
+    console.log("Selected reason:", reason);
     selectedReason = reason;
     showTributeStep(2);
 }
