@@ -91,6 +91,15 @@ export function toggleRewardGrid() {
         btn.style.opacity = '0.6';
         toggleRewardSubMenu(false);
     }
+
+    const grid = document.getElementById("revealGridContainer");
+    if (grid && grid.querySelectorAll('.reveal-square').length === 0) {
+        for (let i = 0; i < 9; i++) {
+            const sq = document.createElement("div");
+            sq.className = "reveal-square";
+            grid.appendChild(sq);
+        }
+    }
 }
 
 

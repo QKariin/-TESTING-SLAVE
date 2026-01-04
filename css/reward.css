@@ -42,14 +42,20 @@
    HEIGHT is set to 85% to give the photo MAX space while leaving room for the button. */
 #revealGridContainer {
     position: relative !important;
-    height: 85% !important; /* THE MAX HEIGHT COMMAND */
-    width: fit-content !important; /* SNAPS TO MEDIA WIDTH */
+
+    /* FIX: prevent collapse */
+    width: 100% !important;          /* replaces fit-content */
     max-width: 95% !important;
+
+    height: 85% !important;
     margin: 0 auto !important;
+
     background: transparent !important;
     border: 1px solid #222;
     border-radius: 6px;
     overflow: hidden;
+
+    /* FIX: flex is fine, but only if width is stable */
     display: flex !important;
     align-items: center;
     justify-content: center;
