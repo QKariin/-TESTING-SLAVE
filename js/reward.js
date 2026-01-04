@@ -84,7 +84,7 @@ export function toggleRewardGrid() {
 
     // FIX: Check for empty string "" as well
     if (section.style.display === 'none' || section.style.display === "") {
-        section.style.display = 'flex'; 
+        section.style.display = 'block'; 
         btn.style.opacity = '1';
     } else {
         section.style.display = 'none';
