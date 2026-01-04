@@ -1,6 +1,6 @@
 // js/reward.js - THE REVEAL ENGINE
-import { activeRevealMap, currentLibraryMedia, libraryProgressIndex, gameStats, vaultItems } from './state.js';
-import { getOptimizedUrl, triggerSound } from './utils.js';
+import { activeRevealMap, currentLibraryMedia, libraryProgressIndex, gameStats, vaultItems } from '../../js/state.js';
+import { getOptimizedUrl, triggerSound } from '../../js/utils.js';
 
 // --- 1. THE GRID RENDERER (Draws the 3x3 frosted glass) ---
 // js/reward.js - THE REVEAL ENGINE (REACTIVE VERSION)
@@ -268,7 +268,7 @@ export function renderVault() {
 
 // Helper to open the big glass modal for vault items
 window.openVaultMedia = function(url, isVideo) {
-    import('./gallery.js').then(({ openModal }) => {
+    import('../../js/gallery.js').then(({ openModal }) => {
         // We reuse your perfect history modal for the vault
         openModal(url, "UNLOCKED", "High-Class Reward", isVideo);
     });

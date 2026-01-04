@@ -3,7 +3,7 @@ import { currentView, cmsHierarchyData, setCurrentView, WISHLIST_ITEMS, gameStat
 import { CMS_HIERARCHY } from './config.js';
 import { renderGallery } from './gallery.js';
 import { getOptimizedUrl } from './utils.js';
-import { renderVault } from './reward.js';
+import { renderVault } from '../profile/kneeling/reward.js';
 
 export function switchTab(mode) {
     // 1. Update the buttons
