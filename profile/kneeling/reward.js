@@ -87,21 +87,14 @@ export function toggleRewardGrid() {
 
     // FIX: Check for empty string "" as well
     if (section.style.display === 'none' || section.style.display === "") {
-        section.style.display = 'block'; 
+        section.style.display = 'flex'; 
         btn.style.opacity = '1';
+        // Render the grid when opening
+        renderRewardGrid();
     } else {
         section.style.display = 'none';
         btn.style.opacity = '0.6';
         toggleRewardSubMenu(false);
-    }
-
-    const grid = document.getElementById("revealGridContainer");
-    if (grid && grid.querySelectorAll('.reveal-square').length === 0) {
-        for (let i = 0; i < 9; i++) {
-            const sq = document.createElement("div");
-            sq.className = "reveal-square";
-            grid.appendChild(sq);
-        }
     }
 }
 
