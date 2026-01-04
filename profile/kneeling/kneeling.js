@@ -1,11 +1,11 @@
 // Kneeling system - dedicated module for devotion mechanics
 import { 
     isLocked, lastWorshipTime, COOLDOWN_MINUTES, gameStats, ignoreBackendUpdates
-} from './state.js';
+} from '/js/state.js';
 import { 
     setIsLocked, setLastWorshipTime, setIgnoreBackendUpdates 
-} from './state.js';
-import { triggerSound } from './utils.js';
+} from '/js/state.js';
+import { triggerSound } from '/js/utils.js';
 
 // Hold timer for the progress bar
 let holdTimer = null;
