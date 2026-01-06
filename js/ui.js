@@ -35,7 +35,13 @@ export function switchTab(mode) {
         });
     }
     
-    // 4. Hide all views - Including the old ones for safety, but removing from logic
+    // 4. For modal tabs, open full-screen modals instead of inline content
+    if (['session', 'protocol', 'buy'].includes(mode)) {
+        openTabModal(mode);
+        return;
+    }
+    
+    // 5. Hide all views - Including the old ones for safety, but removing from logic
     const allViews = [
         'viewServingTop', 'viewNews', 'viewSession', 
         'viewVault', 'viewProtocol', 'viewBuy', 
@@ -47,14 +53,11 @@ export function switchTab(mode) {
         if (el) el.classList.add('hidden');
     });
 
-    // 5. THE CLEAN VIEW MAP
+    // 6. THE CLEAN VIEW MAP (only for non-modal tabs)
     const viewMap = {
         'serve': 'viewServingTop',
         'news': 'viewNews',
-        'session': 'viewSession',
-        'rewards': 'viewVault',    // MAPS TO THE NEW VAULT
-        'protocol': 'viewProtocol',
-        'buy': 'viewBuy'
+        'rewards': 'viewVault'    // MAPS TO THE NEW VAULT
     };
 
     const targetId = viewMap[mode];
@@ -63,7 +66,7 @@ export function switchTab(mode) {
         if (targetEl) targetEl.classList.remove('hidden');
     }
        
-    // 6. TRIGGER RENDERS & MESSAGES
+    // 7. TRIGGER RENDERS & MESSAGES
     if (mode === 'news') {
         window.parent.postMessage({ type: "LOAD_Q_FEED" }, "*");
     }
@@ -75,6 +78,45 @@ export function switchTab(mode) {
     if (mode === 'serve') {
         renderGallery(); // Draws the history/pending
     }
+}
+
+function openTabModal(mode) {
+    const modal = document.getElementById('glassModal');
+    const overlay = document.getElementById('modalGlassOverlay');
+    const mediaContainer = document.getElementById('modalMediaContainer');
+    
+    if (!modal || !overlay || !mediaContainer) return;
+    
+    // Clear media container
+    mediaContainer.innerHTML = '';
+    
+    // Set modal content based on mode
+    let content = '';
+    
+    if (mode === 'buy') {
+        const buyContent = document.getElementById('viewBuy');
+        content = buyContent ? buyContent.innerHTML : '<div class="gm-content"><h2>Buy content not found</h2></div>';
+    } else if (mode === 'session') {
+        const sessionContent = document.getElementById('viewSession');
+        content = sessionContent ? sessionContent.innerHTML : '<div class="gm-content"><h2>Session content not found</h2></div>';
+    } else if (mode === 'protocol') {
+        const protocolContent = document.getElementById('viewProtocol');
+        content = protocolContent ? protocolContent.innerHTML : '<div class="gm-content"><h2>Protocol content not found</h2></div>';
+    }
+    
+    // Wrap content in gm-content if it's not already wrapped
+    if (!content.includes('gm-content')) {
+        content = `<div class="gm-content">${content}</div>`;
+    }
+    
+    // Set the modal content
+    overlay.innerHTML = `
+        <div id="modalCloseX" onclick="closeModal(null)">×</div>
+        ${content}
+    `;
+    
+    // Show the modal
+    modal.classList.add('active');
 }
 
 // --- THE WISHLIST RENDERER ---
