@@ -266,22 +266,6 @@ html, body {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 .pc-avatar-edit-overlay {
   position: absolute;
   inset: 0;
@@ -593,6 +577,32 @@ html, body {
 }
 
 #newTaskBtn:hover {
+    background: var(--gold) !important;
+    color: #000 !important;
+}
+
+
+.btn-upload {
+    background: transparent !important;
+    border: 1px solid var(--gold) !important;
+    color: var(--gold) !important;
+    font-family: 'Cinzel', serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 4px !important; /* Increased spacing for luxury look */
+    
+    /* WIDTH & SPACING FIX */
+    width: auto !important;         /* Stop full width */
+    min-width: 280px !important;    /* Solid, fixed size */
+    padding: 18px 40px !important;  /* Massive internal spacing */
+    margin: 40px auto 10px auto !important; /* Huge space above the button */
+    
+    display: block !important;
+    border-radius: 0 !important;    /* Keep sharp corners */
+    transition: all 0.4s ease !important;
+}
+
+.btn-upload:hover {
     background: var(--gold) !important;
     color: #000 !important;
 }
