@@ -182,19 +182,22 @@ export function resetTaskDisplay(success) {
     document.getElementById('activeBadge').classList.remove('show');
     document.getElementById('mainButtonsArea').classList.remove('hidden');
     
-    const color = success ? 'var(--neon-green)' : 'var(--neon-red)';
-    const text = success ? 'TASK SUBMITTED' : 'TASK FAILED (-300 🪙)';
+    // Luxury Terminal Colors (Gold/Red) instead of Neon
+    const color = success ? '#c5a059' : '#8b0000';
+    const text = success ? 'DIRECTIVE COMPLETE' : 'FAILURE RECORDED (-300 🪙)';
     
     const tc = document.getElementById('taskContent');
-    if(tc) tc.innerHTML = `<h2 style="font-weight:bold; font-size:1.5rem; color:${color}">${text}</h2>`;
+    // Using Cinzel font for the status message
+    if(tc) tc.innerHTML = `<h2 style="font-family:'Cinzel', serif; font-weight:700; font-size:1.2rem; color:${color}; margin-top:20px;">${text}</h2>`;
     
     setCurrentTask(null);
     
     if (resetUiTimer) clearTimeout(resetUiTimer);
     
+    // The Reset Timer
     const timer = setTimeout(() => {
         if(tc) {
-            // UPDATED TO MATCH YOUR NEW LUXURY UI
+            // RESTORES THE LUXURY "VACANT ASSET" UI
             tc.innerHTML = `
                 <h2 id="readyText">VACANT ASSET</h2>
                 <p class="inter">
@@ -205,3 +208,6 @@ export function resetTaskDisplay(success) {
         }
         setResetUiTimer(null);
     }, 4000);
+    
+    setResetUiTimer(timer);
+}
