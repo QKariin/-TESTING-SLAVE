@@ -529,9 +529,21 @@ html, body {
 
 /* --- THE COMMAND DOSSIER --- */
 #taskContent {
-    padding-top: 40px !important; /* Clears space for the badge */
-    padding-bottom: 20px !important;
-    text-align: center !important;
+    /* RESTORE THE LEFT LINE LOOK */
+    border-left: 3px solid var(--gold) !important;
+    padding-left: 25px !important;
+    text-align: left !important; /* Forces text to the left */
+    
+    /* Spacing */
+    margin: 20px 0 20px 10px !important;
+    padding-top: 5px !important; /* Remove the huge padding I added before */
+    padding-bottom: 5px !important;
+}
+
+/* Ensure the Header is big and left-aligned */
+#readyText {
+    text-align: left !important;
+    margin-bottom: 5px !important;
 }
 
 /* THE DOMINANT HEADER */
@@ -2125,49 +2137,41 @@ html, body {
   transform: rotate(15deg); 
 }
 
-/* THE PILL BADGE CONTAINER */
 #activeBadge {
-    display: none; /* Hidden until active */
+    display: none; /* HIDDEN BY DEFAULT */
+    
+    /* Bugle/Pill Styling */
     position: absolute;
-    top: -18px !important; /* Move up to sit on the line */
+    top: -18px; /* Sits on the top border */
     left: 50%;
     transform: translateX(-50%);
+    width: auto;
+    min-width: 160px;
+    padding: 4px 25px;
+    border-radius: 50px;
     
-    /* SHAPE: Wider and Shorter */
-    width: auto !important;
-    min-width: 180px !important; /* Force it wider */
-    padding: 6px 30px !important; /* Padding creates the "Bugle" look */
-    border-radius: 50px !important; /* Perfect Pill Roundness */
-    
-    /* COLORS */
-    background-color: #000 !important;
-    border: 1px solid var(--gold) !important;
-    box-shadow: 0 0 20px rgba(0,0,0,1) !important; /* Hides the line behind it */
-    z-index: 20;
-    
-    /* CENTER CONTENT */
-    text-align: center !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    /* Luxury Colors */
+    background-color: #000;
+    border: 1px solid var(--gold);
+    box-shadow: 0 0 15px rgba(0,0,0,1); /* Shadow hides the line behind it */
+    z-index: 99;
 }
 
-/* THE TIMER TEXT INSIDE */
+/* THE TIMER TEXT STYLING */
 #activeBadge #timerDisplay {
     font-family: 'Cinzel', serif !important;
-    font-size: 1.2rem !important; /* Much Smaller */
-    font-weight: 700 !important;
-    letter-spacing: 4px !important;
-    color: var(--gold) !important;
-    margin: 0 !important;
-    background: none !important;
-    -webkit-text-fill-color: var(--gold) !important;
-    filter: none !important;
+    font-size: 1.1rem !important;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 3px;
+    margin: 0;
 }
 
-/* SHOW RULE */
+/* ONLY SHOW WHEN TASK IS PENDING */
 #activeBadge.show {
-    display: flex !important; /* Flex ensures centering */
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
 }
 
 /* ENSURE THE CARD CAN HOLD THE BADGE */
