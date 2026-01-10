@@ -36,7 +36,9 @@
             <!-- TEXT: Gold -->
             <div class="bar-text" style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; pointer-events: none;">
                 <span id="txt-main" style="font-family: 'Cinzel', serif; font-size: 1.8rem; font-weight: 900; color: #c5a059; letter-spacing: 5px; text-shadow: 0 0 10px rgba(0,0,0,0.8);">KNEEL</span>
-                <span id="txt-sub" style="font-family: 'Inter', monospace; font-size: 0.6rem; color: #666; margin-top: -2px;"></span>
+                
+                <!-- SUB TEXT: FORCED HIDDEN (So JS writes to it, but you don't see it) -->
+                <span id="txt-sub" style="display: none !important;"></span>
             </div>
         </div>
     </div>
