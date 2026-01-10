@@ -531,43 +531,60 @@ html, body {
 
 /* Moves Skip/Cancel lower and dims it significantly */
 
-/* THE NEW STATUS BAR - Replaces .task-badge-top and #activeBadge */
+/* --- THE ULTIMATE COMMAND BADGE --- */
+/* This replaces .task-badge-top and #activeBadge entirely */
 .task-badge-top, #activeBadge {
-    display: flex !important; /* Forces the text and timer into one line */
-    align-items: center;
-    gap: 12px;                /* Space between "ACTIVE TASK" and the clock */
+    display: none; /* Hidden by default */
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
     position: absolute !important;
-    top: -14px !important;    /* Pins it perfectly to the top border */
+    top: -38px !important; /* Sits high on the border */
     left: 50%;
     transform: translateX(-50%);
     background: #050505 !important;
     border: 1px solid var(--gold) !important;
-    padding: 4px 18px !important;
-    border-radius: 0 !important; /* Sharp corners match the luxury card */
-    z-index: 100;
+    padding: 12px 35px !important;
+    border-radius: 0 !important; /* Sharp technical corners */
+    z-index: 1000 !important;
+    box-shadow: 0 15px 40px rgba(0,0,0,1) !important;
     white-space: nowrap;
-    
-    /* Text Style */
-    font-family: 'Cinzel', serif !important;
-    font-size: 0.6rem !important;
-    letter-spacing: 2px;
-    color: var(--soft-gray);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.8);
 }
 
-/* THE GRADIENT CLOCK INSIDE THE BAR */
+/* Force show the flex layout */
+#activeBadge.show {
+    display: flex !important;
+}
+
+/* THE PROTOCOL LABEL */
+.task-badge-top::before {
+    content: "PROTOCOL ACTIVE"; 
+    display: block;
+    font-family: 'Cinzel', serif !important;
+    font-size: 0.5rem !important;
+    letter-spacing: 5px !important;
+    color: #555; /* Dimmed so the gold pops */
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+/* THE GRADIENT TIMER */
 #timerDisplay {
     background: linear-gradient(180deg, #d4b76a 0%, #c5a059 100%) !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
-    font-weight: 700;
-    font-size: 0.75rem !important;
-    letter-spacing: 1px !important;
+    font-family: 'Cinzel', serif !important;
+    font-weight: 700 !important;
+    font-size: 1.7rem !important; /* Large, expensive digital look */
+    letter-spacing: 4px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
 }
 
-/* 3. THE RULE TO MAKE IT VISIBLE (CRITICAL) */
-#activeBadge.show {
-    display: block !important;
+/* KILL THE OLD "SHIT" TIMER IN THE MIDDLE */
+#taskCard > #timerDisplay:not(.task-badge-top #timerDisplay),
+#taskContent #timerDisplay {
+    display: none !important;
 }
 
 #chatBadge {
