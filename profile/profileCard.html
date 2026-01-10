@@ -21,6 +21,7 @@
     </div>
 
     <!-- 2. KNEEL BUTTON (Gold Border / Red Fill) -->
+    <!-- 2. KNEEL BUTTON (Sophisticated Black Gradient + Formatted Locked Text) -->
     <div class="devotion-wrapper" style="margin-bottom: 15px;">
         <div id="btn" class="kneel-btn-bar" 
                 onmousedown="handleHoldStart(event)" 
@@ -28,16 +29,28 @@
                 onmouseleave="handleHoldEnd(event)" 
                 ontouchstart="handleHoldStart(event)" 
                 ontouchend="handleHoldEnd(event)"
-                style="position: relative; display: block; cursor: pointer; user-select: none; overflow: hidden; height: 50px; background: rgba(0,0,0,0.6); border: 1px solid #c5a059; border-radius: 50px; box-shadow: 0 0 15px rgba(197, 160, 89, 0.2);">
+                style="position: relative; display: block; cursor: pointer; user-select: none; overflow: hidden; height: 48px; 
+                       /* SOPHISTICATED BLACK GRADIENT HERE: */
+                       background: linear-gradient(180deg, #1a1a1a 0%, #000000 100%); 
+                       border: 1px solid #c5a059; border-radius: 50px; box-shadow: 0 0 15px rgba(197, 160, 89, 0.1);">
             
-            <!-- FILL: Red Gradient -->
+            <!-- FILL (Currently 0% for Locked State example) -->
             <span id="fill" class="bar-fill" style="display: block; position: absolute; top: 0; left: 0; height: 100%; width: 0%; z-index: 1; background: linear-gradient(90deg, #8b0000, #ff0000); transition: none;"></span> 
 
-            <!-- TEXT: Gold -->
-            <div class="bar-text" style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; pointer-events: none;">
-                <span id="txt-main" style="font-family: 'Cinzel', serif; font-size: 1.5rem; font-weight: 900; color: #c5a059; letter-spacing: 5px; text-shadow: 0 0 10px rgba(0,0,0,0.8);">KNEEL</span>
+            <!-- TEXT CENTERED -->
+            <div class="bar-text" style="position: relative; z-index: 2; display: flex; flex-direction: row; align-items: center; justify-content: center; height: 100%; pointer-events: none; gap: 8px;">
                 
-                <!-- SUB TEXT: FORCED HIDDEN (So JS writes to it, but you don't see it) -->
+                <!-- 1. THE MAIN 'LOCKED' TEXT (Cinzel, Gold) -->
+                <span id="txt-main" style="font-family: 'Cinzel', serif; font-size: 1.4rem; font-weight: 900; color: #c5a059; letter-spacing: 3px; text-shadow: 0 0 10px rgba(0,0,0,0.8);">
+                    LOCKED
+                </span>
+
+                <!-- 2. THE TIME (Inter, Styled exactly like 'POINTS' label) -->
+                <span id="txt-sub-time" style="font-family: 'Inter', sans-serif; font-size: 0.65rem; color: #888; font-weight: 600; letter-spacing: 1px; margin-top: 2px;">
+                    18 MIN
+                </span>
+                
+                <!-- HIDDEN SUBTEXT (Kept for JS safety) -->
                 <span id="txt-sub" style="display: none !important;"></span>
             </div>
         </div>
