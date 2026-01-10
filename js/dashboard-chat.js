@@ -105,31 +105,50 @@ export async function renderChat(msgs) {
 }
 
 function renderTributeMessage(message, timeStr) {
-    const lines = message.split('\n');
-    const tributeLine = lines.find(line => line.includes('💝 TRIBUTE:'));
-    const itemLine = lines.find(line => line.includes('🎁 ITEM:'));
-    const costLine = lines.find(line => line.includes('💰 COST:'));
-    const messageLine = lines.find(line => line.includes('💌'));
+    // Regex to remove any potential emojis from the incoming string
+    const cleanMsg = message.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
     
-    const reason = tributeLine ? tributeLine.replace('💝 TRIBUTE:', '').trim() : 'Unknown';
-    const item = itemLine ? itemLine.replace('🎁 ITEM:', '').trim() : 'Unknown Item';
-    const cost = costLine ? costLine.replace('💰 COST:', '').trim() : '0';
-    const note = messageLine ? messageLine.replace('💌', '').replace(/"/g, '').trim() : 'A silent tribute';
+    const lines = cleanMsg.split('\n');
+    const tributeLine = lines.find(line => line.includes('TRIBUTE:'));
+    const itemLine = lines.find(line => line.includes('ITEM:'));
+    const costLine = lines.find(line => line.includes('COST:'));
+    const messageLine = lines.find(line => line.includes('MESSAGE:')) || lines[lines.length - 1];
+    
+    const reason = tributeLine ? tributeLine.replace('TRIBUTE:', '').trim() : 'Adoration';
+    const item = itemLine ? itemLine.replace('ITEM:', '').trim() : 'Premium Selection';
+    const cost = costLine ? costLine.replace('COST:', '').trim() : '0';
+    const note = messageLine ? messageLine.replace('MESSAGE:', '').replace(/"/g, '').trim() : 'A silent tribute';
     
     return `
-        <div class="tribute-system-container" style="margin: 15px 0; text-align: center;">
-            <div class="tribute-timestamp" style="font-size: 0.7rem; color: #666; margin-bottom: 5px;">${timeStr}</div>
-            <div class="tribute-card" style="background: linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(255,0,222,0.1) 100%); border: 1px solid var(--yellow); border-radius: 12px; padding: 15px; max-width: 300px; margin: 0 auto;">
-                <div class="tribute-card-header" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px;">
-                    <svg style="width: 20px; height: 20px; fill: var(--yellow);" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                    <div style="font-weight: 900; color: var(--yellow); font-size: 0.9rem;">TRIBUTE SENT</div>
+        <div class="tribute-system-container" style="margin: 25px 0; width: 100%; display: flex; flex-direction: column; align-items: center;">
+            <div class="tribute-card" style="background: rgba(10, 10, 12, 0.95); border: 1px solid var(--gold); border-radius: 0; padding: 25px; width: 85%; max-width: 290px; position: relative; box-shadow: 0 15px 40px rgba(0,0,0,0.8);">
+                
+                <div style="text-align: center; margin-bottom: 10px;">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 15l-3-8 7 3 3-8 3 8 7-3-3 8h-14z"></path>
+                        <circle cx="12" cy="19" r="2"></circle>
+                    </svg>
                 </div>
-                <div style="color: white; font-size: 0.8rem; margin-bottom: 8px;"><strong>Item:</strong> ${item}</div>
-                <div style="color: var(--yellow); font-size: 0.9rem; font-weight: bold; margin-bottom: 8px;">${cost} 🪙</div>
-                <div style="color: #ccc; font-size: 0.75rem; margin-bottom: 8px;"><strong>Reason:</strong> ${reason}</div>
-                <div style="color: #aaa; font-size: 0.7rem; font-style: italic;">"${note}"</div>
-                <div style="margin-top: 10px; color: var(--pink); font-size: 0.7rem; font-weight: bold;">✨ For Queen Karin ✨</div>
+
+                <div class="tribute-card-header" style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-family: 'Cinzel', serif; font-weight: 900; color: var(--gold); font-size: 0.7rem; letter-spacing: 4px; text-transform: uppercase;">Sacrifice Validated</div>
+                </div>
+
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="color: white; font-family: 'Cinzel'; font-size: 1rem; font-weight: 700; letter-spacing: 1.5px;">${item}</div>
+                    <div style="color: var(--gold-bright); font-family: 'Orbitron'; font-size: 1.1rem; font-weight: 900; margin-top: 8px;">${cost} 🪙</div>
+                </div>
+
+                <div style="border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 15px;">
+                    <div style="color: var(--gold); font-family: 'Inter'; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px; opacity: 0.7;">Intention: ${reason}</div>
+                    <div style="color: #eee; font-family: 'Inter'; font-size: 0.85rem; font-weight: 300; line-height: 1.5; font-style: italic;">"${note}"</div>
+                </div>
+
+                <div style="text-align: center; margin-top: 20px; font-family: 'Cinzel'; color: var(--gold); font-size: 0.5rem; letter-spacing: 3px; opacity: 0.5; border-top: 1px solid rgba(212, 175, 55, 0.1); padding-top: 10px;">
+                    ROYAL ASSET
+                </div>
             </div>
+            <div class="msg-time" style="margin-top: 10px; font-family: 'Orbitron'; font-size: 0.6rem; color: #444;">${timeStr}</div>
         </div>
     `;
 }
