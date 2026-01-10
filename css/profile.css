@@ -560,6 +560,7 @@ html, body {
 }
 
 /* --- 4. THE BUTTON (Full Width & Symmetrical) --- */
+/* FIX THE BUTTON SIZE & CENTERING */
 #newTaskBtn {
     background: transparent !important;
     border: 1px solid var(--gold) !important;
@@ -569,12 +570,17 @@ html, body {
     letter-spacing: 4px !important;
     text-transform: uppercase !important;
     
-    /* SYMMETRY FIX */
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 15px 0 !important;
+    /* CHANGE LINE 73 TO AUTO */
+    width: auto !important; 
     
-    display: block;
+    /* ADD MIN-WIDTH SO IT ISNT TINY */
+    min-width: 250px !important;
+    
+    /* CHANGE LINE 74 TO CENTER IT */
+    margin: 20px auto !important; 
+    
+    padding: 15px 30px !important;
+    display: block !important;
     border-radius: 2px !important;
     transition: all 0.4s ease;
 }
