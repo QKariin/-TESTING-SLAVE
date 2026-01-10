@@ -310,14 +310,14 @@ html, body {
 }
 
 .pc-name {
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   font-family: 'Cinzel', serif;
   color: var(--elegant-white);
   text-transform: uppercase;
   text-shadow: 0 0 10px rgba(197, 160, 89, 0.3);
-  line-height: 1.2;
-  letter-spacing: 2px;
+  line-height: 1.5;
+  letter-spacing: 6px;
 }
 
 .pc-rank {
