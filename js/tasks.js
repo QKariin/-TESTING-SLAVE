@@ -193,9 +193,15 @@ export function resetTaskDisplay(success) {
     if (resetUiTimer) clearTimeout(resetUiTimer);
     
     const timer = setTimeout(() => {
-        if(tc) tc.innerHTML = `<h2 id="readyText" style="font-weight:bold; margin-bottom:5px; color:white; font-size:1.5rem;">Ready?</h2><p class="rajdhani" style="color:#aaa; margin:0;">Waiting for orders.</p>`;
+        if(tc) {
+            // UPDATED TO MATCH YOUR NEW LUXURY UI
+            tc.innerHTML = `
+                <h2 id="readyText">VACANT ASSET</h2>
+                <p class="inter">
+                    Current status: Unproductive. <br>
+                    Standby for mandatory labor assignment.
+                </p>
+            `;
+        }
         setResetUiTimer(null);
     }, 4000);
-    
-    setResetUiTimer(timer);
-}
