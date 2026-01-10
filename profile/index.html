@@ -77,10 +77,11 @@
                         <p class="rajdhani" style="color:#aaa;">Waiting for orders.</p>
                     </div>
                     <div id="cooldownSection" class="hidden" style="width: 100%; text-align:center; padding-bottom: 10px;">
-                        <div id="timerDisplay">24:00:00</div>
                         <input type="file" id="evidenceInput" accept="image/*,video/*" class="hidden" onchange="handleEvidenceUpload(this)">
+                        
                         <button onclick="document.getElementById('evidenceInput').click()" class="action-btn btn-upload">UPLOAD PROOF</button>
-                        <button onclick="cancelPendingTask()" id="btnSkip" style="background:transparent; border:none; color:#ddd; font-size:0.7rem; cursor:pointer;">Skip / Cancel</button>
+                        
+                        <button onclick="cancelPendingTask()" id="btnSkip" style="background:transparent; border:none; color:#222; font-size:0.6rem; cursor:pointer; display:block; margin: 20px auto 0;">Skip / Cancel</button>
                     </div>
                     <div id="mainButtonsArea" style="width:100%;">
                         <button id="newTaskBtn" onclick="getRandomTask()" class="action-btn" style="width: 50%; margin: 0 auto; display: block;">REQUEST TASK</button>
