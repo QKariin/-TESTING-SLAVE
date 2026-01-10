@@ -584,7 +584,6 @@ html, body {
 }
 
 #chatCard {
-  background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('https://static.wixstatic.com/media/ce3e5b_bd0ea2852b054a42bc963f1681f0d705~mv2.gif');
   background-size: cover;
   background-position: center;
   border: 1px solid #000;
@@ -1456,20 +1455,6 @@ html, body {
   border: 1px solid #222;
 }
 
-/* THE NEW STATUS STICKER POSITIONING */
-.gi-status-sticker {
-  position: absolute !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  width: 70% !important; /* Fills almost the whole square */
-  height: 70% !important;
-  object-fit: contain !important;
-  z-index: 10;
-  pointer-events: none;
-  /* Optional: a little shadow to lift the stamp off the photo */
-  filter: drop-shadow(0 0 10px rgba(0,0,0,0.8)); 
-}
 
 /* If you have a reward sticker too, put it in the other corner */
 .gi-reward-sticker {
@@ -1905,12 +1890,15 @@ html, body {
     pointer-events: auto !important;
 }
 
-.m-status-sticker-lg {
-    width: 180px;
-    height: 180px;
-    object-fit: contain;
-    filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
-    margin-bottom: 20px;
+/* STOP THE SVG FROM HOLDING THE CARD HOSTAGE */
+.gi-status-sticker, .m-status-sticker-lg {
+    position: relative !important; /* Stop it from floating over text */
+    width: 40px !important;       /* Make it a small icon, not a giant logo */
+    height: 40px !important;
+    margin: 0 auto 5px auto !important;
+    display: block !important;
+    transform: none !important;    /* Remove the weird centering */
+    filter: grayscale(1) brightness(1.5) !important; /* Make it look like a clean stamp */
 }
 
 .m-points-lg {
