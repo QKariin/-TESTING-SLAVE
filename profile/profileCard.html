@@ -12,15 +12,26 @@
         <!-- RIGHT: INFO (CENTERED TEXT) -->
         <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
             <div id="subName" class="pc-name" style="text-align: center; letter-spacing: 4px; margin-bottom: 2px;">SLAVE</div>
-            <div id="subHierarchy" class="pc-rank" style="text-align: center; color: #666; font-size: 0.7rem;">LOADING...</div>
+            <div id="subHierarchy" class="pc-rank" style="text-align: center; color: #666; font-size: 0.7rem; margin-bottom: 8px;">LOADING...</div>
             
-            <!-- CONNECTED BAR & TO GO -->
-            <div class="level-progress-container" style="width: 100%; margin: 8px 0 0 0;">
-                <div class="lp-bar-bg" style="background: #111; border: 1px solid #333; height: 6px; border-radius: 4px; margin-bottom: 3px;">
+            <!-- CONNECTED PROGRESS UNIT -->
+            <div class="level-progress-container" style="width: 100%; margin: 0;">
+                
+                <!-- 1. NEXT LEVEL LABEL (TOP LEFT) -->
+                <div style="display: flex; justify-content: flex-start; margin-bottom: 2px;">
+                    <span style="font-family: 'Cinzel', serif; font-size: 0.55rem; color: #666; letter-spacing: 1px;">
+                        NEXT: <span id="nextLevelName" style="color: #c5a059; font-weight: 800;">LOADING...</span>
+                    </span>
+                </div>
+
+                <!-- 2. THE BAR -->
+                <div class="lp-bar-bg" style="background: #111; border: 1px solid #333; height: 6px; border-radius: 4px;">
                     <div id="progressBar" class="lp-bar-fill" style="width: 0%; background: linear-gradient(90deg, #000, #c5a059);"></div>
                 </div>
-                <div style="text-align: center;">
-                    <span id="pointsNeeded" style="font-family: 'Cinzel', serif; font-size: 0.55rem; color: #444; letter-spacing: 1px;">LOADING...</span>
+
+                <!-- 3. TO GO LABEL (BOTTOM RIGHT) -->
+                <div style="text-align: right; margin-top: 2px;">
+                    <span id="pointsNeeded" style="font-family: 'Inter', sans-serif; font-size: 0.5rem; color: #555; font-weight: 600;">LOADING...</span>
                 </div>
             </div>
         </div>
