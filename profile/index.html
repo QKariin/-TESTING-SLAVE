@@ -69,27 +69,29 @@
               
                 <!-- Task Card -->
                 <div id="taskCard" class="glass-card">
-                   <div id="activeBadge" class="task-badge-top">
-                      <span id="timerDisplay">23:59:59</span>
-                  </div>
-                    <div id="taskContent" style="width: 100%; padding: 40px 0; text-align: left;">
-                        <h2 id="readyText" class="cinzel" style="font-weight:900; color:var(--gold); font-size:1.2rem; letter-spacing:5px;">VACANT ASSET</h2>
-                        
-                        <p class="inter" style="color:#555; font-size:0.7rem; letter-spacing:2px; text-transform:uppercase; line-height:1.6;">
+    
+                    <div id="activeBadge" class="task-badge-top">
+                        <span id="timerDisplay">00:00:00</span>
+                    </div>
+                
+                    <div id="taskContent">
+                        <h2 id="readyText">VACANT ASSET</h2>
+                        <p class="inter">
                             Current status: Unproductive. <br>
                             Standby for mandatory labor assignment.
                         </p>
                     </div>
+                
                     <div id="cooldownSection" class="hidden" style="width: 100%; text-align:center; padding-bottom: 10px;">
                         <input type="file" id="evidenceInput" accept="image/*,video/*" class="hidden" onchange="handleEvidenceUpload(this)">
-                        
                         <button onclick="document.getElementById('evidenceInput').click()" class="action-btn btn-upload">UPLOAD PROOF</button>
-                        
-                        <button onclick="cancelPendingTask()" id="btnSkip" style="background:transparent; border:none; color:#222; font-size:0.6rem; cursor:pointer; display:block; margin: 20px auto 0;">Skip / Cancel</button>
+                        <button onclick="cancelPendingTask()" id="btnSkip">Skip / Cancel</button>
                     </div>
+                
                     <div id="mainButtonsArea" style="width:100%;">
-                        <button id="newTaskBtn" onclick="getRandomTask()" class="action-btn" style="width: 50%; margin: 0 auto; display: block;">REQUEST TASK</button>
+                        <button id="newTaskBtn" onclick="getRandomTask()" class="action-btn">REQUEST TASK</button>
                     </div>
+                
                 </div>
 
                 <!-- Chat Card (CLEAN VERSION) -->
