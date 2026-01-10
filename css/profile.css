@@ -530,28 +530,30 @@ html, body {
 }
 
 #taskCard {
-  background: rgba(0, 0, 0, 0.4);
-  min-height: 100px;
-  transition: min-height 0.3s ease;
+    background: #050505 !important;
+    border: 1px solid #c5a059 !important; /* Thin Gold Line */
+    border-radius: 2px !important;         /* Sharp "System" corners */
+    box-shadow: none !important;           /* No glow */
+    padding: 15px !important;
 }
 
 #activeBadge {
   display: none;
   position: absolute;
-  top: -12px;
+  top: -25px; /* Moved above the avatar so it floats nicely */
   left: 50%;
   transform: translateX(-50%);
   width: auto;
-  padding: 4px 20px;
-  background: var(--bg-dark);
-  border: 1px solid var(--gold);
-  color: var(--gold);
-  border-radius: 20px;
-  font-size: 0.65rem;
+  padding: 0;
+  background: transparent; /* Remove background */
+  border: none; /* Remove border */
+  color: var(--gold); /* Text Only */
+  border-radius: 0;
+  font-size: 0.7rem;
   letter-spacing: 2px;
   font-weight: 700;
   font-family: 'Cinzel', serif;
-  box-shadow: 0 0 15px var(--gold-dim);
+  box-shadow: none; /* Remove shadow */
   z-index: 10;
   white-space: nowrap;
 }
@@ -1448,13 +1450,12 @@ html, body {
 }
 
 .timer-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  pointer-events: none;
+    font-family: 'Inter', monospace !important; /* Technical feel */
+    font-weight: 600;
+    color: var(--elegant-white);
+    letter-spacing: 2px;
+    font-size: 1.2rem;
+    text-shadow: none !important; /* Clean and sharp */
 }
 
 .timer-icon {
@@ -1794,16 +1795,20 @@ html, body {
 }
 
 .btn-upload {
-  background: rgba(0, 0, 0, 0.4) !important;
-  -webkit-backdrop-filter: blur(8px);
-          backdrop-filter: blur(8px);
-  border: 1px solid var(--gold) !important;
-  color: var(--elegant-white) !important;
-  font-family: 'Cinzel', serif;
-  box-shadow: 0 0 15px var(--gold-dim), inset 0 0 8px var(--gold-dim);
-  margin: 10px auto !important;
-  width: 60% !important;
+  background: #000 !important; /* Solid Black */
+  border: 1px solid var(--gold) !important; /* Gold Border */
+  color: var(--gold) !important;
+  font-family: 'Cinzel', serif !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  box-shadow: none !important; /* No Pink Glow */
+  margin: 15px auto !important;
+  width: 100% !important;
+  max-width: 250px;
   display: block;
+  border-radius: 2px !important;
+  padding: 10px !important;
 }
 
 /* Ensure the photo NEVER crops and always fits the middle */
