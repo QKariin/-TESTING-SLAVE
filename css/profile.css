@@ -1915,59 +1915,35 @@ html, body {
     font-weight: 900;
     text-shadow: 0 0 15px var(--gold-dim);
 }
-/* --- 7. DESKTOP TWEAKS (REPLACE YOUR MEDIA QUERY BLOCK) --- */
+/* --- DESKTOP TWEAKS --- */
+
+/* --- 7. DESKTOP TWEAKS (1024px+) --- */
 @media (min-width: 1024px) {
-  .app-container { 
-    width: 90%; 
-    max-width: 1400px; 
-    padding-top: 60px; 
+  .gallery-grid {
+    grid-template-columns: repeat(5, 1fr) !important; 
+    gap: 12px;
   }
-  
-  .top-section-split { 
-    flex-direction: row; 
-    align-items: flex-start; /* Keeps sidebar at top */
-    justify-content: center; /* Centers the whole assembly */
-    gap: 30px; 
-  }
-  
-  .layout-left { 
-    width: 320px; 
-    flex-shrink: 0; 
-    position: sticky; 
-    top: 40px; 
-  }
+  .app-container { width: 80%; max-width: 1600px; padding-top: 60px; }
+  .top-section-split { flex-direction: row; align-items: flex-start; }
+  .layout-left { width: 30%; min-width: 280px; position: sticky; top: 20px; }
+  .layout-right { width: 70%; margin-top: 25px; }
+} /* THIS CLOSES DESKTOP */
 
-  /* THIS IS THE FIX FOR THE RIGHT SIDE */
-  .layout-right { 
-    flex: 1; /* Takes all remaining space symmetrically */
-    margin-top: 0; /* Remove that 25px gap pushing it down */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    min-width: 0; /* Prevents flex-grow blowout */
-  }
-}
-
-/* --- THE PROTOCOL PILLAR (REPLACE THIS BLOCK) --- */
-.protocol-item {
-    background: rgba(10, 10, 12, 0.4); 
-    padding: 25px; /* Increased for luxury feel */
-    border-radius: 0; 
-    cursor: pointer;
-    border-bottom: 1px solid var(--glass-border); 
-    width: 100% !important; /* Forces the pillar to fill the container */
-    transition: background 0.4s ease;
-    display: block; /* Ensure it behaves as a full-width block */
-}
-
-/* --- THE TASK CARD FIX --- */
-#taskCard {
+/* --- 8. GLOBAL PRISON & FEED (WORKS ON ALL DEVICES) --- */
+#historySection {
     position: relative !important;
-    overflow: visible !important;
-    width: 100% !important; /* Ensures the header area is as wide as the protocol */
-    margin-top: 40px !important; 
-    background: var(--glass-bg);
+    overflow: hidden !important; 
+    min-height: 450px;
+    margin-top: 20px;
 }
+
+#newsGrid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 2px;
+    width: 100%;
+}
+
 /* --- 9. MOBILE FIXES (UNDER 1023px) --- */
 @media (max-width: 1023px) {
   .glass-card, .glass-modal, .theater-text-box {
