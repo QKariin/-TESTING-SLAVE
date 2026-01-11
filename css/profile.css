@@ -17,7 +17,7 @@
 }
 
 html, body {
-  background-color: var(--bg-dark);
+  background-color: transparent;
   font-family: 'Inter', sans-serif;
   color: var(--elegant-white);
   margin: 0;
