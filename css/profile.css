@@ -371,6 +371,33 @@ body {
     filter: brightness(1);
 }
 
+/* --- FIX BLACK SQUARES --- */
+
+/* 1. Force ANY image/video inside the card to fill the space */
+.gallery-item img, 
+.gallery-item video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important; /* Crops image to fit square without distortion */
+    display: block !important;
+    opacity: 1 !important;
+    min-height: 100%;
+    min-width: 100%;
+}
+
+/* 2. Optional: Remove the dark filter if it's too dark */
+.gallery-item .gi-thumb {
+    filter: brightness(0.8) !important; /* Lighter than before */
+}
+
+/* 3. Hover Effect: Light up the image */
+.gallery-item:hover img,
+.gallery-item:hover video {
+    filter: brightness(1.1) !important;
+    transform: scale(1.05);
+    transition: all 0.3s ease;
+}
+
 /* 4. The Status Badge Overlay (Accepted/Rejected) */
 .status-badge {
     position: absolute;
