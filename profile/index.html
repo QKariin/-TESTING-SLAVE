@@ -49,45 +49,8 @@
 <div class="app-container">
     
     <!-- === LEFT PILLAR: IDENTITY === -->
-    <div class="layout-left">
-        <div id="subHierarchy" class="hierarchy-top">LOADING...</div>
-
-        <div class="avatar-container" onclick="document.getElementById('profileUploadInput').click()">
-            <img id="profilePic" src="" alt="Avatar">
-        </div>
-        <div id="subName" class="identity-name">SLAVE</div>
-
-        <div class="stats-stack">
-            <div class="stat-row">
-                <span class="stat-lbl">MERIT</span>
-                <span id="points" class="stat-val">0</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-lbl">CAPITAL</span>
-                <span id="coins" class="stat-val">0</span>
-            </div>
-        </div>
-
-        <div class="progress-section">
-            <div class="prog-labels">
-                <span>NEXT: <span id="nextLevelName">-</span></span>
-                <span id="pointsNeeded">0 to go</span>
-            </div>
-            <div class="prog-bg"><div id="progressBar" class="prog-fill"></div></div>
-        </div>
-
-        <button class="stats-toggle-btn" onclick="toggleStats()">EXPAND STATS ▾</button>
-        <div id="statsContent" class="stats-panel">
-            <div class="stat-line"><span>Streak</span> <strong id="statStreak">0</strong></div>
-            <div class="stat-line"><span>Total Tasks</span> <strong id="statTotal">0</strong></div>
-            <div class="stat-line"><span>Completed</span> <strong id="statCompleted">0</strong></div>
-            <div class="stat-line"><span>Skipped</span> <strong id="statSkipped">0</strong></div>
-            <div class="stat-line"><span>Total Kneeling</span> <strong id="statTotalKneels">0</strong></div>
-            <div class="stat-footer">
-                <span>SLAVE SINCE</span>
-                <strong id="slaveSinceDate">--/--/--</strong>
-            </div>
-        </div>
+    <div class="layout-left" id="profile-card-hook">
+    </div>
 
         <div class="nav-menu">
           <button class="nav-btn active" onclick="switchTab('serve')">CONSOLE</button>
