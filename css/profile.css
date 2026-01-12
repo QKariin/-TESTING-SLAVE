@@ -318,3 +318,32 @@ body {
 }
 .history-action-btn:hover { background: rgba(255,255,255,0.1); color: white; border-color: white; }
 .btn-close-red { border-color: var(--neon-red); color: var(--neon-red); grid-column: span 2; }
+
+/* =========================================
+   FIX: HIDE BROKEN STICKERS / IMAGES
+   ========================================= */
+
+/* 1. Hide images with empty or 'undefined' sources immediately */
+img[src=""], 
+img[src="undefined"], 
+img[src="null"] {
+    display: none !important;
+}
+
+/* 2. Hide the broken image icon/border for the Sticker class specifically */
+/* This ensures if the sticker fails to load, it becomes invisible 
+   instead of showing a broken icon over your photo */
+.gi-status-sticker {
+    text-indent: -10000px; /* Hides 'broken image' text */
+}
+
+/* 3. Fallback: If the Sticker image is broken, it often has 0 natural width.
+   We can try to ensure it doesn't block clicks or view if it fails. */
+img:not([src]) {
+    display: none !important;
+}
+
+/* 4. Ensure the Main Photo is always visible underneath */
+.gallery-item {
+    background: #000; /* Keep background black so we don't see through to body */
+}
