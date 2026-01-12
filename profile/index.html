@@ -357,6 +357,53 @@
             }
         }
     }
+
+   document.querySelectorAll("[data-include]").forEach(async el => {
+        const file = el.getAttribute("data-include");
+        try {
+            const html = await fetch(file).then(r => r.text());
+            el.innerHTML = html;
+        } catch (err) {
+            console.error("Include failed:", file, err);
+        }
+    });
+
+    // 2. FIXED MENU LOGIC
+    // This highlights the header tab AND calls the system's data loader
+    window.switchMainTab = function(el, viewId) {
+        
+        // A. Visual Highlight (The Underline)
+        document.querySelectorAll('.profile-crown-nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        el.classList.add('active');
+
+        // B. Call the Original System Function (loads Gallery/Vault data)
+        // We check if the main.js function exists, then call it.
+        if (typeof window.showView === 'function') {
+            window.showView(viewId);
+        } else {
+            // Fallback: Manually toggle if main.js isn't ready
+            const views = ['viewServingTop', 'viewProtocol', 'viewNews', 'viewVault', 'viewBuy', 'viewRewards', 'viewHierarchy', 'viewSession'];
+            views.forEach(id => {
+                const v = document.getElementById(id);
+                if(v) {
+                    v.classList.add('hidden');
+                    v.style.display = 'none';
+                }
+            });
+            const target = document.getElementById(viewId);
+            if(target) {
+                target.classList.remove('hidden');
+                // Ensure Gallery gets block display, others get flex
+                if (viewId === 'viewNews' || viewId === 'viewVault' || viewId === 'viewServingTop') {
+                    target.style.display = 'block';
+                } else {
+                    target.style.display = 'flex';
+                }
+            }
+        }
+    }
 </script>
 
 </body>
