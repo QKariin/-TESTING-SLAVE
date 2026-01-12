@@ -137,11 +137,10 @@ export async function renderChat(messages) {
             }
         }
 
-        // BUBBLE ALIGNMENT (No Avatars as ordered)
-        // mr-out = Slave (Left) | mr-in = Queen (Right)
+       // Inside the visibleMessages.map loop:
         return `
             <div class="msg-row ${isMe ? 'mr-out' : 'mr-in'}">
-                <div class="msg-col" style="align-items: ${isMe ? 'flex-start' : 'flex-end'};">
+                <div class="msg-col" style="align-items: ${isMe ? 'flex-end' : 'flex-start'};">
                     ${contentHtml}
                     <div class="msg-time">${timeStr}</div>
                 </div>
