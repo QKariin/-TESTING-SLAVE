@@ -593,4 +593,5 @@ window.submitSessionRequest = submitSessionRequest;
 window.handleAdminUpload = handleAdminUpload;
 window.WISHLIST_ITEMS = WISHLIST_ITEMS;
 window.gameStats = gameStats;
+window.buyRealCoins = buyRealCoins;
 window.parent.postMessage({ type: "UI_READY" }, "*");
