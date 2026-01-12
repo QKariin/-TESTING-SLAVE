@@ -321,3 +321,76 @@ body {
 @keyframes blinker {
     50% { opacity: 0; }
 }
+
+
+/* --- MISSING GALLERY GRID STYLES (ADD THIS) --- */
+
+/* 1. The Grid Container */
+.gallery-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr); /* 3 Columns on Mobile */
+    gap: 4px;
+    width: 100%;
+    padding-bottom: 20px;
+}
+
+/* 5 Columns on Desktop */
+@media (min-width: 768px) {
+    .gallery-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 8px;
+    }
+}
+
+/* 2. The Square Picture Card */
+.gallery-item {
+    position: relative;
+    aspect-ratio: 1 / 1; /* Forces Perfect Square */
+    background: #000;
+    overflow: hidden;
+    cursor: pointer;
+    border: 1px solid #333;
+    transition: border-color 0.2s;
+}
+
+.gallery-item:hover {
+    border-color: var(--neon-yellow);
+}
+
+/* 3. The Image Inside */
+.gi-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Fills square without stretching */
+    transition: transform 0.3s;
+    filter: brightness(0.6);
+}
+
+.gallery-item:hover .gi-thumb {
+    transform: scale(1.05);
+    filter: brightness(1);
+}
+
+/* 4. The Status Badge Overlay (Accepted/Rejected) */
+.status-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 4px 8px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: white;
+    border: 1px solid white;
+    background: rgba(0,0,0,0.8);
+    z-index: 10;
+    pointer-events: none; /* Click goes through to card */
+    white-space: nowrap;
+}
+
+/* Badge Colors */
+.status-badge.approved { color: var(--neon-green); border-color: var(--neon-green); }
+.status-badge.rejected { color: var(--neon-red, #ff003c); border-color: var(--neon-red, #ff003c); }
+.status-badge.pending { color: var(--neon-yellow); border-color: var(--neon-yellow); }
