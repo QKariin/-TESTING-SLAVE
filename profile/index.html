@@ -28,26 +28,24 @@
 <input type="file" id="evidenceInput" accept="image/*,video/*" class="hidden" onchange="handleEvidenceUpload(this)">
 <input type="file" id="adminMediaInput" accept="image/*,video/*" class="hidden" onchange="handleAdminUpload(this)">
 
-<!-- OVERLAY -->
+<!-- CELEBRATION -->
 <div id="celebrationOverlay" style="position:fixed;inset:0;pointer-events:none;z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;">
     <div class="glass-card" style="border: 2px solid var(--neon-green); text-align:center;">
-        <div style="font-size:1.8rem;font-weight:900;color:var(--neon-green);text-shadow:0 0 20px var(--neon-green);">TASK<br>SUBMITTED</div>
+        <div style="font-size:1.8rem;font-weight:900;color:var(--neon-green);text-shadow:0 0 20px var(--neon-green); font-family: 'Orbitron';">TASK<br>SUBMITTED</div>
     </div>
 </div>
 
 <!-- ICONS -->
 <svg style="display:none;">
-    <symbol id="icon-coin" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.69 1.64 1.83 1.64 1.22 0 1.6-.64 1.6-1.26 0-.81-.42-1.22-2.34-1.67-2.37-.59-3.54-1.7-3.54-3.41 0-1.68 1.29-2.94 3.28-3.29V4h2.66v1.93c1.61.27 2.87 1.28 3.01 3.05h-1.95c-.14-.99-.68-1.55-1.7-1.55-1.04 0-1.55.56-1.55 1.15 0 .75.46 1.2 2.37 1.65 2.51.6 3.58 1.74 3.58 3.52 0 1.82-1.46 3.09-3.28 3.34z"/></symbol>
     <symbol id="icon-sparkles" viewBox="0 0 24 24"><path d="M9.5 1L8 4.5L4.5 6L8 7.5L9.5 11L11 7.5L14.5 6L11 4.5L9.5 1zm0 0"/><path d="M19 8.5L17.5 11L15 12.5L17.5 14L19 16.5L20.5 14L23 12.5L20.5 11L19 8.5zm0 0"/><path d="M16.5 18L15.5 20L13.5 21L15.5 22L16.5 24L17.5 22L19.5 21L17.5 20L16.5 18zm0 0"/></symbol>
 </svg>
 
-<!-- 5. MAIN CONTAINER -->
 <div class="app-container">
     
     <!-- === LEFT PILLAR: IDENTITY (30%) === -->
     <div class="layout-left">
         
-        <!-- 1. HIERARCHY RANK (Top, Grey, Huge Spacing) -->
+        <!-- 1. HIERARCHY RANK (Top, Grey, Cinzel) -->
         <div id="subHierarchy" class="hierarchy-top">LOADING...</div>
 
         <!-- 2. AVATAR -->
@@ -56,7 +54,7 @@
         </div>
         <div id="subName" class="identity-name">SLAVE</div>
 
-        <!-- 3. STATS (Stacked Vertical) -->
+        <!-- 3. BASIC STATS (Vertical Stack) -->
         <div class="stats-stack">
             <div class="stat-row">
                 <span class="stat-lbl">MERIT</span>
@@ -68,7 +66,21 @@
             </div>
         </div>
 
-        <!-- 4. NAVIGATION -->
+        <!-- 4. EXPANDED STATS (Restored) -->
+        <button class="stats-toggle-btn" onclick="toggleStats()">EXPAND STATS ▾</button>
+        <div id="statsContent" class="stats-panel">
+            <div class="stat-line"><span>Task Streak</span> <strong id="statStreak">0</strong></div>
+            <div class="stat-line"><span>Total Tasks</span> <strong id="statTotal">0</strong></div>
+            <div class="stat-line"><span>Completed</span> <strong id="statCompleted">0</strong></div>
+            <div class="stat-line"><span>Skipped</span> <strong id="statSkipped">0</strong></div>
+            <div class="stat-line"><span>Total Kneeling</span> <strong id="statTotalKneels">0</strong></div>
+            <div class="stat-footer">
+                <span>SLAVE SINCE</span>
+                <strong id="slaveSinceDate">--/--/--</strong>
+            </div>
+        </div>
+
+        <!-- 5. NAVIGATION (Fixed Position, Not at bottom) -->
         <div class="nav-menu">
             <button class="nav-btn active" onclick="switchTab('serve')">CONSOLE</button>
             <button class="nav-btn" onclick="switchTab('news')">GALLERY</button>
@@ -77,17 +89,16 @@
             <button class="nav-btn" onclick="switchTab('protocol')">PROTOCOL</button>
         </div>
 
-        <!-- Logic placeholders -->
+        <!-- Logic placeholders (Hidden but necessary) -->
         <div class="logic-only">
             <div id="progressBar"></div> <span id="nextLevelName"></span> <span id="pointsNeeded"></span>
-            <div onclick="toggleStats()">STATS</div>
         </div>
     </div>
 
     <!-- === RIGHT STAGE: OPERATIONS (70%) === -->
     <div class="layout-right">
         
-        <!-- HEADER: CENTERED HUGE KNEEL BUTTON -->
+        <!-- HEADER: CENTERED HUGE KNEEL BUTTON (Red Graphic) -->
         <div class="right-header">
             <div class="kneel-center-wrapper">
                 <div id="btn" class="kneel-bar-graphic" 
@@ -108,20 +119,30 @@
             <!-- VIEW 1: CONSOLE (Task + Chat) -->
             <div id="viewServingTop" class="view-wrapper">
                 
-                <!-- TOP: TASK RIBBON -->
-                <div id="taskCard" class="glass-card task-ribbon">
+                <!-- TOP: TASK RIBBON (Consistent Look) -->
+                <div id="taskCard" class="task-ribbon">
                     <div id="activeBadge" class="hidden"></div>
-                    <div id="timerDisplay" class="ribbon-timer">00:00:00</div>
+                    
+                    <!-- Timer Left -->
+                    <div class="ribbon-left">
+                        <div id="timerDisplay" class="ribbon-timer">00:00:00</div>
+                    </div>
+                    
+                    <!-- Text Center -->
                     <div id="taskContent" class="ribbon-center">
-                        <span class="ribbon-title">CURRENT DIRECTIVE</span>
-                        <h2 id="readyText" class="ribbon-text">AWAITING ORDERS</h2>
+                        <span class="ribbon-label">CURRENT DIRECTIVE</span>
+                        <h2 id="readyText" class="ribbon-status">AWAITING ORDERS</h2>
                     </div>
-                    <div id="mainButtonsArea">
-                        <button id="newTaskBtn" onclick="getRandomTask()" class="action-btn">REQUEST</button>
-                    </div>
-                    <div id="cooldownSection" class="hidden" style="display: flex; gap: 10px;">
-                        <button onclick="document.getElementById('evidenceInput').click()" class="action-btn">UPLOAD</button>
-                        <button id="btnSkip" onclick="cancelPendingTask()" class="btn-dim">SKIP</button>
+
+                    <!-- Action Right -->
+                    <div class="ribbon-right">
+                        <div id="mainButtonsArea">
+                            <button id="newTaskBtn" onclick="getRandomTask()" class="action-btn">REQUEST TASK</button>
+                        </div>
+                        <div id="cooldownSection" class="hidden" style="display: flex; gap: 10px;">
+                            <button onclick="document.getElementById('evidenceInput').click()" class="action-btn">UPLOAD</button>
+                            <button id="btnSkip" onclick="cancelPendingTask()" class="btn-dim">SKIP</button>
+                        </div>
                     </div>
                 </div>
 
@@ -130,19 +151,16 @@
                     <div id="chatBadge" class="hidden"></div>
                     
                     <div id="chatBody" class="chat-body-frame">
-                        <!-- Logic Overlays -->
-                        <div id="kneelRewardOverlay" class="hidden overlay-center"><div style="text-align: center;"><h2 style="color:white; margin-bottom: 20px;">DEVOTION RECOGNIZED</h2><div style="display:flex; gap:10px;"><button onclick="claimKneelReward('coins')" class="action-btn">COINS</button><button onclick="claimKneelReward('points')" class="action-btn">POINTS</button></div></div></div>
+                        <div id="kneelRewardOverlay" class="hidden overlay-center"><div style="text-align: center;"><h2 style="color:white; margin-bottom: 20px; font-family:'Orbitron';">DEVOTION RECOGNIZED</h2><div style="display:flex; gap:10px;"><button onclick="claimKneelReward('coins')" class="action-btn">COINS</button><button onclick="claimKneelReward('points')" class="action-btn">POINTS</button></div></div></div>
                         <div id="chatMediaOverlay" class="hidden overlay-center"><div id="mediaOverlayClose" onclick="closeChatPreview()" style="position: absolute; top: 20px; right: 20px; color: white; font-size: 2rem; cursor: pointer;">X</div><div id="chatMediaOverlayContent"></div></div>
-                        <div id="tributeHuntOverlay" class="hidden overlay-center" style="background:#000; padding:20px; flex-direction:column;"><button onclick="toggleTributeHunt()" style="color: white; align-self:flex-end;">CLOSE</button><div id="huntStoreGrid" class="store-grid" style="margin-top: 20px;"></div><textarea id="huntNote" class="hidden"></textarea><div id="huntProgress" class="hidden"></div></div>
+                        <div id="tributeHuntOverlay" class="hidden overlay-center" style="background:#000; padding:20px; flex-direction:column;"><button onclick="toggleTributeHunt()" style="color: white; align-self:flex-end; font-family:'Orbitron'; background:none; border:none; cursor:pointer;">CLOSE</button><div id="huntStoreGrid" class="store-grid" style="margin-top: 20px;"></div><textarea id="huntNote" class="hidden"></textarea><div id="huntProgress" class="hidden"></div></div>
 
-                        <!-- MESSAGES -->
                         <div id="chatContent" class="chat-area"></div>
                     </div>
 
-                    <!-- INPUT -->
                     <div class="chat-footer">
                         <button id="tributeHuntBtn" onclick="toggleTributeHunt()" class="icon-btn">🎁</button>
-                        <input type="text" id="chatMsgInput" class="chat-input" placeholder="Speak..." onkeypress="handleChatKey(event)">
+                        <input type="text" id="chatMsgInput" class="chat-input" placeholder="Type..." onkeypress="handleChatKey(event)">
                         <button class="chat-send" onclick="sendChatMessage()" class="icon-btn">></button>
                     </div>
                 </div>
@@ -150,7 +168,7 @@
 
             <!-- VIEW 2: STORE -->
             <div id="viewBuy" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
-                <div class="glass-card" style="margin-bottom: 20px;"><h2 style="text-align: center; color: var(--neon-yellow);">STORE</h2></div>
+                <div class="glass-card" style="margin-bottom: 20px;"><h2 style="text-align: center; color: var(--neon-yellow); font-family:'Cinzel';">STORE</h2></div>
                 <div class="store-grid">
                     <div class="store-item"><div>1K</div><button class="si-btn" onclick="buyRealCoins(1000)">€10.00</button></div>
                     <div class="store-item"><div>5.5K</div><button class="si-btn" onclick="buyRealCoins(5500)">€50.00</button></div>
@@ -163,23 +181,22 @@
 
             <!-- VIEW 3: GALLERY -->
             <div id="viewNews" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
-                <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2>GALLERY</h2></div>
+                <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2 style="font-family:'Cinzel';">GALLERY</h2></div>
                 <div id="newsGrid" class="gallery-grid"></div>
             </div>
 
             <!-- VIEW 4: VAULT -->
             <div id="viewVault" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
-                <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2>VAULT</h2></div>
+                <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2 style="font-family:'Cinzel';">VAULT</h2></div>
                 <div id="vaultGrid" class="gallery-grid"></div>
             </div>
 
             <!-- VIEW 5: PROTOCOL -->
             <div id="viewProtocol" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
-                <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2>PROTOCOL</h2></div>
-                <div style="color: #ccc; text-align: center;">Obedience is the only currency.</div>
+                <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2 style="font-family:'Cinzel';">PROTOCOL</h2></div>
+                <div style="color: #ccc; text-align: center; font-family:'Inter';">Obedience is the only currency.</div>
             </div>
 
-            <!-- HIDDEN PLACEHOLDERS -->
             <div id="viewRewards" class="hidden"></div>
             <div id="viewHierarchy" class="hidden"></div>
             <div id="viewSession" class="hidden"></div>
@@ -241,14 +258,12 @@
         const target = document.getElementById(targetId);
         if(target) {
             target.classList.remove('hidden');
-            // Ensure flex logic for viewServingTop
-            if (targetId === 'viewServingTop') {
+            if (targetId === 'viewNews' || targetId === 'viewVault' || targetId === 'viewServingTop') {
                  target.style.display = 'flex'; 
                  target.style.flexDirection = 'column';
             } else {
                  target.style.display = 'block';
             }
-            
             if (typeof window.showView === 'function') {
                 window.showView(targetId);
             }
