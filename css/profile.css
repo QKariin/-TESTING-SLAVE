@@ -240,19 +240,41 @@ body {
     pointer-events: auto; /* Re-enable clicking on buttons/text */
 }
 
-/* 1. BUTTTONNN!!!!! */
+/* --- FIXING THE TIMER BADGE --- */
 #activeBadge {
-    display: none;
+  /* Changed from 'none' to 'block' so it shows up when JS removes .hidden */
+  display: block; 
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  padding: 4px 20px;
+  background: black;
+  border: 1px solid var(--neon-green);
+  color: var(--neon-green);
+  border-radius: 20px;
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  font-weight: 900;
+  box-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+  z-index: 10;
+  white-space: nowrap;
 }
 
-/* 2. The JS adds this class to make it visible */
+/* This rule is no longer needed because we use .hidden, but keeping it doesn't hurt */
 #activeBadge.show {
-    display: block; /* or display: flex; if you want alignment */
+  display: block;
 }
 
-/* 3. Utility for the other buttons (standard) */
+/* --- ENSURE HIDDEN CLASS IS STRONG --- */
 .hidden {
-    display: none !important;
+  display: none !important;
+}
+
+/* --- ENSURE PENDING CARD HAS HEIGHT --- */
+.pending-card {
+    min-height: 140px; /* Ensure it doesn't collapse */
 }
 
 /* Loading State for Button */
