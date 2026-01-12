@@ -80,23 +80,47 @@
 /* Kill the Circus Avatars */
 .chat-av, .msg-avatar, .chat-av-placeholder { display: none !important; }
 
-/* Luxury Bubble Design */
+/* --- KILL BUBBLES - ACTIVATE TACTICAL LINES --- */
 .msg {
-    max-width: 70% !important;
-    padding: 12px 16px !important;
+    background: none !important; /* No more bubble background */
+    border: none !important;
+    border-radius: 0 !important;
+    max-width: 75% !important; /* Matches your requirement */
+    padding: 10px 0 !important;
     font-family: 'Rajdhani', sans-serif !important;
-    font-size: 0.95rem !important;
+    font-size: 1rem !important;
     letter-spacing: 1px !important;
+    position: relative !important;
 }
 
-/* Slave (Left - Pink) */
+/* SLAVE MESSAGE (Right Side - Silver Strip) */
+.mr-out .msg {
+    color: #eee !important;
+    text-align: right !important;
+    border-right: 3px solid #888 !important; /* Silver accent line */
+    padding-right: 15px !important;
+}
 
-/* Queen (Right - Dark Glass) */
+/* QUEEN MESSAGE (Left Side - Gold Strip) */
 .mr-in .msg {
-    background: rgba(25, 25, 25, 0.95) !important;
-    border: 1px solid #333 !important;
     color: #fff !important;
-    border-radius: 15px 15px 2px 15px !important;
+    text-align: left !important;
+    border-left: 3px solid var(--gold) !important; /* Gold accent line */
+    padding-left: 15px !important;
+}
+
+/* Optional: Subtle Glow for Queen's Gold Line */
+.mr-in .msg {
+    box-shadow: -10px 0 15px -10px var(--gold) !important;
+}
+
+/* Fix Time Stamps to sit under the lines */
+.msg-time {
+    font-family: 'Rajdhani' !important;
+    font-size: 0.6rem !important;
+    color: #444 !important;
+    margin-top: 4px !important;
+    text-transform: uppercase !important;
 }
 
 .system-row {
@@ -148,10 +172,3 @@
     border-radius: 4px !important;
 }
 
-.msg-time {
-    font-family: 'Rajdhani' !important;
-    font-size: 0.55rem !important;
-    color: #333 !important;
-    margin-top: 5px !important;
-    text-transform: uppercase !important;
-}
