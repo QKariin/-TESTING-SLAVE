@@ -177,21 +177,18 @@
                 </div>
             </div>
 
-            <!-- VIEW 3: SLAVE RECORD (History + Pending) -->
+            <!-- VIEW 3: SLAVE RECORD (PENDING + HISTORY) -->
             <div id="historySection" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
                 <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2 style="font-family:'Cinzel';">SLAVE RECORD</h2></div>
                 
-                <!-- PENDING TASKS (Limbo) -->
-                <!-- Main logic toggles this section directly via ID -->
-                <div id="pendingSection" class="hidden" style="width: 100%; margin-bottom: 30px;">
+                <!-- PENDING SECTION -->
+                <div id="pendingSection" style="width: 100%; margin-bottom: 30px;">
                     <div style="font-family:'Cinzel'; color: var(--neon-yellow); margin-bottom: 15px; text-align: center; border-bottom:1px solid var(--neon-yellow); padding-bottom:5px;">PENDING REVIEW</div>
-                    <!-- The Grid logic injects into #pendingGrid -->
                     <div id="pendingGrid" class="gallery-grid"></div>
                 </div>
 
-                <!-- HISTORY LOG (Record) -->
+                <!-- HISTORY LOG -->
                 <div style="font-family:'Cinzel'; color: #666; margin-bottom: 15px; text-align: center; border-bottom:1px solid #333; padding-bottom:5px;">HISTORY LOG</div>
-                <!-- The Grid logic injects into #historyGrid -->
                 <div id="historyGrid" class="gallery-grid"></div>
                 
                 <button id="loadMoreBtn" onclick="loadMoreHistory()" class="action-btn" style="display:none; margin:20px auto;">LOAD MORE...</button>
@@ -286,7 +283,7 @@
             
             if (typeof window.showView === 'function') window.showView(targetId);
             
-            // THE FIX: Trigger Data Load for History
+            // THE FIX: Trigger Data Load specifically for Slave Record (History)
             if(targetId === 'historySection' && typeof window.loadMoreHistory === 'function') {
                 window.loadMoreHistory();
             }
