@@ -1,19 +1,34 @@
-/* --- LUXURY TERMINAL CHAT --- */
-
-/* The Main Box */
+/* Container Lockdown */
 .chat-container {
-    background: rgba(5, 5, 5, 0.8) !important;
-    border: 1px solid rgba(197, 160, 89, 0.15) !important;
-    backdrop-filter: blur(15px);
-    box-shadow: inset 0 0 50px rgba(0,0,0,0.9);
-}
-
-/* Scroll Area */
-.chat-body-frame {
-    padding: 30px 15px;
+    position: relative;
+    overflow: hidden !important; /* Prevents chat from escaping the box */
     display: flex;
     flex-direction: column;
-    gap: 20px;
+}
+
+.chat-body-frame {
+    flex: 1;
+    overflow-y: auto !important; /* Forces scroll inside the box */
+    overflow-x: hidden;
+    max-height: 100%; 
+}
+
+/* Fix the Huge Avatar */
+.chat-av, .chat-av-placeholder {
+    width: 35px !important;  /* Strict size cap */
+    height: 35px !important;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;         /* Prevents stretching */
+    border: 1px solid var(--gold-dim);
+    margin: 0 10px;
+}
+
+/* Ensure images inside messages don't explode */
+.msg img {
+    max-width: 200px !important; 
+    height: auto !important;
+    border-radius: 4px;
 }
 
 /* Admin: The Royal Decree */
