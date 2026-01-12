@@ -1,13 +1,13 @@
-// UI management functions - FULL LOGIC WITH WISHLIST & VAULT SYNC
+// UI management functions - FULL LOGIC WITH WISHLIST & VAULT SYNC & SLAVE RECORD FIX
 import { currentView, cmsHierarchyData, setCurrentView, WISHLIST_ITEMS, gameStats } from './state.js';
 import { CMS_HIERARCHY } from './config.js';
-import { renderGallery } from './gallery.js';
+import { renderGallery, loadMoreHistory } from './gallery.js'; // IMPORTED loadMoreHistory
 import { getOptimizedUrl } from './utils.js';
 import { renderVault } from '../profile/kneeling/reward.js';
 
 export function switchTab(mode) {
     // 1. Update the buttons
-    const allBtns = document.querySelectorAll('.tab-btn');
+    const allBtns = document.querySelectorAll('.tab-btn, .nav-btn'); // Added .nav-btn support for new layout
     allBtns.forEach(b => b.classList.remove('active'));
     
     // 2. Update the "State" correctly
@@ -35,32 +35,47 @@ export function switchTab(mode) {
         });
     }
     
-    // 4. Hide all views - Including the old ones for safety, but removing from logic
+    // 4. Hide all views - Including historySection
     const allViews = [
         'viewServingTop', 'viewNews', 'viewSession', 
         'viewVault', 'viewProtocol', 'viewBuy', 
-        'viewTribute', 'viewHierarchy', 'viewRewards'
+        'viewTribute', 'viewHierarchy', 'viewRewards', 'historySection'
     ];
     
     allViews.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
+        if (el) {
+            el.classList.add('hidden');
+            el.style.display = 'none'; // Force hide to be safe
+        }
     });
 
-    // 5. THE CLEAN VIEW MAP
+    // 5. THE CLEAN VIEW MAP (Added 'history')
     const viewMap = {
         'serve': 'viewServingTop',
         'news': 'viewNews',
         'session': 'viewSession',
-        'rewards': 'viewVault',    // MAPS TO THE NEW VAULT
+        'rewards': 'viewVault',    
         'protocol': 'viewProtocol',
-        'buy': 'viewBuy'
+        'buy': 'viewBuy',
+        'history': 'historySection', // NEW MAPPING
+        'vault': 'viewVault' // Added vault explicitly just in case
     };
 
     const targetId = viewMap[mode];
     if (targetId) {
         const targetEl = document.getElementById(targetId);
-        if (targetEl) targetEl.classList.remove('hidden');
+        if (targetEl) {
+            targetEl.classList.remove('hidden');
+            
+            // New Layout Logic: Grids need Flex, Main Layout needs Block (or Flex Column)
+            if (['viewNews', 'viewVault', 'historySection', 'viewServingTop'].includes(targetId)) {
+                targetEl.style.display = 'flex';
+                targetEl.style.flexDirection = 'column';
+            } else {
+                targetEl.style.display = 'block';
+            }
+        }
     }
        
     // 6. TRIGGER RENDERS & MESSAGES
@@ -68,12 +83,17 @@ export function switchTab(mode) {
         window.parent.postMessage({ type: "LOAD_Q_FEED" }, "*");
     }
     
-    if (mode === 'rewards') {
-        renderVault(); // Draws the collected prizes
+    if (mode === 'rewards' || mode === 'vault') {
+        renderVault(); 
     }
 
     if (mode === 'serve') {
-        renderGallery(); // Draws the history/pending
+        renderGallery(); 
+    }
+
+    // THE MISSING LINK: Load History Data
+    if (mode === 'history') {
+        loadMoreHistory();
     }
 }
 
