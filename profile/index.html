@@ -132,7 +132,10 @@
                     <div id="activeBadge" class="hidden"></div>
                     
                     <div class="ribbon-left">
-                        <div id="timerDisplay" class="ribbon-timer">00:00:00</div>
+                        <!-- Logic: JS toggles 'hidden' class on activeBadge. Timer must be inside. -->
+                        <div id="activeBadge" class="hidden">
+                            <span id="timerDisplay" class="ribbon-timer">00:00:00</span>
+                        </div>
                     </div>
                     
                     <div id="taskContent" class="ribbon-center">
