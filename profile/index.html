@@ -3,188 +3,251 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>The Altar</title>
+  <title>Command Console</title>
   
+  <!-- LOGIC: Main System -->
   <script type="module" src="../js/main.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 
+  <!-- FONTS: Luxury Set -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@200;300;400&family=Orbitron:wght@400;600&family=Italianno&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@200;300;400;600&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet" />
 
+  <!-- STYLES -->
   <link rel="stylesheet" href="../css/profile.css">
   <link rel="stylesheet" href="../css/reward.css">
 </head>
 <body>
 
-<!-- SOUNDS -->
+<!-- 1. AUDIO ENGINE (Logic Required) -->
 <audio id="msgSound" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"></audio>
 <audio id="coinSound" src="/audio/2019-preview1.mp3"></audio>
 <audio id="skipSound" src="https://static.wixstatic.com/mp3/ce3e5b_3b5b34d4083847e2b123b6fd9a8551fd.mp3"></audio>
 <audio id="sfx-buy" src="/audio/2019-preview1.mp3"></audio>
 <audio id="sfx-deny" src="https://assets.mixkit.co/active_storage/sfx/2578/2578-preview.mp3"></audio>
 
-<!-- HIDDEN INPUTS (Logic) -->
+<!-- 2. HIDDEN INPUTS (Logic Required) -->
 <input type="file" id="profileUploadInput" accept="image/*" class="hidden" onchange="handleProfileUpload(this)">
 <input type="file" id="evidenceInput" accept="image/*,video/*" class="hidden" onchange="handleEvidenceUpload(this)">
 <input type="file" id="adminMediaInput" accept="image/*,video/*" class="hidden" onchange="handleAdminUpload(this)">
 
-<!-- CELEBRATION OVERLAY -->
+<!-- 3. CELEBRATION OVERLAY -->
 <div id="celebrationOverlay" style="position:fixed;inset:0;pointer-events:none;z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;">
-    <div class="glass-card" style="border: 1px solid var(--gold); text-align:center; background: #000;">
-        <div style="font-family:'Cinzel'; font-size:2rem; color:var(--gold);">OFFERING ACCEPTED</div>
+    <div class="glass-card" style="border: 2px solid var(--neon-green); text-align:center;">
+        <div style="font-size:1.8rem;font-weight:900;color:var(--neon-green);text-shadow:0 0 20px var(--neon-green);">TASK<br>SUBMITTED</div>
     </div>
 </div>
 
-<!-- THE ALTAR CONTAINER -->
-<div class="altar-layout">
+<!-- 4. ICONS (Logic Required) -->
+<svg style="display:none;">
+    <symbol id="icon-coin" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.69 1.64 1.83 1.64 1.22 0 1.6-.64 1.6-1.26 0-.81-.42-1.22-2.34-1.67-2.37-.59-3.54-1.7-3.54-3.41 0-1.68 1.29-2.94 3.28-3.29V4h2.66v1.93c1.61.27 2.87 1.28 3.01 3.05h-1.95c-.14-.99-.68-1.55-1.7-1.55-1.04 0-1.55.56-1.55 1.15 0 .75.46 1.2 2.37 1.65 2.51.6 3.58 1.74 3.58 3.52 0 1.82-1.46 3.09-3.28 3.34z"/></symbol>
+    <symbol id="icon-star" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></symbol>
+    <symbol id="icon-send" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></symbol>
+    <symbol id="icon-sparkles" viewBox="0 0 24 24"><path d="M9.5 1L8 4.5L4.5 6L8 7.5L9.5 11L11 7.5L14.5 6L11 4.5L9.5 1zm0 0"/><path d="M19 8.5L17.5 11L15 12.5L17.5 14L19 16.5L20.5 14L23 12.5L20.5 11L19 8.5zm0 0"/><path d="M16.5 18L15.5 20L13.5 21L15.5 22L16.5 24L17.5 22L19.5 21L17.5 20L16.5 18zm0 0"/></symbol>
+</svg>
 
-    <!-- 1. THE PRESENCE (Background) -->
-    <div class="queen-presence">
-        <div class="queen-overlay"></div>
-    </div>
-
-    <!-- 2. THE SKY (Task) -->
-    <!-- Logic ID: taskCard -->
-    <div id="taskCard" class="altar-sky">
-        <div id="activeBadge" class="hidden"></div>
+<!-- 5. MAIN LAYOUT: THE COMMAND CONSOLE -->
+<div class="hud-container">
+    
+    <!-- === LEFT PILLAR: IDENTITY (30%) === -->
+    <!-- Contains: Avatar, Kneel Button, Stats, Navigation -->
+    <aside class="pillar-identity">
         
-        <div class="sky-line">
-            <!-- Logic ID: timerDisplay -->
-            <div id="timerDisplay" class="sky-timer">00:00:00</div>
-            <!-- Logic ID: taskContent -->
-            <div id="taskContent" class="sky-text">
-                <h2 id="readyText">AWAITING ORDERS</h2>
-            </div>
-            <!-- Logic ID: mainButtonsArea -->
-            <div id="mainButtonsArea">
-                <button id="newTaskBtn" onclick="getRandomTask()" class="sky-btn">REQUEST</button>
+        <!-- TOP: The Crown -->
+        <div class="crown-zone">
+            <!-- Logic: onclick triggers upload -->
+            <div class="avatar-frame" onclick="document.getElementById('profileUploadInput').click()">
+                <!-- Logic: ID profilePic is required -->
+                <img id="profilePic" src="" class="pc-avatar-img">
             </div>
             
-            <div id="cooldownSection" class="hidden" style="display:flex; gap:10px;">
-                <button onclick="document.getElementById('evidenceInput').click()" class="sky-btn">UPLOAD</button>
-                <button id="btnSkip" onclick="cancelPendingTask()" class="sky-btn-dim">SKIP</button>
+            <!-- Logic: ID btn and fill are required for kneel mechanics -->
+            <div id="btn" class="kneel-btn-bar" 
+                 onmousedown="handleHoldStart(event)" 
+                 onmouseup="handleHoldEnd(event)" 
+                 onmouseleave="handleHoldEnd(event)" 
+                 ontouchstart="handleHoldStart(event)" 
+                 ontouchend="handleHoldEnd(event)">
+                <span id="fill" class="bar-fill"></span>
+                <span id="txt-main" class="bar-text">KNEEL</span>
+            </div>
+            
+            <!-- Logic: ID subName -->
+            <div id="subName" class="identity-name">SLAVE</div>
+        </div>
+
+        <!-- MIDDLE: The Watermark -->
+        <!-- Logic: ID subHierarchy -->
+        <div id="subHierarchy" class="rank-watermark">LOADING...</div>
+
+        <!-- BOTTOM: The Ledger (Stats) -->
+        <div class="ledger-zone">
+            <div class="stat-block">
+                <span class="stat-lbl">MERIT</span>
+                <!-- Logic: ID points -->
+                <span id="points" class="stat-val">0</span>
+            </div>
+            <div class="stat-thread"></div>
+            <div class="stat-block">
+                <span class="stat-lbl">CAPITAL</span>
+                <!-- Logic: ID coins -->
+                <span id="coins" class="stat-val">0</span>
             </div>
         </div>
-    </div>
 
-    <!-- 3. THE VOID (Center Content) -->
-    <div class="altar-void">
+        <!-- CORNER: Navigation -->
+        <!-- Logic: onclick calls switchTab() just like before -->
+        <nav class="nav-corner">
+            <div class="nav-link active" onclick="switchTab('serve')">CONSOLE</div>
+            <div class="nav-link" onclick="switchTab('news')">GALLERY</div>
+            <div class="nav-link" onclick="switchTab('vault')">VAULT</div>
+            <div class="nav-link" onclick="switchTab('buy')">STORE</div>
+            <div class="nav-link" onclick="switchTab('protocol')">PROTOCOL</div>
+        </nav>
+
+        <!-- Hidden toggles needed for logic scripts to not crash -->
+        <div class="hidden" onclick="toggleStats()">STATS</div> 
+    </aside>
+
+    <!-- === RIGHT STAGE: OPERATION (70%) === -->
+    <main class="operation-stage">
         
-        <!-- HOME VIEW -->
-        <div id="viewServingTop" class="void-content">
-            <!-- Logic ID: chatCard -->
-            <div id="chatCard" class="chat-container">
+        <!-- VIEW 1: CONSOLE (Task + Chat) -->
+        <!-- Logic: ID viewServingTop is the main view -->
+        <div id="viewServingTop" class="view-wrapper">
+            
+            <!-- A. THE DIRECTIVE RIBBON (Replaces Task Card) -->
+            <!-- Logic: ID taskCard is required -->
+            <div id="taskCard" class="directive-ribbon">
+                <div id="activeBadge" class="hidden"></div> <!-- Prevents JS error -->
+                
+                <!-- Logic: ID timerDisplay -->
+                <div id="timerDisplay" class="ribbon-timer">00:00:00</div>
+                
+                <!-- Logic: ID taskContent -->
+                <div id="taskContent" class="ribbon-center">
+                    <span class="ribbon-title">CURRENT DIRECTIVE</span>
+                    <!-- Logic: ID readyText -->
+                    <h2 id="readyText" class="ribbon-text">AWAITING ORDERS</h2>
+                </div>
+
+                <!-- Logic: ID mainButtonsArea -->
+                <div id="mainButtonsArea">
+                    <!-- Logic: onclick getRandomTask -->
+                    <button id="newTaskBtn" onclick="getRandomTask()" class="ribbon-action">[ REQUEST TASK ]</button>
+                </div>
+
+                <!-- Logic: ID cooldownSection -->
+                <div id="cooldownSection" class="hidden" style="display: flex; gap: 10px;">
+                    <button onclick="document.getElementById('evidenceInput').click()" class="ribbon-action">[ UPLOAD ]</button>
+                    <button id="btnSkip" onclick="cancelPendingTask()" class="ribbon-action" style="border-color: #444; color: #666;">SKIP</button>
+                </div>
+            </div>
+
+            <!-- B. THE CONNECTION VOID (Replaces Chat Card) -->
+            <!-- Logic: ID chatCard is required -->
+            <div id="chatCard" class="connection-void">
                 <div id="chatBadge" class="hidden"></div>
                 
-                <!-- Chat Body -->
-                <div id="chatBody" class="chat-body">
-                    <!-- Overlays (Logic) -->
-                    <div id="kneelRewardOverlay" class="hidden" style="position:absolute; inset:0; z-index:100; display:flex; justify-content:center; align-items:center; background:rgba(0,0,0,0.8);">
-                        <button onclick="claimKneelReward('coins')" class="sky-btn">CLAIM COINS</button>
+                <!-- Visual Header (Gallery Rail) -->
+                <div class="media-rail-header">
+                    <div style="font-family:'Inter'; font-size:0.7rem; color:var(--gold); letter-spacing:2px;">RECENT UPLOADS</div>
+                    <div class="rail-thumb"></div>
+                    <div class="rail-thumb"></div>
+                    <div class="rail-thumb"></div>
+                </div>
+
+                <!-- Logic: ID chatBody -->
+                <div id="chatBody" style="flex: 1; display:flex; flex-direction:column; overflow:hidden;">
+                    
+                    <!-- Overlays (Moved inside chatBody as per logic requirements) -->
+                    <div id="kneelRewardOverlay" class="hidden" style="position: absolute; inset: 0; background: rgba(0,0,0,0.92); z-index: 100; display: flex; align-items: center; justify-content: center;">
+                        <div style="text-align: center;">
+                            <h2 style="color:var(--gold);">DEVOTION RECOGNIZED</h2>
+                            <div style="display:flex; gap:10px; margin-top:20px;">
+                                <button onclick="claimKneelReward('coins')" class="si-btn">COINS</button>
+                                <button onclick="claimKneelReward('points')" class="si-btn">POINTS</button>
+                            </div>
+                        </div>
                     </div>
-                    <div id="chatMediaOverlay" class="hidden" style="position:absolute; inset:0; z-index:200; display:flex; justify-content:center; align-items:center; background:#000;">
+
+                    <div id="chatMediaOverlay" class="hidden" style="position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; display: flex; align-items: center; justify-content: center;">
                         <div id="mediaOverlayClose" onclick="closeChatPreview()" style="position:absolute; top:20px; right:20px; color:white; font-size:2rem; cursor:pointer;">X</div>
                         <div id="chatMediaOverlayContent"></div>
                     </div>
-                    <div id="tributeHuntOverlay" class="hidden" style="position:absolute; inset:0; z-index:150; background:rgba(0,0,0,0.95); padding:20px;">
+
+                    <div id="tributeHuntOverlay" class="hidden" style="position: absolute; inset: 0; background: #000; z-index: 150; padding: 20px;">
                         <button onclick="toggleTributeHunt()" style="color:white; float:right;">CLOSE</button>
                         <div id="huntStoreGrid" class="store-grid"></div>
+                        <!-- Inputs for tribute logic -->
                         <textarea id="huntNote" class="hidden"></textarea>
+                        <div id="huntProgress" class="hidden"></div>
                     </div>
 
-                    <!-- Messages -->
+                    <!-- Logic: ID chatContent (Messages go here) -->
                     <div id="chatContent" class="chat-stream"></div>
                 </div>
 
-                <!-- Input -->
-                <div class="whisper-input">
-                    <input type="text" id="chatMsgInput" placeholder="Whisper to her..." onkeypress="handleChatKey(event)">
-                    <button id="tributeHuntBtn" onclick="toggleTributeHunt()">🎁</button>
+                <!-- Input Line -->
+                <div class="input-line-container">
+                    <!-- Logic: ID chatMsgInput -->
+                    <input type="text" id="chatMsgInput" class="void-input" placeholder="Speak..." onkeypress="handleChatKey(event)">
+                    <button class="void-send" onclick="sendChatMessage()">→</button>
+                    <!-- Logic: Tribute Button -->
+                    <button id="tributeHuntBtn" onclick="toggleTributeHunt()" style="background:transparent; border:none; color:var(--gold); margin-right:10px;">🎁</button>
                 </div>
             </div>
         </div>
 
-        <!-- OTHER VIEWS (Overlays) -->
-        <div id="viewBuy" class="void-content hidden">
-            <div class="section-title">OFFERINGS</div>
+        <!-- VIEW 2: STORE (Logic: viewBuy) -->
+        <div id="viewBuy" class="view-wrapper hidden">
+            <div class="directive-ribbon"><div class="ribbon-text" style="color:var(--gold);">ACQUIRE CAPITAL</div></div>
             <div class="store-grid">
-                <div class="store-item"><div class="si-val">1K</div><button class="si-btn" onclick="buyRealCoins(1000)">€10.00</button></div>
-                <div class="store-item"><div class="si-val">5.5K</div><button class="si-btn" onclick="buyRealCoins(5500)">€50.00</button></div>
-                <div class="store-item"><div class="si-val">12K</div><button class="si-btn" onclick="buyRealCoins(12000)">€100.00</button></div>
-                <div class="store-item"><div class="si-val">30K</div><button class="si-btn" onclick="buyRealCoins(30000)">€250.00</button></div>
-                <div class="store-item"><div class="si-val">70K</div><button class="si-btn" onclick="buyRealCoins(70000)">€500.00</button></div>
-                <div class="store-item"><div class="si-val">150K</div><button class="si-btn" onclick="buyRealCoins(150000)">€1000.00</button></div>
+                <!-- Logic: onclick calls buyRealCoins() -->
+                <div class="store-item"><div style="font-size:2rem; color:var(--gold);">1K</div><button class="si-btn" onclick="buyRealCoins(1000)">€10.00</button></div>
+                <div class="store-item"><div style="font-size:2rem; color:var(--gold);">5.5K</div><button class="si-btn" onclick="buyRealCoins(5500)">€50.00</button></div>
+                <div class="store-item"><div style="font-size:2rem; color:var(--gold);">12K</div><button class="si-btn" onclick="buyRealCoins(12000)">€100.00</button></div>
+                <div class="store-item"><div style="font-size:2rem; color:var(--gold);">30K</div><button class="si-btn" onclick="buyRealCoins(30000)">€250.00</button></div>
+                <div class="store-item"><div style="font-size:2rem; color:var(--gold);">70K</div><button class="si-btn" onclick="buyRealCoins(70000)">€500.00</button></div>
+                <div class="store-item"><div style="font-size:2rem; color:var(--gold);">150K</div><button class="si-btn" onclick="buyRealCoins(150000)">€1000.00</button></div>
             </div>
         </div>
 
-        <div id="viewNews" class="void-content hidden">
-            <div class="section-title">HER IMAGE</div>
+        <!-- VIEW 3: GALLERY (Logic: viewNews / newsGrid) -->
+        <div id="viewNews" class="view-wrapper hidden">
+            <div class="directive-ribbon"><div class="ribbon-text" style="color:var(--gold);">THE QUEEN'S IMAGE</div></div>
             <div id="newsGrid" class="gallery-grid"></div>
         </div>
 
-        <div id="viewVault" class="void-content hidden">
-            <div class="section-title">YOUR VAULT</div>
+        <!-- VIEW 4: VAULT (Logic: viewVault / vaultGrid) -->
+        <div id="viewVault" class="view-wrapper hidden">
+            <div class="directive-ribbon"><div class="ribbon-text" style="color:var(--gold);">UNLOCKED ASSETS</div></div>
             <div id="vaultGrid" class="gallery-grid"></div>
         </div>
 
-        <div id="viewProtocol" class="void-content hidden">
-            <div class="section-title">THE LAW</div>
-            <div style="text-align:center; color:#888;">Submission is the only path.</div>
+        <!-- VIEW 5: PROTOCOL (Logic: viewProtocol) -->
+        <div id="viewProtocol" class="view-wrapper hidden">
+            <div class="directive-ribbon"><div class="ribbon-text" style="color:var(--gold);">LAW</div></div>
+            <div class="protocol-container">
+                <div class="protocol-item">
+                    <div class="protocol-header">OBEDIENCE</div>
+                    <p>Your worth is determined solely by your submission.</p>
+                </div>
+            </div>
         </div>
 
-        <!-- Hidden Logic Placeholders -->
+        <!-- HIDDEN LOGIC PLACEHOLDERS -->
+        <!-- These IDs must exist for main.js to not throw errors -->
         <div id="viewRewards" class="hidden"></div>
         <div id="viewHierarchy" class="hidden"></div>
         <div id="viewSession" class="hidden"></div>
         <div id="pendingSection" class="hidden"></div>
         <div id="historySection" class="hidden"></div>
 
-    </div>
-
-    <!-- 4. THE ANCHOR (Identity & Nav) -->
-    <div class="altar-anchor">
-        
-        <!-- Navigation -->
-        <div class="anchor-nav">
-            <span class="nav-word" onclick="switchTab('serve')">ALTAR</span>
-            <span class="nav-word" onclick="switchTab('news')">IMAGE</span>
-            <span class="nav-word" onclick="switchTab('vault')">VAULT</span>
-            <span class="nav-word" onclick="switchTab('buy')">OFFER</span>
-            <span class="nav-word" onclick="switchTab('protocol')">LAW</span>
-        </div>
-
-        <!-- Identity -->
-        <div class="anchor-identity">
-            <div class="anchor-stats">
-                <span id="points">0</span> MERIT
-                <span class="sep">|</span>
-                <span id="coins">0</span> CAPITAL
-            </div>
-            
-            <div class="anchor-center">
-                <div class="anchor-avatar" onclick="document.getElementById('profileUploadInput').click()">
-                    <img id="profilePic" src="">
-                </div>
-                <div id="subName" class="anchor-name">SLAVE</div>
-                <!-- Logic ID: btn / fill -->
-                <div id="btn" class="anchor-kneel" 
-                     onmousedown="handleHoldStart(event)" 
-                     onmouseup="handleHoldEnd(event)" 
-                     onmouseleave="handleHoldEnd(event)" 
-                     ontouchstart="handleHoldStart(event)" 
-                     ontouchend="handleHoldEnd(event)">
-                    <div id="fill" class="kneel-fill"></div>
-                    <span>KNEEL</span>
-                </div>
-            </div>
-
-            <div id="subHierarchy" class="anchor-rank">LOADING...</div>
-        </div>
-    </div>
-
+    </main>
 </div>
 
-<!-- JAILED THEATER MODAL -->
+<!-- JAILED THEATER MODAL (Exact same structure as before) -->
 <div id="glassModal" class="glass-modal" onclick="closeModal(event)">
     <div id="modalMediaContainer" class="modal-bg-photo"></div>
     <div id="modalGlassOverlay" class="modal-glass-overlay">
@@ -214,17 +277,31 @@
     </div>
 </div>
 
+<!-- SCRIPT: YOUR WORKING LOGIC RESTORED -->
 <script>
+    // 1. Load HTML Includes (Keeps profiles loading)
     document.querySelectorAll("[data-include]").forEach(async el => {
         const file = el.getAttribute("data-include");
         try { const html = await fetch(file).then(r => r.text()); el.innerHTML = html; } catch (err) {}
     });
 
+    // 2. SWITCH TAB LOGIC (The Brain)
+    // This maps the 'serve', 'buy', 'news' keywords to the new IDs
     window.switchTab = function(viewId) {
-        // Simple visual toggle + Logic Trigger
-        const views = ['viewServingTop', 'viewProtocol', 'viewNews', 'viewVault', 'viewBuy'];
-        views.forEach(id => document.getElementById(id).classList.add('hidden'));
+        // A. Visuals (Nav Active State)
+        document.querySelectorAll('.nav-link').forEach(item => {
+            if(item.getAttribute('onclick').includes(viewId)) item.classList.add('active');
+            else item.classList.remove('active');
+        });
 
+        // B. Hide All Views
+        const views = ['viewServingTop', 'viewProtocol', 'viewNews', 'viewVault', 'viewBuy'];
+        views.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.classList.add('hidden');
+        });
+
+        // C. Show Target
         let targetId = viewId;
         if(viewId === 'serve') targetId = 'viewServingTop';
         if(viewId === 'news') targetId = 'viewNews';
@@ -232,9 +309,14 @@
         if(viewId === 'vault') targetId = 'viewVault';
         if(viewId === 'protocol') targetId = 'viewProtocol';
 
-        document.getElementById(targetId).classList.remove('hidden');
+        const target = document.getElementById(targetId);
+        if(target) target.classList.remove('hidden');
 
-        if(typeof window.showView === 'function') window.showView(targetId);
+        // D. Trigger Main JS Logic (CRITICAL)
+        // This ensures the store buttons activate and gallery loads
+        if(typeof window.showView === 'function') {
+            window.showView(targetId);
+        }
     }
 </script>
 
