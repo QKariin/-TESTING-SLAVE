@@ -51,7 +51,7 @@ export function restorePendingUI() {
     if (resetUiTimer) { clearTimeout(resetUiTimer); setResetUiTimer(null); }
     if (cooldownInterval) clearInterval(cooldownInterval);
     
-    // UI IDs for 30/40/30 Layout
+    // UI Updates (Visibility)
     const mainBtns = document.getElementById('mainButtonsArea');
     if(mainBtns) mainBtns.classList.add('hidden');
     
@@ -73,20 +73,32 @@ export function restorePendingUI() {
 
     const newInterval = setInterval(() => {
         const diff = targetTime - Date.now();
+        
+        // GET THE BOXES
+        const tH = document.getElementById('timerH');
+        const tM = document.getElementById('timerM');
+        const tS = document.getElementById('timerS');
+
         if (diff <= 0) {
             clearInterval(newInterval);
             setCooldownInterval(null);
-            const td = document.getElementById('timerDisplay');
-            if(td) td.textContent = "00:00:00";
+            // Reset to 00 00 00
+            if(tH) tH.innerText = "00";
+            if(tM) tM.innerText = "00";
+            if(tS) tS.innerText = "00";
             applyPenaltyFail("TIMEOUT");
             return;
         }
+
         const h = Math.floor(diff / 3600000).toString().padStart(2, '0');
         const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
         const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
         
-        const td = document.getElementById('timerDisplay');
-        if(td) td.textContent = `${h}:${m}:${s}`;
+        // UPDATE SEPARATE BOXES
+        if(tH) tH.innerText = h;
+        if(tM) tM.innerText = m;
+        if(tS) tS.innerText = s;
+
     }, 1000);
     
     setCooldownInterval(newInterval);
