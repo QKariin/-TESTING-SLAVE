@@ -39,81 +39,285 @@ body {
 /* =========================================
    2. LEFT PILLAR
    ========================================= */
+/* =========================================
+   2. LEFT PILLAR (THE SLAVE DOSSIER)
+   ========================================= */
+
 .layout-left {
     width: 25%;
-    min-width: 280px;
+    min-width: 300px; /* Slightly wider for the grandeur */
     height: 100%;
-    border-right: 1px solid var(--gold-dim);
+    
+    /* MATERIALITY: Onyx/Charcoal Gradient */
+    background: linear-gradient(145deg, #1a1a1a 0%, #0a0a0a 100%);
+    box-shadow: inset 20px 0 50px rgba(0,0,0,0.8);
+    border-right: 1px solid rgba(197, 160, 89, 0.1);
+    
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 30px;
-    background: rgba(0,0,0,0.4);
+    padding: 40px 20px;
     flex-shrink: 0;
     z-index: 10;
+    position: relative;
+    overflow: hidden; /* For the shine effect */
 }
 
-.hierarchy-top {
-    font-family: 'Cinzel', serif; font-size: 2rem; font-weight: 700;
-    color: #444; letter-spacing: 10px; text-transform: uppercase;
-    text-align: center; margin-bottom: 30px; width: 100%;
-    text-shadow: 0 0 10px rgba(0,0,0,0.8);
+/* WATERMARK (The invisible presence) */
+.layout-left::before {
+    content: '♛'; /* Fallback logo */
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20rem;
+    color: var(--gold);
+    opacity: 0.02; /* Barely visible */
+    pointer-events: none;
+    font-family: 'Cinzel', serif;
+    z-index: 0;
 }
 
+/* INTERACTIVE SHINE (Brushed Metal Effect on Hover) */
+.layout-left::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.03), transparent);
+    transform: skewX(-25deg);
+    transition: 0.5s;
+    pointer-events: none;
+}
+.layout-left:hover::after {
+    left: 150%;
+    transition: 1s ease-in-out;
+}
+
+/* --- 1. THE ARCHITECTURAL AVATAR --- */
 .avatar-container {
-    width: 140px; height: 140px; border-radius: 50%; border: 2px solid var(--gold);
-    overflow: hidden; cursor: pointer; margin-bottom: 15px;
+    width: 160px; 
+    height: 185px; /* Tall Hexagon Ratio */
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 2;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    
+    /* HEXAGON CLIP */
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    /* DOUBLE BORDER EFFECT via padding */
+    padding: 3px; 
+    background: linear-gradient(to bottom, var(--gold), #fff); 
 }
-#profilePic { width: 100%; height: 100%; object-fit: cover; filter: grayscale(0.2); }
-.identity-name { font-family: 'Cinzel'; font-size: 1.4rem; color: #fff; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 30px; }
 
-.stats-stack { display: flex; flex-direction: column; gap: 20px; width: 100%; align-items: center; margin-bottom: 20px; }
-.stat-row { display: flex; flex-direction: column; align-items: center; }
-.stat-val { font-family: 'Cinzel', serif; font-size: 1.8rem; color: #fff; font-weight: 700; }
-.stat-lbl { font-family: 'Cinzel', serif; font-size: 0.7rem; color: var(--gold); letter-spacing: 3px; margin-top: 5px; }
-
-.progress-section { width: 100%; margin-bottom: 15px; }
-.prog-labels { display: flex; justify-content: space-between; font-family: 'Cinzel'; font-size: 0.6rem; color: #888; margin-bottom: 5px; }
-.prog-bg { width: 100%; height: 4px; background: #333; }
-.prog-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--gold), #fff); box-shadow: 0 0 10px var(--gold); transition: width 0.5s; }
-
-.stats-toggle-btn { background: transparent; border: none; color: #666; font-family: 'Cinzel'; font-size: 0.7rem; cursor: pointer; margin-bottom: 20px; }
-.stats-panel { display: none; width: 100%; padding: 15px; border-top: 1px solid var(--gold-dim); border-bottom: 1px solid var(--gold-dim); margin-bottom: 20px; font-family: 'Cinzel'; font-size: 0.8rem; color: #aaa; }
-#statsContent.open { display: block; }
-.stat-line { display: flex; justify-content: space-between; margin-bottom: 5px; }
-.stat-footer { margin-top: 10px; text-align: center; border-top: 1px solid #333; padding-top: 5px; }
-
-.nav-menu { display: flex; flex-direction: column; gap: 10px; width: 100%; padding-left: 20px; }
-.nav-btn {
-    background: transparent; border: none; color: #666; text-align: left;
-    font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 2px; cursor: pointer;
-    transition: 0.3s; padding: 10px; border-left: 2px solid transparent; text-transform: uppercase;
+/* The Inner Black Gap */
+.avatar-container::before {
+    content: '';
+    position: absolute;
+    inset: 3px; /* The thickness of the outer gold/white line */
+    background: #000;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    z-index: -1;
 }
-.nav-btn:hover, .nav-btn.active { color: var(--gold); border-left-color: var(--gold); padding-left: 20px; text-shadow: 0 0 10px rgba(197, 160, 89, 0.4); }
 
-/* =========================================
-   3. RIGHT STAGE
-   ========================================= */
-.layout-right { flex-grow: 1; height: 100%; display: flex; flex-direction: column; position: relative; overflow: hidden; }
-.glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--gold-dim); }
-
-.right-header {
-    height: 100px; width: 100%; border-bottom: 1px solid var(--gold-dim);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(0,0,0,0.5);
+/* The Image with Scanline */
+#profilePic { 
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    filter: sepia(30%) contrast(1.1) brightness(0.9);
+    position: relative;
+    z-index: 1;
 }
-.kneel-center-wrapper { width: 350px; height: 60px; }
+
+/* Scanline Overlay */
+.avatar-container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 2px,
+        rgba(0,0,0,0.3) 3px
+    );
+    z-index: 5;
+    pointer-events: none;
+}
+
+/* --- 2. HIERARCHY STAMP --- */
+.hierarchy-top {
+    font-family: 'Black Ops One', 'Orbitron', sans-serif; /* Stencil look */
+    font-size: 1rem; 
+    font-weight: 700;
+    color: rgba(197, 160, 89, 0.6); 
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    
+    /* STAMP EFFECT */
+    border: 2px solid rgba(197, 160, 89, 0.3);
+    padding: 5px 15px;
+    transform: rotate(-3deg); /* The imperfections make it real */
+    margin-bottom: 30px;
+    background: rgba(0,0,0,0.4);
+    mix-blend-mode: overlay;
+}
+
+/* --- 3. BOUTIQUE NAME --- */
+.identity-name { 
+    font-family: 'Cinzel', serif; 
+    font-size: 1.6rem; 
+    color: #fff; 
+    letter-spacing: 6px; /* Wide spacing */
+    text-transform: uppercase; 
+    margin-bottom: 30px;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+    text-shadow: 0 5px 10px rgba(0,0,0,0.5);
+}
+
+/* --- 4. SWISS WATCH STATS ROW --- */
+.stats-stack-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 30px;
+    padding: 15px 0;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.stat-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+/* Vertical Fade Divider */
+.stat-divider {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+    opacity: 0.5;
+}
+
+/* Text up */
+.stat-lbl { 
+    font-family: 'Rajdhani', sans-serif; 
+    font-size: 0.7rem; 
+    color: #888; 
+    letter-spacing: 2px; 
+    text-transform: uppercase;
+}
+
+/* Number down */
+.stat-val { 
+    font-family: 'Cinzel', serif; 
+    font-size: 1.4rem; 
+    color: var(--gold); 
+    font-weight: 700;
+}
+
+/* --- 5. SEGMENTED PROGRESS BAR --- */
+.progress-section { 
+    width: 100%; 
+    margin-bottom: 25px; 
+    position: relative;
+    z-index: 2;
+}
+
+.prog-labels { 
+    display: flex; 
+    justify-content: space-between; 
+    font-family: 'Rajdhani'; 
+    font-size: 0.7rem; 
+    color: #666; 
+    margin-bottom: 8px; 
+    text-transform: uppercase;
+}
+
+.prog-bg { 
+    width: 100%; 
+    height: 6px; 
+    background: #111; 
+    border: 1px solid #333;
+    /* Create segments */
+    background-image: linear-gradient(to right, #000 20%, transparent 0%);
+    background-size: 5px 100%; 
+}
+
+.prog-fill { 
+    height: 100%; 
+    width: 0%; 
+    background: var(--gold);
+    /* Glowing segments */
+    box-shadow: 0 0 10px var(--gold);
+    position: relative;
+}
+/* The leading light of the progress bar */
+.prog-fill::after {
+    content: '';
+    position: absolute;
+    right: -2px;
+    top: -2px;
+    bottom: -2px;
+    width: 4px;
+    background: #fff;
+    box-shadow: 0 0 10px #fff;
+}
+
+/* KNEEL BUTTON (Clean Fit) */
+.kneel-sidebar-wrapper {
+    width: 100%;
+    height: 50px;
+    margin-bottom: 30px;
+}
 .kneel-bar-graphic {
-    width: 100%; height: 100%; border: 1px solid var(--gold); border-radius: 4px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    background: transparent; overflow: hidden; position: relative;
-    box-shadow: 0 0 15px rgba(197, 160, 89, 0.1);
+    width: 100%; height: 100%;
+    border: 1px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+    cursor: pointer;
+    background: rgba(0,0,0,0.3);
 }
-.graphic-fill { position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: var(--red-grad); z-index: 0; transition: none; }
-.graphic-text { position: relative; z-index: 2; font-family: 'Cinzel', serif; font-size: 1.2rem; color: var(--gold); letter-spacing: 5px; font-weight: 700; }
-.kneel-bar-graphic:active .graphic-text { color: #000; }
+.graphic-text {
+    z-index: 2;
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    letter-spacing: 4px;
+    font-size: 0.9rem;
+}
 
-.content-stage { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; }
-.view-wrapper { width: 100%; height: 100%; display: flex; flex-direction: column; }
+/* STATS PANEL (Hidden drawer) */
+.stats-toggle-btn { background: transparent; border: none; color: #444; font-family: 'Orbitron'; font-size: 0.6rem; cursor: pointer; margin-bottom: 10px; transition:0.3s; }
+.stats-toggle-btn:hover { color: var(--gold); }
+.stats-panel { display: none; width: 100%; padding: 15px; background: rgba(0,0,0,0.3); border: 1px solid #222; margin-bottom: 20px; font-family: 'Rajdhani'; font-size: 0.85rem; color: #888; }
+.stat-line { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px solid #111; padding-bottom: 2px;}
+
+/* NAV MENU (Minimalist) */
+.nav-menu { display: flex; flex-direction: column; gap: 5px; width: 100%; }
+.nav-btn {
+    background: transparent; border: none; color: #555; text-align: left;
+    font-family: 'Rajdhani', sans-serif; font-size: 0.8rem; font-weight: 600;
+    letter-spacing: 2px; cursor: pointer;
+    transition: 0.3s; padding: 12px 10px; 
+    border-left: 1px solid transparent; 
+}
+.nav-btn:hover, .nav-btn.active { 
+    color: #fff; 
+    border-left-color: var(--gold); 
+    background: linear-gradient(90deg, rgba(197, 160, 89, 0.05), transparent);
+    padding-left: 20px; 
+}
 
 /* =========================================
    4. TASK RIBBON & CONTROLS (RELATIVE PUSH)
