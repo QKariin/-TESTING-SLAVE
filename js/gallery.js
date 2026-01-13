@@ -1,4 +1,4 @@
-// gallery.js - FIXED: DATA NORMALIZATION & FIELD MISMATCHES
+// gallery.js - SUPER AGGRESSIVE NORMALIZATION VERSION
 
 import { 
     galleryData, pendingLimit, historyLimit, currentHistoryIndex, touchStartX, 
@@ -13,39 +13,76 @@ const STICKER_DENIED = "https://static.wixstatic.com/media/ce3e5b_63a0c8320e2941
 
 let isInProofMode = false; 
 
+// --- HELPER: THE SUPER AGGRESSIVE URL FINDER ---
+function normalizeGalleryItem(item) {
+    // 1. If it already has what we want, clean it and return.
+    if (item.proofUrl && typeof item.proofUrl === 'string') return item;
+
+    // 2. Define the "Likely Suspects" - Wix often uses these keys
+    const candidates = [
+        'proof', 'proofUrl', 'proof_url', 'ProofUrl', 'evidence', 'Evidence',
+        'media', 'mediaUrl', 'Media', 'image', 'Image', 'img', 'picture', 
+        'file', 'fileUrl', 'src', 'url', 'link', 'attachment', 'upload'
+    ];
+
+    // 3. Check specific candidates first
+    for (let key of candidates) {
+        if (item[key] && typeof item[key] === 'string' && item[key].length > 5) {
+            item.proofUrl = item[key];
+            return item;
+        }
+        // Handle Wix Object structure (e.g. item.image.src)
+        if (item[key] && typeof item[key] === 'object' && item[key].src) {
+            item.proofUrl = item[key].src;
+            return item;
+        }
+    }
+
+    // 4. "Scorched Earth" Search: Look at EVERY property for a URL string
+    const allKeys = Object.keys(item);
+    for (let key of allKeys) {
+        const val = item[key];
+        if (typeof val === 'string') {
+            // Does it look like an image URL?
+            if (val.match(/\.(jpeg|jpg|gif|png|webp|mp4|mov|webm)/i) || val.startsWith('http') || val.startsWith('wix:')) {
+                item.proofUrl = val;
+                return item;
+            }
+        }
+    }
+
+    // 5. Fallback for Text
+    if (!item.text) {
+        // Try to find ANY text field
+        item.text = item.description || item.caption || item.message || item.comment || item.notes || "No description.";
+    }
+
+    return item;
+}
+
 export async function renderGallery() {
     if (!galleryData || !Array.isArray(galleryData)) return;
 
-    // --- STEP 1: NORMALIZE DATA (The Fix for the "Disappearing" Images) ---
-    // The backend might send 'media', 'url', 'image', or 'evidence'. 
-    // We force them all into 'proofUrl' so the rest of the code works.
-    galleryData.forEach(item => {
-        if (!item.proofUrl) {
-            item.proofUrl = item.media || item.url || item.evidence || item.image || item.fileUrl || "";
-        }
-        // Normalize Text
-        if (!item.text) {
-            item.text = item.description || item.caption || item.message || "No description.";
-        }
-    });
+    // --- STEP 1: RUN NORMALIZATION ---
+    galleryData.forEach(item => normalizeGalleryItem(item));
 
-    // --- STEP 2: HANDLE SECURE URLS ---
+    // --- STEP 2: HANDLE SECURE URLS (Bytescale) ---
     const signingPromises = galleryData.map(async (item) => {
-        if (item.proofUrl && typeof item.proofUrl === 'string' && item.proofUrl.startsWith("https://upcdn.io/")) {
+        if (item.proofUrl && item.proofUrl.startsWith("https://upcdn.io/")) {
             try {
                 // Try to get thumbnail version first for grid
-                item.proofUrlThumb = await signUpcdnUrl(item.proofUrl.replace("/raw/", "/thumbnail/"));
+                const thumb = item.proofUrl.replace("/raw/", "/thumbnail/");
+                item.proofUrlThumb = await signUpcdnUrl(thumb);
                 
                 // Get full version
                 const signedFull = await signUpcdnUrl(item.proofUrl);
-                if (signedFull) item.proofUrl = signedFull; // Only update if signing succeeded
+                if (signedFull) item.proofUrl = signedFull;
             } catch (e) {
                 console.warn("Signing failed for:", item.proofUrl);
             }
         }
     });
     
-    // Wait for all URLs to be signed before rendering to prevent "jumping" content
     await Promise.all(signingPromises);
 
     // --- STEP 3: RENDER GRIDS ---
@@ -87,6 +124,7 @@ export function loadMoreHistory() {
 function createPendingCardHTML(item) {
     const cleanText = cleanHTML(item.text).replace(/"/g, '&quot;');
     const isVideo = item.proofUrl.match(/\.(mp4|webm|mov)($|\?)/i);
+    // Use the thumb if we have it, otherwise fallback to the main url
     let thumb = item.proofUrlThumb || item.proofUrl;
     
     const encUrl = encodeURIComponent(item.proofUrl || "");
@@ -125,14 +163,11 @@ function createGalleryItemHTML(item, index) {
 }
 
 export function openHistoryModal(index) {
-    // Re-filter to ensure index matches the displayed grid
     const hItems = galleryData.filter(i => {
         const s = (i.status || "").toLowerCase();
         return (s.includes('app') || s.includes('rej')) && i.proofUrl;
     });
 
-    // Find the actual item in the filtered list
-    // Note: The index passed from HTML is based on the filtered list order
     const item = hItems[index]; 
     if (!item) return;
 
@@ -199,26 +234,18 @@ export function toggleHistoryView(view) {
 
 export function closeModal(e) {
     const overlay = document.getElementById('modalGlassOverlay');
-    
-    // If we are in "clean" mode (Proof View), clicking anywhere brings back the overlay, unless it's the X
     if (overlay && overlay.classList.contains('clean')) {
-        if (e && e.target.id === 'modalCloseX') { 
-            // actually close 
-        } else { 
-            // just restore overlay
-            toggleHistoryView('info'); 
-            return; 
-        }
+        if (e && e.target.id === 'modalCloseX') { /* close */ } 
+        else { toggleHistoryView('info'); return; }
     }
     
-    // Standard closing logic
     if (e && e.target.id !== 'glassModal' && e.target.id !== 'modalCloseX' && !e.target.classList.contains('btn-close-red')) return;
 
     const modal = document.getElementById('glassModal');
     if (modal) {
         modal.classList.remove('active');
         const mediaContainer = document.getElementById('modalMediaContainer');
-        if(mediaContainer) mediaContainer.innerHTML = ""; // Stop video playback
+        if(mediaContainer) mediaContainer.innerHTML = "";
     }
 }
 
@@ -230,9 +257,8 @@ export function openModal(url, status, text, isVideo) {
             : `<img src="${decodeURIComponent(url)}" style="width:100%; height:100%; object-fit:contain;">`;
     }
     
-    // Handle status text manually for Pending items
     const statusSticker = document.getElementById('modalStatusSticker');
-    if (statusSticker) statusSticker.style.display = 'none'; // Hide sticker for pending
+    if (statusSticker) statusSticker.style.display = 'none';
     
     const taskText = document.getElementById('modalOrderText');
     if (taskText) taskText.innerHTML = decodeURIComponent(text).replace(/\n/g, '<br>');
@@ -251,17 +277,15 @@ export function initModalSwipeDetection() {
         const touchEndX = e.changedTouches[0].screenX;
         const diff = touchStartX - touchEndX;
         if (Math.abs(diff) > 80) {
-            // Recalculate filtered list to get correct index mapping
             const hItems = galleryData.filter(i => {
                 const s = (i.status || "").toLowerCase();
                 return (s.includes('app') || s.includes('rej')) && i.proofUrl;
             });
             
             let nextIndex = currentHistoryIndex;
-            if (diff > 0) nextIndex++; // Swipe Left -> Next
-            else nextIndex--; // Swipe Right -> Prev
+            if (diff > 0) nextIndex++; 
+            else nextIndex--; 
             
-            // Bounds check
             if (nextIndex >= 0 && nextIndex < hItems.length) {
                 openHistoryModal(nextIndex);
             }
