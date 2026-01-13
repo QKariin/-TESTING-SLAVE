@@ -116,7 +116,7 @@ body {
 .view-wrapper { width: 100%; height: 100%; display: flex; flex-direction: column; }
 
 /* =========================================
-   4. TASK RIBBON & CONTROLS (RAJDHANI TACTICAL)
+   4. TASK RIBBON & CONTROLS (FINAL POLISHED)
    ========================================= */
 
 /* The Header Bar */
@@ -129,31 +129,24 @@ body {
     background: rgba(10,10,10,0.95); 
     border: 1px solid var(--gold-dim);
     position: relative;
-    z-index: 20; 
+    z-index: 100; /* High priority to stay above the drawer */
 }
 
-/* --- THE FONT UPDATE (RAJDHANI) --- */
+/* --- RAJDHANI FONT STYLING --- */
 
-/* 1. The "UNPRODUCTIVE" / "WORKING" Text */
+/* 1. Status Text */
 .status-text-lg {
     font-family: 'Rajdhani', sans-serif !important;
     font-weight: 700; 
-    font-size: 1.1rem; /* Slightly larger for readability */
+    font-size: 1.1rem; 
     letter-spacing: 2px; 
     text-transform: uppercase;
     margin-top: 5px;
 }
+.status-unproductive { color: #666; }
+.status-working { color: var(--neon-green); text-shadow: 0 0 10px rgba(0,255,0,0.4); }
 
-.status-unproductive { 
-    color: #666; 
-}
-
-.status-working { 
-    color: var(--neon-green); 
-    text-shadow: 0 0 10px rgba(0,255,0,0.4); 
-}
-
-/* 2. The "AWAITING DIRECTIVE..." Text */
+/* 2. Main Text */
 .ribbon-status {
     font-family: 'Rajdhani', sans-serif !important;
     font-weight: 600;
@@ -163,20 +156,20 @@ body {
     text-transform: uppercase;
 }
 
-/* 3. The Timer (00:00:00) */
+/* 3. Timer */
 .ribbon-timer {
     font-family: 'Rajdhani', sans-serif !important;
     font-weight: 700;
-    font-size: 2.2rem; /* Big and clear */
+    font-size: 2.2rem; 
     color: white; 
     line-height: 1;
     letter-spacing: 1px;
 }
 
-/* 4. The "See Directive" Button */
+/* 4. The Toggle Button ("See Directive") */
 .see-task-link {
     font-family: 'Rajdhani', sans-serif !important;
-    font-size: 0.8rem; /* Easier to read */
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--gold); 
     cursor: pointer; 
@@ -186,79 +179,109 @@ body {
     padding: 5px;
     border-bottom: 1px solid transparent;
     transition: 0.3s;
+    pointer-events: auto; /* Ensure clickable */
 }
 .see-task-link:hover {
     color: #fff;
     border-bottom-color: var(--gold);
 }
 
-/* =========================================
-   DRAWER OVERLAY (COVERS CHAT)
-   ========================================= */
+/* --- CINEMA MODE DRAWER (Glass Overlay) --- */
 
-/* Ensure the parent view allows absolute positioning */
-#viewServingTop {
-    position: relative; 
-}
+#viewServingTop { position: relative; }
 
 .task-detail-panel {
-    /* POSITIONING: Cover the chat area */
+    /* POSITIONING */
     position: absolute;
-    top: 125px; /* Fits perfectly under the 100px header + margins */
+    top: 130px; /* Header (100px) + Margin (20px) + Gap (10px) */
     left: 20px;
     right: 20px;
-    bottom: 20px; /* Stretch to bottom of screen */
+    bottom: 20px; /* Stretches to bottom */
     
-    /* APPEARANCE */
-    background: #000; /* Solid black to hide chat */
-    border: 1px solid #333;
-    border-top: none; /* Looks connected to header */
+    /* GLASS STYLE */
+    background: rgba(0, 0, 0, 0.85); 
+    backdrop-filter: blur(20px); 
+    border: 1px solid rgba(255, 215, 0, 0.1); 
+    box-shadow: 0 0 50px rgba(0,0,0,0.8); 
     
-    /* LAYERING */
-    z-index: 50; /* Above Chat (1), Below Header Buttons (100) */
-    
-    /* ANIMATION STATE: CLOSED */
+    /* BEHAVIOR */
+    z-index: 50; /* Above Chat (1), Below Header (100) */
     opacity: 0;
-    pointer-events: none; /* Click through to chat when closed */
-    transform: translateY(-20px); /* Start slightly up */
-    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.task-detail-panel.open {
-    /* ANIMATION STATE: OPEN */
-    opacity: 1;
-    pointer-events: auto; /* Capture clicks */
-    transform: translateY(0);
-    max-height: none !important; /* Allow full screen height */
-}
-
-.detail-content {
-    padding: 40px; /* More breathing room since we have full screen */
-    text-align: center;
+    pointer-events: none; 
+    transform: scale(0.95);
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    
+    /* LAYOUT */
     display: flex;
     flex-direction: column;
     justify-content: center;
-    height: 100%; /* Center vertical content */
+    align-items: center;
 }
 
-/* Text Button (Hide/Show) */
+.task-detail-panel.open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+}
+
+/* Task Text inside Drawer */
+.drawer-task-text, #readyText {
+    font-family: 'Rajdhani', sans-serif !important;
+    font-weight: 600;
+    font-size: 1.5rem; 
+    color: #fff;
+    text-align: center;
+    max-width: 80%;
+    line-height: 1.4;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* Footer Buttons inside Drawer */
+.panel-footer {
+    margin-top: 40px;
+    display: flex;
+    gap: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 20px;
+    width: 60%;
+    justify-content: center;
+}
+
 .text-btn {
-    background: none; border: none; 
-    color: #666; 
-    font-family: 'Rajdhani', sans-serif;
-    font-weight: 700;
-    font-size: 0.8rem; 
-    cursor: pointer;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-top: 30px;
+    background: transparent; border: none;
+    color: #666; font-family: 'Cinzel', serif; font-size: 0.8rem;
+    cursor: pointer; transition: 0.3s; letter-spacing: 2px;
 }
-.text-btn:hover { color: white; }
+.text-btn:hover { color: var(--gold); }
 
-/* Buttons */
-.action-btn { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 12px 10px; font-family: 'Cinzel'; font-weight: 700; cursor: pointer; transition: 0.3s; }
-.action-btn:hover { background: var(--gold); color: #000; box-shadow: 0 0 15px var(--gold); }
-.btn-dim { border-color: #444; color: #666; padding: 10px 15px; background: transparent; cursor: pointer; font-family: 'Cinzel'; }
+/* The Skip Button (Red Hover Effect) */
+.btn-dim {
+    background: rgba(255, 0, 0, 0.05);
+    border: 1px solid #333;
+    color: #555;
+    padding: 10px 20px;
+    font-family: 'Orbitron'; font-size: 0.7rem;
+    cursor: pointer; transition: 0.3s;
+}
+.btn-dim:hover {
+    border-color: var(--neon-red);
+    color: var(--neon-red);
+    box-shadow: 0 0 10px rgba(255, 0, 60, 0.2);
+}
+
+/* Main Ribbon Buttons (Request/Upload) */
+.action-btn { 
+    background: transparent; 
+    border: 1px solid var(--gold); 
+    color: var(--gold); 
+    padding: 12px 10px; 
+    font-family: 'Cinzel'; font-weight: 700; 
+    cursor: pointer; transition: 0.3s; 
+}
+.action-btn:hover { 
+    background: var(--gold); color: #000; 
+    box-shadow: 0 0 15px var(--gold); 
+}
 .btn-upload { background: rgba(255, 215, 0, 0.1); }
 
 /* Utility */
