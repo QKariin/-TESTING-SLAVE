@@ -161,25 +161,45 @@ function createPendingCardHTML(item) {
 function createGalleryItemHTML(item, index) {
     let thumbUrl = getOptimizedUrl(item.proofUrl, 300);
     const s = (item.status || "").toLowerCase();
-    const statusSticker = s.includes('app') ? STICKER_APPROVE : STICKER_DENIED;
+    
+    // Visual Logic
+    const isPending = s === 'pending';
+    const statusSticker = isPending ? "" : (s.includes('app') ? STICKER_APPROVE : STICKER_DENIED);
     const isVideo = (item.proofUrl || "").match(/\.(mp4|webm|mov)($|\?)/i);
+
+    // Points Logic
+    const pts = item.points || 0;
+    
+    // THE MERIT PLAQUE HTML (Only show if > 0)
+    const pointsBadge = (pts > 0) 
+        ? `<div class="merit-plaque">+${pts}</div>` 
+        : ``;
+
+    // Pending Overlay (The "Ghost" look)
+    const pendingOverlay = isPending 
+        ? `<div class="pending-overlay"><div class="pending-icon">⏳</div></div>` 
+        : ``;
 
     let safeSticker = item.sticker;
     if (safeSticker && (safeSticker.includes("profile") || safeSticker.includes("avatar"))) safeSticker = null;
-    const pts = item.points || 0;
 
     return `
-        <div class="gallery-item" onclick='window.openHistoryModal(${index})'>
+        <div class="gallery-item ${isPending ? 'is-pending' : ''}" onclick='window.openHistoryModal(${index})'>
             ${isVideo 
-                ? `<video src="${thumbUrl}" class="gi-thumb" muted style="width:100%; height:100%; object-fit:cover; opacity: ${s.includes('rej') ? '0.3' : '0.7'};"></video>` 
-                : `<img src="${thumbUrl}" class="gi-thumb" loading="lazy" style="opacity: ${s.includes('rej') ? '0.3' : '0.7'};">`
+                ? `<video src="${thumbUrl}" class="gi-thumb" muted style="object-fit:cover;"></video>` 
+                : `<img src="${thumbUrl}" class="gi-thumb" loading="lazy">`
             }
-            <img src="${statusSticker}" class="gi-status-sticker" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:60%; height:60%; z-index:10; pointer-events:none;">
-            ${safeSticker ? `<img src="${safeSticker}" class="gi-reward-sticker" style="position:absolute; bottom:5px; left:5px; width:30px; height:30px; z-index:10;">` : ''}
             
-            <div style="position:absolute; top:5px; right:5px; background:rgba(0,0,0,0.8); color:var(--gold); font-size:0.6rem; padding:2px 5px; border-radius:2px; font-family:'Orbitron'; font-weight:bold; z-index:20;">
-                ${pts}
-            </div>
+            ${pendingOverlay}
+            
+            <!-- Status Sticker (Approved/Denied) -->
+            ${!isPending ? `<img src="${statusSticker}" class="gi-status-sticker">` : ''}
+            
+            <!-- Reward Sticker (The Icon) -->
+            ${safeSticker ? `<img src="${safeSticker}" class="gi-reward-sticker">` : ''}
+            
+            <!-- THE FIX: POINTS DISPLAY -->
+            ${pointsBadge}
         </div>`;
 }
 
