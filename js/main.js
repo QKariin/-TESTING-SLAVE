@@ -24,29 +24,7 @@ import { handleEvidenceUpload, handleProfileUpload, handleAdminUpload } from './
 import { handleHoldStart, handleHoldEnd, claimKneelReward, updateKneelingStatus } from '../profile/kneeling/kneeling.js';
 import { Bridge } from './bridge.js';
 
-// --- 2. INITIALIZATION & DYNAMIC PROFILE LOAD ---
-
-async function injectProfileCard() {
-    try {
-        const response = await fetch('profileCard.html'); 
-        if (!response.ok) throw new Error('Profile card file not found');
-        const html = await response.text();
-        
-        const hook = document.getElementById('profile-card-hook');
-        if (hook) {
-            hook.innerHTML = html;
-            updateStats(); 
-        }
-    } catch (err) {
-        console.error("Profile Load Error:", err);
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    injectProfileCard(); 
-    initDomProfile();
-});
-
+// --- 2. INITIALIZATION ---
 document.addEventListener('click', () => {
     if (!window.audioUnlocked) {
         ['msgSound', 'coinSound', 'skipSound', 'sfx-buy', 'sfx-deny'].forEach(id => {
@@ -90,6 +68,7 @@ function initDomProfile() {
         frame.src = `https://player.twitch.tv/?channel=${CONFIG.TWITCH_CHANNEL}${parentString}&muted=true&autoplay=true`;
     }
 }
+initDomProfile();
 
 Bridge.listen((data) => {
     const ignoreList = [
@@ -330,9 +309,9 @@ function updateStats() {
     const coinsEl = document.getElementById('coins');
     const pointsEl = document.getElementById('points');
 
-    if (!userProfile || !gameStats) return; 
+    if (!subName || !userProfile || !gameStats) return; 
 
-    if (subName) subName.textContent = userProfile.name || "Slave";
+    subName.textContent = userProfile.name || "Slave";
     if (subHierarchy) subHierarchy.textContent = userProfile.hierarchy || "HallBoy";
     if (coinsEl) coinsEl.textContent = gameStats.coins ?? 0;
     if (pointsEl) pointsEl.textContent = gameStats.points ?? 0;
