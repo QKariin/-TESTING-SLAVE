@@ -501,3 +501,55 @@ body {
 #kneelRewardOverlay h2 { color: white !important; font-family: 'Cinzel', serif; z-index: 100000; }
 
 .glass-card.punishment { border-color: #ff003c !important; box-shadow: 0 0 50px rgba(255, 0, 60, 0.4) !important; }
+
+/* =========================================
+   STICKER FILTER BAR
+   ========================================= */
+.filter-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 10px; /* Space for scrollbar if needed */
+    scrollbar-width: none; /* Hide scrollbar Firefox */
+}
+.filter-row::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome */
+
+.filter-circle {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 1px solid #333;
+    background: #050505;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.filter-circle img {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+    pointer-events: none;
+    filter: drop-shadow(0 0 2px black);
+}
+
+/* Selected State */
+.filter-circle.active {
+    border-color: var(--gold);
+    background: rgba(197, 160, 89, 0.1);
+    box-shadow: 0 0 15px rgba(197, 160, 89, 0.2);
+    transform: scale(1.1);
+}
+
+/* "ALL" Button Text */
+.filter-all-text {
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #666;
+}
+.filter-circle.active .filter-all-text { color: var(--gold); }
