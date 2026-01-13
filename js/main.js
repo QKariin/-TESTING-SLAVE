@@ -1,4 +1,4 @@
-// main.js - FIXED: DRAWER ONLY OPENS ON COMMAND
+// main.js - FIXED: RESTORED UI STATE LOGIC
 
 import { CONFIG, URLS, LEVELS, FUNNY_SAYINGS, STREAM_PASSWORDS } from './config.js';
 import { 
@@ -33,7 +33,7 @@ window.toggleTaskDetails = function(forceOpen = null) {
 
     const panel = document.getElementById('taskDetailPanel');
     const link = document.querySelector('.see-task-link'); 
-    const chatBox = document.getElementById('chatBox'); // GET CHAT BOX
+    const chatBox = document.getElementById('chatBox'); 
     
     if (!panel) return;
 
@@ -49,23 +49,15 @@ window.toggleTaskDetails = function(forceOpen = null) {
     }
 
     if (shouldOpen) {
-        // OPEN DRAWER
         panel.classList.add('open');
-        
-        // ADD BLUR TO CHAT
         if(chatBox) chatBox.classList.add('focused-task');
-        
         if(link) {
             link.innerHTML = "▲ HIDE DIRECTIVE ▲";
             link.style.opacity = "1"; 
         }
     } else {
-        // CLOSE DRAWER
         panel.classList.remove('open');
-        
-        // REMOVE BLUR FROM CHAT
         if(chatBox) chatBox.classList.remove('focused-task');
-        
         if(link) {
             link.innerHTML = "▼ SEE DIRECTIVE ▼";
             link.style.opacity = "1";
@@ -73,6 +65,7 @@ window.toggleTaskDetails = function(forceOpen = null) {
     }
 };
 
+// --- THIS WAS MISSING: THE STATE SWITCHER ---
 window.updateTaskUIState = function(isActive) {
     // 1. STATUS TEXT (Single Element)
     const statusText = document.getElementById('mainStatusText');
