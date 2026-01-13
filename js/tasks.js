@@ -1,4 +1,4 @@
-// tasks.js - CHAT ONLY (No Overlay, No Task Text in Log)
+// tasks.js - MUTED VERSION (Does not send Task Text to Backend)
 
 import { 
     currentTask, pendingTaskState, taskDatabase, taskQueue, gameStats, 
@@ -18,7 +18,6 @@ const DEFAULT_TRASH = [
 ];
 
 export function getRandomTask() {
-    // 1. Collateral Check
     if (gameStats.coins < 300) {
         triggerSound('sfx-deny');
         injectChatMessage(false, "ACCESS DENIED: 300 🪙 REQUIRED");
@@ -26,7 +25,6 @@ export function getRandomTask() {
         return;
     }
 
-    // 2. Setup Task
     setIgnoreBackendUpdates(true);
     if (resetUiTimer) { clearTimeout(resetUiTimer); setResetUiTimer(null); }
     
@@ -41,12 +39,10 @@ export function getRandomTask() {
     const newPendingState = { task: newTask, endTime: endTimeVal, status: "PENDING" };
     setPendingTaskState(newPendingState);
     
-    // 3. Update UI
     restorePendingUI();
     if(window.updateTaskUIState) window.updateTaskUIState(true);
     if(window.toggleTaskDetails) window.toggleTaskDetails(true);
     
-    // 4. Save to Backend
     window.parent.postMessage({ type: "savePendingState", pendingState: newPendingState, consumeQueue: true }, "*");
     setTimeout(() => { setIgnoreBackendUpdates(false); }, 5000);
 }
@@ -103,10 +99,11 @@ function applyPenaltyFail(reason) {
     const coinsEl = document.getElementById('coins');
     if (coinsEl) coinsEl.textContent = newBalance;
 
-    // Send data to backend (but NOT to chat via backend echo)
+    // --- FIX: DO NOT SEND TASK TEXT TO BACKEND ---
+    // This stops Velo from echoing it back to the chat.
     window.parent.postMessage({ 
         type: "taskSkipped", 
-        taskTitle: currentTask ? currentTask.text : "Unknown Task",
+        taskTitle: "REDACTED", // Muted
         reason: reason
     }, "*");
 
@@ -120,20 +117,17 @@ export function finishTask(success) {
     setPendingTaskState(null);
     setCooldownInterval(null);
     
-    // Close the drawer immediately so they see the chat
+    // Close the drawer immediately
     if(window.toggleTaskDetails) window.toggleTaskDetails(false);
 
     if (success) {
-        // GREEN SUCCESS MESSAGE
         injectChatMessage(true, "DIRECTIVE COMPLETE");
     } else {
-        // RED FAILURE MESSAGE + TRASH TALK (No Task Text)
         const trashList = (window.CMS_HIERARCHY && window.CMS_HIERARCHY.trash) 
                           ? window.CMS_HIERARCHY.trash 
                           : DEFAULT_TRASH;
         const insult = trashList[Math.floor(Math.random() * trashList.length)];
         
-        // Clean HTML: Status + Coin Loss + Insult
         const failMsg = `FAILURE RECORDED (-300 🪙)<br><span style="font-style:italic; opacity:0.7; font-size:0.8em; margin-top:5px; display:block;">"${insult}"</span>`;
         injectChatMessage(false, failMsg);
     }
@@ -142,7 +136,6 @@ export function finishTask(success) {
     setTimeout(() => { setTaskJustFinished(false); setIgnoreBackendUpdates(false); }, 5000);
 }
 
-// Helper to push HTML directly to chat
 function injectChatMessage(isSuccess, htmlContent) {
     const chatBox = document.getElementById('chatContent');
     if (!chatBox) return;
@@ -158,7 +151,6 @@ function injectChatMessage(isSuccess, htmlContent) {
 
     chatBox.innerHTML += msgHTML;
     
-    // Force Scroll bottom
     const container = document.getElementById('chatBox');
     if(container) container.scrollTop = container.scrollHeight;
 }
@@ -174,7 +166,6 @@ export function cancelPendingTask() {
 }
 
 export function resetTaskDisplay(success) {
-    // Return UI to Idle State
     if(window.updateTaskUIState) window.updateTaskUIState(false);
     
     const tc = document.getElementById('readyText');
