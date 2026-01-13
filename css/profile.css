@@ -116,38 +116,91 @@ body {
 .view-wrapper { width: 100%; height: 100%; display: flex; flex-direction: column; }
 
 /* =========================================
-   4. TASK RIBBON & CONTROLS (DRAWER VERSION)
+   4. TASK RIBBON & CONTROLS (CINZEL FONT UPDATE)
    ========================================= */
 
-/* The Header Bar (Original Look) */
+/* The Header Bar */
 .task-ribbon {
     display: flex; 
     align-items: center; 
     justify-content: space-between; 
-    padding: 0 10px; /* Reduced padding for the 30/40/30 split */
+    padding: 0 10px; 
     height: 100px; 
     background: rgba(10,10,10,0.95); 
     border: 1px solid var(--gold-dim);
     position: relative;
-    z-index: 20; /* MUST BE HIGHER THAN DRAWER */
+    z-index: 20; 
 }
 
-/* Status Text Colors */
-.status-unproductive { color: #666; font-family: 'Orbitron'; font-weight: 700; }
-.status-working { color: var(--neon-green); font-family: 'Orbitron'; font-weight: 700; text-shadow: 0 0 10px rgba(0,255,0,0.3); }
+/* --- THE FONT UPDATE IS HERE --- */
 
-/* The Drawer (Slides down) */
+/* 1. The "UNPRODUCTIVE" / "WORKING" Text */
+.status-text-lg {
+    font-family: 'Cinzel', serif !important; /* CHANGED FROM ORBITRON */
+    font-weight: 700; 
+    font-size: 0.9rem;
+    letter-spacing: 3px; /* Wider spacing looks more expensive */
+    margin-top: 5px;
+}
+
+.status-unproductive { 
+    color: #666; 
+}
+
+.status-working { 
+    color: var(--neon-green); 
+    text-shadow: 0 0 15px rgba(0,255,0,0.4); 
+}
+
+/* 2. The "AWAITING DIRECTIVE..." Text */
+.ribbon-status {
+    font-family: 'Cinzel', serif !important; /* CHANGED FROM INTER */
+    font-size: 0.85rem; 
+    color: #aaa; 
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* 3. The Timer (00:00:00) */
+.ribbon-timer {
+    font-family: 'Cinzel', serif !important; /* CHANGED FROM ORBITRON */
+    font-size: 2rem; 
+    color: white; 
+    font-weight: 700; 
+    line-height: 1;
+    letter-spacing: 2px;
+}
+
+/* 4. The "See Directive" Button */
+.see-task-link {
+    font-family: 'Cinzel', serif !important;
+    font-size: 0.65rem; 
+    color: var(--gold); 
+    cursor: pointer; 
+    margin-top: 8px; 
+    letter-spacing: 2px; 
+    font-weight: 700; 
+    padding: 5px;
+    border-bottom: 1px solid transparent;
+    transition: 0.3s;
+}
+.see-task-link:hover {
+    color: #fff;
+    border-bottom-color: var(--gold);
+}
+
+/* --- DRAWER & REST OF CSS STAYS THE SAME --- */
 .task-detail-panel {
     background: #000;
     border: 1px solid #333;
-    border-top: none; /* Connects to header */
-    margin-top: -5px; /* Slight overlap */
+    border-top: none; 
+    margin-top: -5px; 
     max-height: 0;
     overflow: hidden;
     opacity: 0;
     transition: max-height 0.4s ease, opacity 0.3s ease;
     position: relative;
-    z-index: 1; /* MUST BE LOWER THAN HEADER */
+    z-index: 1; 
 }
 
 .task-detail-panel.open {
@@ -164,8 +217,10 @@ body {
 /* Text Button (Hide/Show) */
 .text-btn {
     background: none; border: none; 
-    color: #666; font-family: 'Orbitron'; font-size: 0.7rem; 
+    color: #666; font-family: 'Cinzel', serif; /* Updated to match */
+    font-size: 0.7rem; 
     cursor: pointer;
+    letter-spacing: 1px;
 }
 .text-btn:hover { color: white; }
 
