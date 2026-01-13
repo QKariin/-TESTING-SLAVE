@@ -1,4 +1,4 @@
-// gallery.js - SAFE VERSION (Prevents Image Vanishing)
+// gallery.js - SMART VERSION (Ignores Avatars)
 
 import { 
     galleryData, pendingLimit, historyLimit, currentHistoryIndex, touchStartX, 
@@ -10,43 +10,53 @@ import { signUpcdnUrl } from './bytescale.js';
 // YOUR STICKER LINKS
 const STICKER_APPROVE = "https://static.wixstatic.com/media/ce3e5b_a19d81b7f45c4a31a4aeaf03a41b999f~mv2.png";
 const STICKER_DENIED = "https://static.wixstatic.com/media/ce3e5b_63a0c8320e29416896d071d5b46541d7~mv2.png";
-const PLACEHOLDER_IMG = "https://static.wixstatic.com/media/ce3e5b_1bd27ba758ce465fa89a36d70a68f355~mv2.png"; // Fallback if broken
+const PLACEHOLDER_IMG = "https://static.wixstatic.com/media/ce3e5b_1bd27ba758ce465fa89a36d70a68f355~mv2.png"; 
 
 let isInProofMode = false; 
 
-// --- HELPER: Aggressive URL Finder ---
+// --- HELPER: SMART URL FINDER ---
 function normalizeGalleryItem(item) {
-    // If we already have a valid proofUrl, don't touch it.
+    // 1. If we already have a valid proofUrl, STOP.
     if (item.proofUrl && typeof item.proofUrl === 'string' && item.proofUrl.length > 5) return item;
 
-    // 1. Look for common Wix/Velo keys
+    // 2. BLACKLIST: Never accept these fields as evidence
+    const ignoreKeys = ['profilePic', 'avatar', 'userImage', 'userIcon', 'ownerPhoto', 'thumbnail', 'icon'];
+
+    // 3. PRIORITY SEARCH: Look for specific evidence keys first
     const candidates = [
         'proof', 'proofUrl', 'evidence', 'media', 'mediaUrl', 
-        'image', 'img', 'file', 'fileUrl', 'url', 'src', 'attachment'
+        'file', 'fileUrl', 'attachment', 'upload'
     ];
 
     for (let key of candidates) {
-        // Case A: Simple String
-        if (item[key] && typeof item[key] === 'string') {
+        if (item[key] && typeof item[key] === 'string' && item[key].length > 5) {
             item.proofUrl = item[key];
             return item;
         }
-        // Case B: Nested Object (e.g. item.image.src)
         if (item[key] && typeof item[key] === 'object' && item[key].src) {
             item.proofUrl = item[key].src;
             return item;
         }
     }
 
-    // 2. If still nothing, look at EVERYTHING
-    Object.keys(item).forEach(k => {
-        const val = item[k];
-        if (typeof val === 'string' && (val.startsWith('http') || val.startsWith('wix:'))) {
-            item.proofUrl = val;
+    // 4. SECONDARY SEARCH: Look for generic image keys (but filter out avatars)
+    // Only do this if we haven't found anything yet.
+    if (!item.proofUrl) {
+        const genericKeys = ['image', 'img', 'url', 'src', 'picture'];
+        for (let key of genericKeys) {
+            if (ignoreKeys.includes(key)) continue; // Skip if blacklisted
+            
+            if (item[key] && typeof item[key] === 'string' && item[key].length > 5) {
+                // Double check it's not the same string as the profile pic
+                if (item.profilePic && item[key] === item.profilePic) continue; 
+                
+                item.proofUrl = item[key];
+                return item;
+            }
         }
-    });
+    }
 
-    // 3. Fallback description
+    // 5. Fallback description
     if (!item.text) item.text = item.description || item.title || "Record entry.";
 
     return item;
@@ -55,33 +65,30 @@ function normalizeGalleryItem(item) {
 export async function renderGallery() {
     if (!galleryData || !Array.isArray(galleryData)) return;
 
-    // --- STEP 1: Normalize Data (Fixes missing fields) ---
+    // --- STEP 1: Normalize Data (With Avatar Protection) ---
     galleryData.forEach(normalizeGalleryItem);
 
-    // --- STEP 2: Render IMMEDIATELY (Fixes the "Flash" lag) ---
-    // We render once with raw URLs so the user sees something immediately.
+    // --- STEP 2: Render IMMEDIATELY ---
     renderGridHTML(); 
 
-    // --- STEP 3: Sign URLs in Background (Fixes the "Disappear") ---
-    // We only update if the signing is SUCCESSFUL.
+    // --- STEP 3: Sign URLs in Background ---
     let needsUpdate = false;
     
     const signingPromises = galleryData.map(async (item) => {
-        if (item.proofUrl && item.proofUrl.includes("upcdn.io")) {
+        // Only sign if it's a ByteScale/UpCDN URL
+        if (item.proofUrl && typeof item.proofUrl === 'string' && item.proofUrl.includes("upcdn.io")) {
             try {
-                // Generate Thumbnail URL
+                // Generate Thumbnail
                 const rawThumb = item.proofUrl.replace("/raw/", "/thumbnail/");
                 const signedThumb = await signUpcdnUrl(rawThumb);
                 
-                // Only overwrite if we got a valid string back
                 if (signedThumb && signedThumb.length > 10) {
                     item.proofUrlThumb = signedThumb;
                 }
 
-                // Generate Full URL
+                // Generate Full
                 const signedFull = await signUpcdnUrl(item.proofUrl);
                 
-                // CRITICAL FIX: Only overwrite if signedFull is valid!
                 if (signedFull && signedFull.length > 10) {
                     if (item.proofUrl !== signedFull) {
                         item.proofUrl = signedFull;
@@ -89,19 +96,18 @@ export async function renderGallery() {
                     }
                 }
             } catch (e) {
-                console.warn("Signing skipped for item, keeping raw URL.");
+                console.warn("Signing skipped for item.");
             }
         }
     });
 
-    // Wait for signing, then re-render ONLY if data changed
     await Promise.all(signingPromises);
     if (needsUpdate) {
         renderGridHTML();
     }
 }
 
-// --- HELPER: The Actual HTML Renderer ---
+// --- HELPER: HTML RENDERER ---
 function renderGridHTML() {
     const pGrid = document.getElementById('pendingGrid');
     const hGrid = document.getElementById('historyGrid');
@@ -114,7 +120,7 @@ function renderGridHTML() {
     const pSection = document.getElementById('pendingSection');
     if (pSection) pSection.style.display = pItems.length > 0 ? 'block' : 'none';
 
-    // 2. History Items (Approved/Rejected)
+    // 2. History Items
     const hItems = galleryData.filter(i => {
         const s = (i.status || "").toLowerCase();
         return (s.includes('app') || s.includes('rej'));
@@ -142,7 +148,6 @@ function createPendingCardHTML(item) {
     const isVideo = url.match(/\.(mp4|webm|mov)($|\?)/i);
     let thumb = item.proofUrlThumb || url;
 
-    // Safety: If thumb is undefined, use placeholder
     if (!thumb || thumb === 'undefined') thumb = PLACEHOLDER_IMG;
 
     const encUrl = encodeURIComponent(url);
@@ -182,7 +187,6 @@ function createGalleryItemHTML(item, index) {
         </div>`;
 }
 
-// --- MODAL FUNCTIONS (Standard) ---
 export function openHistoryModal(index) {
     const hItems = galleryData.filter(i => {
         const s = (i.status || "").toLowerCase();
