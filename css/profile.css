@@ -123,7 +123,7 @@ body {
 .view-wrapper { width: 100%; height: 100%; display: flex; flex-direction: column; }
 
 /* =========================================
-   4. TASK RIBBON & CONTROLS (FINAL)
+   4. TASK RIBBON & CONTROLS (ANCHORED VERSION)
    ========================================= */
 
 /* Main Container */
@@ -137,32 +137,37 @@ body {
     border-radius: 4px;
     position: relative;
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    z-index: 1; 
+    /* Ensure the container doesn't hide the button if it hangs low */
+    overflow: visible !important; 
+    z-index: 10;
 }
 
-/* TOP ROW */
+/* TOP ROW - Fixed Height to prevent squashing */
 .task-header-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start; /* Align to top so they don't jump */
     padding: 15px 25px;
-    height: 100px;
+    height: 110px; /* FIXED HEIGHT - CRITICAL */
+    min-height: 110px;
     position: relative;
-    z-index: 5; 
-    background: rgba(5,5,5,0.8);
-    border-bottom: 1px solid transparent;
+    z-index: 50; 
+    background: rgba(5,5,5,0.9);
+    border-bottom: 1px solid #222;
 }
 
 /* LEFT: STATUS & TRIGGER */
 .task-info-block {
     position: relative;
-    z-index: 10;
+    z-index: 50;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    pointer-events: auto;
+    justify-content: flex-start;
+    height: 100%;
+    width: 60%; /* Give it space */
 }
 
+/* Status Text */
 .status-text-lg {
     font-family: 'Orbitron', sans-serif;
     font-weight: 900;
@@ -173,49 +178,49 @@ body {
 .status-unproductive { color: #666; }
 .status-working { color: var(--neon-green); text-shadow: 0 0 10px rgba(0, 255, 0, 0.4); }
 
+/* Timer Container */
+#activeTimerRow {
+    display: flex; 
+    flex-direction: column;
+    position: relative;
+}
+
 .ribbon-timer {
     font-family: 'Orbitron'; font-size: 2rem; color: white; font-weight: 700; line-height: 1;
 }
 
-/* FORCE BUTTON VISIBILITY */
+/* --- THE BUTTON: ABSOLUTELY PINNED --- */
 .see-task-link {
-    opacity: 1 !important; /* DO NOT LET JS HIDE THIS */
-    visibility: visible !important;
-    display: block !important;
-    pointer-events: auto !important;
-    height: auto !important;
-    z-index: 99999 !important;
+    font-family: 'Cinzel', serif; font-size: 0.75rem; color: var(--gold); 
+    font-weight: 700; letter-spacing: 2px; cursor: pointer; 
     
-    /* Make it look clickable */
-    color: var(--gold);
-    font-family: 'Cinzel', serif;
-    font-weight: 700;
-    letter-spacing: 2px;
-    cursor: pointer;
-    margin-top: 5px;
-    padding: 10px;
-    background: rgba(0,0,0,0.3); /* Slight background to separate it */
-    border: 1px solid rgba(255, 215, 0, 0.2);
+    /* ANCHORING LOGIC */
+    position: absolute; 
+    top: 45px; /* Push it down below timer */
+    left: 0;
+    
+    padding: 10px 0; width: 200px; text-align: left;
+    white-space: nowrap; /* Never wrap */
+    
+    z-index: 9999 !important; 
+    pointer-events: auto !important;
+    
+    /* Ensure visibility */
+    opacity: 1 !important;
+    display: block !important;
 }
+.see-task-link:hover { color: #fff; transform: translateX(5px); }
 
-/* Ensure the container doesn't hide it */
-#activeTimerRow {
-    overflow: visible !important;
-}
-
-.see-task-link:hover {
-    background: rgba(255, 215, 0, 0.1);
-    color: #fff;
-}
 /* RIGHT: CONTROLS & BUTTONS */
 .task-controls-block {
     position: relative;
-    z-index: 20;
+    z-index: 60;
     display: flex;
     align-items: center;
+    height: 100%;
 }
 
-/* --- THE SINGLE, WORKING BUTTON DEFINITION --- */
+/* BUTTONS */
 .action-btn { 
     background: transparent; 
     border: 1px solid var(--gold); 
@@ -225,8 +230,6 @@ body {
     font-weight: 700; 
     cursor: pointer; 
     transition: 0.3s; 
-    
-    /* CRITICAL FIX: Z-Index to click above header */
     position: relative;
     z-index: 100; 
     pointer-events: auto; 
@@ -240,18 +243,6 @@ body {
 
 .btn-upload { background: rgba(255, 215, 0, 0.1); }
 
-.btn-dim { 
-    border-color: #444; color: #666; padding: 12px 25px; 
-    background: transparent; cursor: pointer; font-family: 'Cinzel'; 
-    position: relative; z-index: 100;
-}
-
-.icon-btn { 
-    background: transparent; border: none; color: var(--gold); 
-    font-size: 1.5rem; cursor: pointer; transition: 0.2s; 
-    position: relative; z-index: 100;
-}
-
 .btn-loading {
     background: #333 !important; color: var(--neon-yellow) !important; 
     border-color: var(--neon-yellow) !important;
@@ -263,22 +254,23 @@ body {
     max-height: 0;
     overflow: hidden;
     opacity: 0;
+    /* Slide from underneath the header */
     transform: translateY(-20px);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     background: rgba(15,15,15,0.98);
-    border-top: 1px solid #333;
     position: relative;
-    z-index: 1;
+    z-index: 1; /* MUST be lower than header */
 }
 
 .task-detail-panel.open {
     max-height: 400px;
     opacity: 1;
     transform: translateY(0);
+    padding-bottom: 20px;
 }
 
 .detail-content {
-    padding: 30px;
+    padding: 30px 25px;
     text-align: center;
 }
 
@@ -301,9 +293,6 @@ body {
 
 .btn-skip { color: #888; border: 1px solid #333; padding: 5px 15px; border-radius: 4px; }
 .btn-skip:hover { color: var(--neon-red); border-color: var(--neon-red); background: rgba(255, 0, 60, 0.1); }
-
-.blink { animation: blinker 1s linear infinite; }
-@keyframes blinker { 50% { opacity: 0; } }
 
 /* Utility */
 .hidden { display: none !important; }
