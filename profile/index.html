@@ -41,10 +41,8 @@
 
 <div class="app-container">
     
-    <!-- LEFT SIDEBAR -->
-    <!-- LEFT SIDEBAR -->
-    <div class="layout-left">
-        <!-- HIERARCHY STAMP (Reverted Design in CSS) -->
+   <div class="layout-left">
+        <!-- HIERARCHY STAMP -->
         <div id="subHierarchy" class="hierarchy-top">LOADING...</div>
 
         <div class="avatar-container" onclick="document.getElementById('profileUploadInput').click()">
@@ -78,39 +76,53 @@
             </div>
         </div>
 
-        <!-- EXPANDABLE STATS (Progress Bar Moved Here) -->
+        <!-- EXPANDABLE STATS -->
         <button class="stats-toggle-btn" onclick="toggleStats()">EXPAND STATS ▾</button>
         
         <div id="statsContent" class="stats-panel">
             
-            <!-- PROGRESS SECTION (Inside Drawer) -->
-                <!-- PROGRESS SECTION -->
-                <div class="progress-section">
-                    <!-- Row: NEXT (Left) | RANK (Right) -->
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-family: 'Cinzel', serif; font-size: 0.7rem;">
-                        <span style="color:#666;">NEXT:</span>
-                        <span id="nextLevelName" style="color:var(--gold); font-weight:700;">-</span>
-                    </div>
-                    
-                    <!-- Bar -->
-                    <div class="prog-bg"><div id="progressBar" class="prog-fill"></div></div>
-                    
-                    <!-- Center: Points to go -->
-                    <div style="text-align: center; margin-top: 5px;">
-                        <span id="pointsNeeded" style="color:#888; font-size:0.65rem; font-family:'Cinzel', serif;">0 to go</span>
-                    </div>
+            <!-- PROGRESS SECTION -->
+            <div class="progress-section">
+                <!-- Row: NEXT (Left) | RANK (Right) -->
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-family: 'Cinzel', serif; font-size: 0.7rem;">
+                    <span style="color:#666;">NEXT:</span>
+                    <span id="nextLevelName" style="color:var(--gold); font-weight:700;">-</span>
                 </div>
+                
+                <!-- Bar -->
+                <div class="prog-bg"><div id="progressBar" class="prog-fill"></div></div>
+                
+                <!-- Center: Points to go -->
+                <div style="text-align: center; margin-top: 5px;">
+                    <span id="pointsNeeded" style="color:#888; font-size:0.65rem; font-family:'Cinzel', serif;">0 to go</span>
+                </div>
+            </div>
+
+            <!-- DETAILED STATS LIST -->
+            <div class="stat-line"><span>Streak</span> <strong id="statStreak">0</strong></div>
+            <div class="stat-line"><span>Total Tasks</span> <strong id="statTotal">0</strong></div>
+            <div class="stat-line"><span>Completed</span> <strong id="statCompleted">0</strong></div>
+            <div class="stat-line"><span>Skipped</span> <strong id="statSkipped">0</strong></div>
+            <div class="stat-line"><span>Total Kneeling</span> <strong id="statTotalKneels">0</strong></div>
             
-                    <div class="nav-menu">
-                      <button class="nav-btn active" onclick="switchTab('serve')">CONSOLE</button>
-                      <button class="nav-btn" onclick="switchTab('history')">SLAVE RECORD</button>
-                      <button class="nav-btn" onclick="switchTab('news')">QUEEN KARIN</button>
-                      <button class="nav-btn" onclick="switchTab('vault')">VAULT</button>
-                      <button class="nav-btn" onclick="switchTab('protocol')">PROTOCOL</button>
-                      <button class="nav-btn" onclick="switchTab('buy')">EXCHEQUER</button>
-                  </div>
-                </div>
-      </div>
+            <div class="stat-footer">
+                <div style="color:#666; font-size:0.7rem; letter-spacing:2px; margin-bottom:5px;">SLAVE SINCE</div>
+                <strong id="slaveSinceDate" style="color:#ccc; font-size:0.9rem;">--/--/--</strong>
+            </div>
+
+        </div> <!-- END OF STATS PANEL -->
+
+        <!-- NAV MENU (NOW OUTSIDE AND SEPARATE) -->
+        <div class="nav-menu">
+            <button class="nav-btn active" onclick="switchTab('serve')">CONSOLE</button>
+            <button class="nav-btn" onclick="switchTab('history')">SLAVE RECORD</button>
+            <button class="nav-btn" onclick="switchTab('news')">QUEEN KARIN</button>
+            <button class="nav-btn" onclick="switchTab('vault')">VAULT</button>
+            <button class="nav-btn" onclick="switchTab('protocol')">PROTOCOL</button>
+            <button class="nav-btn" onclick="switchTab('buy')">EXCHEQUER</button>
+        </div>
+        
+    </div>
 
     <!-- RIGHT SIDE -->
     <div class="layout-right">
