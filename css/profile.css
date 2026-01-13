@@ -37,22 +37,16 @@ body {
 .hidden { display: none !important; }
 
 /* =========================================
-   2. LEFT PILLAR
-   ========================================= */
-/* =========================================
-   2. LEFT PILLAR (THE SLAVE DOSSIER)
+   2. LEFT PILLAR (FIXED FUNCTIONALITY)
    ========================================= */
 
 .layout-left {
     width: 25%;
-    min-width: 300px; /* Slightly wider for the grandeur */
+    min-width: 300px;
     height: 100%;
-    
-    /* MATERIALITY: Onyx/Charcoal Gradient */
     background: linear-gradient(145deg, #1a1a1a 0%, #0a0a0a 100%);
     box-shadow: inset 20px 0 50px rgba(0,0,0,0.8);
     border-right: 1px solid rgba(197, 160, 89, 0.1);
-    
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -60,250 +54,110 @@ body {
     flex-shrink: 0;
     z-index: 10;
     position: relative;
-    overflow: hidden; /* For the shine effect */
+    overflow-y: auto; /* Allow scrolling if stats get too long */
 }
 
-/* WATERMARK (The invisible presence) */
-.layout-left::before {
-    content: '♛'; /* Fallback logo */
-    position: absolute;
-    top: 10%;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 20rem;
-    color: var(--gold);
-    opacity: 0.02; /* Barely visible */
-    pointer-events: none;
-    font-family: 'Cinzel', serif;
-    z-index: 0;
-}
-
-/* INTERACTIVE SHINE (Brushed Metal Effect on Hover) */
-.layout-left::after {
-    content: '';
-    position: absolute;
-    top: 0; left: -100%;
-    width: 50%; height: 100%;
-    background: linear-gradient(to right, transparent, rgba(255,255,255,0.03), transparent);
-    transform: skewX(-25deg);
-    transition: 0.5s;
-    pointer-events: none;
-}
-.layout-left:hover::after {
-    left: 150%;
-    transition: 1s ease-in-out;
-}
-
-/* --- 1. THE ARCHITECTURAL AVATAR --- */
+/* AVATAR & IDENTITY (Kept the Luxury Look) */
 .avatar-container {
-    width: 160px; 
-    height: 185px; /* Tall Hexagon Ratio */
-    margin-bottom: 20px;
-    position: relative;
-    z-index: 2;
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    
-    /* HEXAGON CLIP */
+    width: 160px; height: 185px; margin-bottom: 20px; position: relative; z-index: 2;
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    /* DOUBLE BORDER EFFECT via padding */
-    padding: 3px; 
-    background: linear-gradient(to bottom, var(--gold), #fff); 
+    padding: 3px; background: linear-gradient(to bottom, var(--gold), #fff); 
 }
-
-/* The Inner Black Gap */
 .avatar-container::before {
-    content: '';
-    position: absolute;
-    inset: 3px; /* The thickness of the outer gold/white line */
-    background: #000;
-    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    z-index: -1;
+    content: ''; position: absolute; inset: 3px; background: #000;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); z-index: -1;
 }
-
-/* The Image with Scanline */
 #profilePic { 
-    width: 100%; 
-    height: 100%; 
-    object-fit: cover; 
+    width: 100%; height: 100%; object-fit: cover; 
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    filter: sepia(30%) contrast(1.1) brightness(0.9);
-    position: relative;
-    z-index: 1;
+    filter: sepia(30%) contrast(1.1) brightness(0.9); z-index: 1;
 }
-
-/* Scanline Overlay */
-.avatar-container::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-        to bottom,
-        transparent 0px,
-        transparent 2px,
-        rgba(0,0,0,0.3) 3px
-    );
-    z-index: 5;
-    pointer-events: none;
-}
-
-/* --- 2. HIERARCHY STAMP --- */
 .hierarchy-top {
-    font-family: 'Black Ops One', 'Orbitron', sans-serif; /* Stencil look */
-    font-size: 1rem; 
-    font-weight: 700;
-    color: rgba(197, 160, 89, 0.6); 
-    text-transform: uppercase;
-    letter-spacing: 4px;
-    
-    /* STAMP EFFECT */
-    border: 2px solid rgba(197, 160, 89, 0.3);
-    padding: 5px 15px;
-    transform: rotate(-3deg); /* The imperfections make it real */
-    margin-bottom: 30px;
-    background: rgba(0,0,0,0.4);
-    mix-blend-mode: overlay;
+    font-family: 'Black Ops One', 'Orbitron', sans-serif; font-size: 1rem; font-weight: 700;
+    color: rgba(197, 160, 89, 0.6); text-transform: uppercase; letter-spacing: 4px;
+    border: 2px solid rgba(197, 160, 89, 0.3); padding: 5px 15px;
+    transform: rotate(-3deg); margin-bottom: 30px; background: rgba(0,0,0,0.4);
 }
-
-/* --- 3. BOUTIQUE NAME --- */
 .identity-name { 
-    font-family: 'Cinzel', serif; 
-    font-size: 1.6rem; 
-    color: #fff; 
-    letter-spacing: 6px; /* Wide spacing */
-    text-transform: uppercase; 
-    margin-bottom: 30px;
-    text-align: center;
-    position: relative;
-    z-index: 2;
-    text-shadow: 0 5px 10px rgba(0,0,0,0.5);
+    font-family: 'Cinzel', serif; font-size: 1.6rem; color: #fff; letter-spacing: 6px; 
+    text-transform: uppercase; margin-bottom: 30px; text-align: center; z-index: 2;
 }
 
-/* --- 4. SWISS WATCH STATS ROW --- */
+/* STATS ROW */
 .stats-stack-row {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 30px;
-    padding: 15px 0;
-    border-top: 1px solid rgba(255,255,255,0.05);
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex; flex-direction: row; justify-content: space-between; align-items: center;
+    width: 100%; margin-bottom: 30px; padding: 15px 0;
+    border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);
 }
+.stat-item { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.stat-divider { width: 1px; height: 40px; background: linear-gradient(to bottom, transparent, var(--gold), transparent); opacity: 0.5; }
+.stat-lbl { font-family: 'Rajdhani', sans-serif; font-size: 0.7rem; color: #888; letter-spacing: 2px; text-transform: uppercase; }
+.stat-val { font-family: 'Cinzel', serif; font-size: 1.4rem; color: var(--gold); font-weight: 700; }
 
-.stat-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-}
-
-/* Vertical Fade Divider */
-.stat-divider {
-    width: 1px;
-    height: 40px;
-    background: linear-gradient(to bottom, transparent, var(--gold), transparent);
-    opacity: 0.5;
-}
-
-/* Text up */
-.stat-lbl { 
-    font-family: 'Rajdhani', sans-serif; 
-    font-size: 0.7rem; 
-    color: #888; 
-    letter-spacing: 2px; 
-    text-transform: uppercase;
-}
-
-/* Number down */
-.stat-val { 
-    font-family: 'Cinzel', serif; 
-    font-size: 1.4rem; 
-    color: var(--gold); 
-    font-weight: 700;
-}
-
-/* --- 5. SEGMENTED PROGRESS BAR --- */
-.progress-section { 
-    width: 100%; 
-    margin-bottom: 25px; 
-    position: relative;
-    z-index: 2;
-}
-
-.prog-labels { 
-    display: flex; 
-    justify-content: space-between; 
-    font-family: 'Rajdhani'; 
-    font-size: 0.7rem; 
-    color: #666; 
-    margin-bottom: 8px; 
-    text-transform: uppercase;
-}
-
-.prog-bg { 
-    width: 100%; 
-    height: 6px; 
-    background: #111; 
-    border: 1px solid #333;
-    /* Create segments */
-    background-image: linear-gradient(to right, #000 20%, transparent 0%);
-    background-size: 5px 100%; 
-}
-
-.prog-fill { 
-    height: 100%; 
-    width: 0%; 
-    background: var(--gold);
-    /* Glowing segments */
-    box-shadow: 0 0 10px var(--gold);
-    position: relative;
-}
-/* The leading light of the progress bar */
-.prog-fill::after {
-    content: '';
-    position: absolute;
-    right: -2px;
-    top: -2px;
-    bottom: -2px;
-    width: 4px;
-    background: #fff;
-    box-shadow: 0 0 10px #fff;
-}
-
-/* KNEEL BUTTON (Clean Fit) */
+/* --- KNEEL BUTTON (FUNCTIONALITY RESTORED) --- */
 .kneel-sidebar-wrapper {
     width: 100%;
     height: 50px;
     margin-bottom: 30px;
 }
+
 .kneel-bar-graphic {
     width: 100%; height: 100%;
     border: 1px solid var(--gold);
     display: flex; align-items: center; justify-content: center;
-    position: relative; overflow: hidden;
+    position: relative; /* Anchor for absolute fill */
+    overflow: hidden; /* Crop the fill */
     cursor: pointer;
     background: rgba(0,0,0,0.3);
 }
+
+/* The Progress Bar Fill - RESTORED */
+.graphic-fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 0%; /* JS Manipulates this */
+    background: linear-gradient(90deg, #8b0000, #ff003c); /* Red fill */
+    z-index: 1;
+    transition: width 0.1s linear;
+}
+
+/* The Text - RESTORED */
 .graphic-text {
-    z-index: 2;
+    position: relative;
+    z-index: 2; /* Sit on top of fill */
     font-family: 'Cinzel', serif;
     color: var(--gold);
     letter-spacing: 4px;
     font-size: 0.9rem;
+    pointer-events: none; /* Let clicks pass to parent */
+    text-shadow: 0 0 5px black;
 }
 
-/* STATS PANEL (Hidden drawer) */
-.stats-toggle-btn { background: transparent; border: none; color: #444; font-family: 'Orbitron'; font-size: 0.6rem; cursor: pointer; margin-bottom: 10px; transition:0.3s; }
+/* --- STATS PANEL EXPAND (FUNCTIONALITY RESTORED) --- */
+.stats-toggle-btn { 
+    background: transparent; border: none; color: #444; 
+    font-family: 'Orbitron'; font-size: 0.6rem; cursor: pointer; 
+    margin-bottom: 10px; transition:0.3s; width: 100%;
+}
 .stats-toggle-btn:hover { color: var(--gold); }
-.stats-panel { display: none; width: 100%; padding: 15px; background: rgba(0,0,0,0.3); border: 1px solid #222; margin-bottom: 20px; font-family: 'Rajdhani'; font-size: 0.85rem; color: #888; }
+
+.stats-panel { 
+    display: none; /* Hidden by default */
+    width: 100%; padding: 15px; 
+    background: rgba(0,0,0,0.3); border: 1px solid #222; 
+    margin-bottom: 20px; 
+    font-family: 'Rajdhani'; font-size: 0.85rem; color: #888; 
+}
+
+/* The class JS adds to show it */
+#statsContent.open { 
+    display: block !important; 
+    animation: fadeIn 0.3s ease;
+}
+
 .stat-line { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px solid #111; padding-bottom: 2px;}
 
-/* NAV MENU (Minimalist) */
+/* NAV MENU */
 .nav-menu { display: flex; flex-direction: column; gap: 5px; width: 100%; }
 .nav-btn {
     background: transparent; border: none; color: #555; text-align: left;
@@ -435,10 +289,86 @@ body {
 .si-btn { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 8px; width: 100%; cursor: pointer; font-family: 'Orbitron'; }
 .si-btn:hover { background: var(--gold); color: #000; }
 
-#historySection { position: relative !important; min-height: 500px; overflow: hidden !important; }
-.pending-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-bottom: 20px; }
-.pending-card { background: #000; border: 1px solid #333; border-radius: 12px; overflow: hidden; position: relative; height: 160px; min-height: 160px; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.5); transition: transform 0.2s; }
-.pending-card:active { transform: scale(0.98); }
+/* =========================================
+   7. HISTORY & GALLERY (FIXED GRID)
+   ========================================= */
+
+#historySection {
+    padding: 20px;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.section-header {
+    font-family: 'Cinzel';
+    color: var(--gold);
+    border-bottom: 1px solid #333;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+    margin-top: 20px;
+}
+
+/* PENDING GRID */
+.pending-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Responsive */
+    gap: 15px;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.pending-card {
+    background: #000;
+    border: 1px solid #333;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 16 / 9;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.pending-card:hover { border-color: var(--neon-yellow); transform: translateY(-2px); }
+
+/* HISTORY GRID - The Fix */
+.gallery-grid {
+    display: grid;
+    /* Force minimum 5 columns on desktop, auto on mobile */
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); 
+    gap: 5px;
+    width: 100%;
+    padding-bottom: 50px;
+}
+
+.gallery-item {
+    position: relative;
+    aspect-ratio: 1 / 1; /* Perfect squares */
+    background: #111;
+    border: 1px solid #222;
+    overflow: hidden;
+    cursor: pointer;
+}
+.gallery-item:hover { border-color: var(--gold); }
+
+/* Images inside grid */
+.gallery-item img, .gallery-item video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+.gallery-item:hover img { opacity: 1; }
+
+/* Stickers */
+.gi-status-sticker {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%; height: 60%;
+    object-fit: contain;
+    z-index: 5;
+    pointer-events: none;
+    filter: drop-shadow(0 0 5px black);
+}
+
 .pc-media { position: absolute; inset: 0; z-index: 0; }
 .pc-thumb { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) brightness(0.5); }
 .pc-gradient { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.4) 100%); z-index: 1; }
