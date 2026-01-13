@@ -43,7 +43,13 @@ body {
     width: 25%;
     min-width: 300px;
     height: 100%;
-    background-image: url('https://static.wixstatic.com/media/ce3e5b_13b4c9faf6c5471ca7d292968d40feee~mv2.png');
+    
+    /* THE FIX: Fit the photo to the space */
+    background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://static.wixstatic.com/media/ce3e5b_13b4c9faf6c5471ca7d292968d40feee~mv2.png');
+    background-size: cover;      /* Scales the photo to fill the whole area */
+    background-position: center; /* Keeps the focus in the middle */
+    background-repeat: no-repeat; /* Prevents the image from tiling */
+
     box-shadow: inset 20px 0 50px rgba(0,0,0,0.8);
     border-right: 1px solid rgba(255,255,255,0.05);
     display: flex;
