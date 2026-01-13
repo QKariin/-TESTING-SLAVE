@@ -1,4 +1,4 @@
-// tasks.js - WITH PUNISHMENT OVERLAY & TRASH TALK
+// tasks.js - FORCED OVERLAY STYLING
 
 import { 
     currentTask, pendingTaskState, taskDatabase, taskQueue, gameStats, 
@@ -8,7 +8,7 @@ import {
 } from './state.js';
 import { triggerSound } from './utils.js';
 
-// Fallback Trash Talk (If CMS is empty)
+// Default insults if CMS is empty
 const DEFAULT_TRASH = [
     "Pathetic. Pay the price.",
     "Disappointing as always.",
@@ -50,7 +50,9 @@ export function restorePendingUI() {
     if (resetUiTimer) { clearTimeout(resetUiTimer); setResetUiTimer(null); }
     if (cooldownInterval) clearInterval(cooldownInterval);
     
+    // Update IDs based on 30/40/30 Layout
     document.getElementById('mainButtonsArea').classList.add('hidden');
+    
     const uploadBtn = document.getElementById('uploadBtnContainer');
     if(uploadBtn) uploadBtn.classList.remove('hidden');
     const timerRow = document.getElementById('activeTimerRow');
@@ -103,47 +105,50 @@ function applyPenaltyFail(reason) {
     finishTask(false);
 }
 
-// --- UPDATED FINISH TASK (HANDLES OVERLAY) ---
+// --- VISUAL FEEDBACK LOGIC ---
 export function finishTask(success) {
     if (cooldownInterval) clearInterval(cooldownInterval);
     setTaskJustFinished(true);
     setPendingTaskState(null);
     setCooldownInterval(null);
     
-    // 1. Get the Overlay
     const overlay = document.getElementById('celebrationOverlay');
-    const card = overlay.querySelector('.glass-card');
     
-    if (overlay && card) {
-        if (success) {
-            // SUCCESS STATE (Green)
-            card.classList.remove('punishment');
-            card.style.borderColor = "var(--neon-green)";
-            card.innerHTML = `
-                <div style="font-size:1.8rem;font-weight:900;color:var(--neon-green);text-shadow:0 0 20px var(--neon-green); font-family: 'Orbitron';">
-                    TASK<br>SUBMITTED
-                </div>`;
-        } else {
-            // FAILURE STATE (Red + Trash Talk)
-            card.classList.add('punishment'); // Adds red styling from CSS
-            
-            // Get Trash Talk from Window/CMS or Default
-            const trashList = (window.CMS_HIERARCHY && window.CMS_HIERARCHY.trash) 
-                              ? window.CMS_HIERARCHY.trash 
-                              : DEFAULT_TRASH;
-            
-            const randomInsult = trashList[Math.floor(Math.random() * trashList.length)];
+    if (overlay) {
+        // Target the inner glass card
+        const card = overlay.querySelector('.glass-card');
+        if(card) {
+            if (success) {
+                // GREEN SUCCESS
+                card.style.borderColor = "var(--neon-green)";
+                card.classList.remove('punishment');
+                card.innerHTML = `
+                    <div style="font-size:1.8rem;font-weight:900;color:var(--neon-green);text-shadow:0 0 20px var(--neon-green); font-family: 'Orbitron';">
+                        TASK<br>SUBMITTED
+                    </div>`;
+            } else {
+                // RED FAILURE
+                card.style.borderColor = "#ff003c"; // Force Red
+                card.classList.add('punishment');
+                
+                // Get Trash Talk
+                const trashList = (window.CMS_HIERARCHY && window.CMS_HIERARCHY.trash) 
+                                  ? window.CMS_HIERARCHY.trash 
+                                  : DEFAULT_TRASH;
+                const randomInsult = trashList[Math.floor(Math.random() * trashList.length)];
 
-            card.innerHTML = `
-                <div class="punish-title">FAILURE RECORDED</div>
-                <div class="punish-cost">-300 🪙</div>
-                <div class="punish-trash">"${randomInsult}"</div>
-            `;
+                // Inject Failure HTML
+                card.innerHTML = `
+                    <div class="punish-title">FAILURE RECORDED</div>
+                    <div class="punish-cost">-300 🪙</div>
+                    <div class="punish-trash">"${randomInsult}"</div>
+                `;
+            }
         }
 
         // Show Overlay
-        overlay.classList.add('active');
-        setTimeout(() => overlay.classList.remove('active'), 3500); // 3.5s display
+        overlay.style.opacity = "1";
+        setTimeout(() => { overlay.style.opacity = "0"; }, 3500);
     }
     
     resetTaskDisplay(success);
@@ -165,15 +170,16 @@ export function resetTaskDisplay(success) {
     
     const tc = document.getElementById('readyText');
     if(tc) {
+        // Update the drawer text temporarily to show result
         const color = success ? '#c5a059' : '#8b0000';
-        const text = success ? 'DIRECTIVE COMPLETE' : 'FAILURE RECORDED (-300 🪙)';
+        const text = success ? 'DIRECTIVE COMPLETE' : 'FAILURE RECORDED';
         tc.innerHTML = `<span style="color:${color}">${text}</span>`;
     }
     
     setCurrentTask(null);
     
     const timer = setTimeout(() => {
-        if(tc) tc.innerText = "AWAITING ORDERS";
+        if(tc) tc.innerText = "AWAITING ORDERS"; // Reset to default text
         setResetUiTimer(null);
     }, 4000);
     
