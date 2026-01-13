@@ -32,11 +32,13 @@ async function injectProfileCard() {
         if (!response.ok) throw new Error('Profile card not found');
         const html = await response.text();
         
-        // FIX: Target only the hook so the nav-menu is not deleted
+        // Target the ID hook exactly as it is in your index.html
         const hook = document.getElementById('profile-card-hook');
         if (hook) {
             hook.innerHTML = html;
             updateStats(); 
+        } else {
+            console.error("Hook ID 'profile-card-hook' not found in DOM");
         }
     } catch (err) {
         console.error("Profile Load Error:", err);
