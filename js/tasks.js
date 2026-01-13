@@ -1,4 +1,4 @@
-// tasks.js - FORCED OVERLAY STYLING
+// tasks.js - CHAT LOGGING VERSION (No Overlay)
 
 import { 
     currentTask, pendingTaskState, taskDatabase, taskQueue, gameStats, 
@@ -6,9 +6,9 @@ import {
     setCurrentTask, setPendingTaskState, setGameStats, 
     setIgnoreBackendUpdates, setTaskJustFinished, setResetUiTimer, setCooldownInterval
 } from './state.js';
-import { triggerSound } from './utils.js';
+import { triggerSound, cleanHTML } from './utils.js';
 
-// Default insults if CMS is empty
+// Default insults
 const DEFAULT_TRASH = [
     "Pathetic. Pay the price.",
     "Disappointing as always.",
@@ -20,6 +20,7 @@ const DEFAULT_TRASH = [
 export function getRandomTask() {
     if (gameStats.coins < 300) {
         triggerSound('sfx-deny');
+        injectChatMessage(false, "ACCESS DENIED: 300 🪙 REQUIRED");
         alert("You are too poor to serve. Earn 300 coins first.");
         return;
     }
@@ -50,7 +51,6 @@ export function restorePendingUI() {
     if (resetUiTimer) { clearTimeout(resetUiTimer); setResetUiTimer(null); }
     if (cooldownInterval) clearInterval(cooldownInterval);
     
-    // Update IDs based on 30/40/30 Layout
     document.getElementById('mainButtonsArea').classList.add('hidden');
     
     const uploadBtn = document.getElementById('uploadBtnContainer');
@@ -105,54 +105,51 @@ function applyPenaltyFail(reason) {
     finishTask(false);
 }
 
-// --- VISUAL FEEDBACK LOGIC ---
+// --- UPDATED: SEND RESULT TO CHAT ---
 export function finishTask(success) {
     if (cooldownInterval) clearInterval(cooldownInterval);
     setTaskJustFinished(true);
     setPendingTaskState(null);
     setCooldownInterval(null);
     
-    const overlay = document.getElementById('celebrationOverlay');
-    
-    if (overlay) {
-        // Target the inner glass card
-        const card = overlay.querySelector('.glass-card');
-        if(card) {
-            if (success) {
-                // GREEN SUCCESS
-                card.style.borderColor = "var(--neon-green)";
-                card.classList.remove('punishment');
-                card.innerHTML = `
-                    <div style="font-size:1.8rem;font-weight:900;color:var(--neon-green);text-shadow:0 0 20px var(--neon-green); font-family: 'Orbitron';">
-                        TASK<br>SUBMITTED
-                    </div>`;
-            } else {
-                // RED FAILURE
-                card.style.borderColor = "#ff003c"; // Force Red
-                card.classList.add('punishment');
-                
-                // Get Trash Talk
-                const trashList = (window.CMS_HIERARCHY && window.CMS_HIERARCHY.trash) 
-                                  ? window.CMS_HIERARCHY.trash 
-                                  : DEFAULT_TRASH;
-                const randomInsult = trashList[Math.floor(Math.random() * trashList.length)];
-
-                // Inject Failure HTML
-                card.innerHTML = `
-                    <div class="punish-title">FAILURE RECORDED</div>
-                    <div class="punish-cost">-300 🪙</div>
-                    <div class="punish-trash">"${randomInsult}"</div>
-                `;
-            }
-        }
-
-        // Show Overlay
-        overlay.style.opacity = "1";
-        setTimeout(() => { overlay.style.opacity = "0"; }, 3500);
+    if (success) {
+        // GREEN SUCCESS MESSAGE
+        injectChatMessage(true, "DIRECTIVE COMPLETE");
+    } else {
+        // RED FAILURE MESSAGE + TRASH TALK
+        const trashList = (window.CMS_HIERARCHY && window.CMS_HIERARCHY.trash) 
+                          ? window.CMS_HIERARCHY.trash 
+                          : DEFAULT_TRASH;
+        const insult = trashList[Math.floor(Math.random() * trashList.length)];
+        
+        const failMsg = `FAILURE RECORDED (-300 🪙)<br><span style="font-style:italic; opacity:0.7; font-size:0.8em;">"${insult}"</span>`;
+        injectChatMessage(false, failMsg);
     }
     
     resetTaskDisplay(success);
     setTimeout(() => { setTaskJustFinished(false); setIgnoreBackendUpdates(false); }, 5000);
+}
+
+// Helper to push HTML directly to chat
+function injectChatMessage(isSuccess, htmlContent) {
+    const chatBox = document.getElementById('chatContent');
+    if (!chatBox) return;
+
+    const cssClass = isSuccess ? "sys-gold" : "sys-red";
+    
+    // Create the HTML structure manually to match chat.js
+    const msgHTML = `
+        <div class="msg-row system-row">
+            <div class="msg-system ${cssClass}">
+                ${htmlContent}
+            </div>
+        </div>`;
+
+    chatBox.innerHTML += msgHTML;
+    
+    // Scroll bottom
+    const container = document.getElementById('chatBox');
+    if(container) container.scrollTop = container.scrollHeight;
 }
 
 export function cancelPendingTask() {
@@ -170,16 +167,16 @@ export function resetTaskDisplay(success) {
     
     const tc = document.getElementById('readyText');
     if(tc) {
-        // Update the drawer text temporarily to show result
+        // Temporarily show result in the drawer too
         const color = success ? '#c5a059' : '#8b0000';
-        const text = success ? 'DIRECTIVE COMPLETE' : 'FAILURE RECORDED';
+        const text = success ? 'COMPLETE' : 'FAILED';
         tc.innerHTML = `<span style="color:${color}">${text}</span>`;
     }
     
     setCurrentTask(null);
     
     const timer = setTimeout(() => {
-        if(tc) tc.innerText = "AWAITING ORDERS"; // Reset to default text
+        if(tc) tc.innerText = "AWAITING ORDERS";
         setResetUiTimer(null);
     }, 4000);
     
