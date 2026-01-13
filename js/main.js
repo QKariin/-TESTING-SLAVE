@@ -1,3 +1,5 @@
+// main.js - FIXED: REMOVED CLICK CONFLICTS
+
 // --- 1. FULL IMPORTS ---
 import { CONFIG, URLS, LEVELS, FUNNY_SAYINGS, STREAM_PASSWORDS } from './config.js';
 import { 
@@ -24,31 +26,36 @@ import { handleEvidenceUpload, handleProfileUpload, handleAdminUpload } from './
 import { handleHoldStart, handleHoldEnd, claimKneelReward, updateKneelingStatus } from '../profile/kneeling/kneeling.js';
 import { Bridge } from './bridge.js';
 
-// --- 2. CRITICAL UI FUNCTIONS ---
+// --- 2. THE UI TOGGLE LOGIC (FIXED) ---
 
-// Toggle the slide-down panel
 window.toggleTaskDetails = function(forceOpen = null) {
+    // If called from an event (onclick), stop it from bubbling up to the closer
+    if (window.event) {
+        window.event.stopPropagation();
+    }
+
     const panel = document.getElementById('taskDetailPanel');
     const link = document.querySelector('.see-task-link'); 
     
     if (!panel) return;
 
-    const shouldOpen = (forceOpen === true) || (forceOpen === null && !panel.classList.contains('open'));
+    // Determine if we are opening or closing
+    const currentlyOpen = panel.classList.contains('open');
+    const shouldOpen = (forceOpen === true) || (forceOpen === null && !currentlyOpen);
 
     if (shouldOpen) {
         panel.classList.add('open');
         panel.style.maxHeight = "500px";
         panel.style.opacity = "1";
-        if(link) link.style.opacity = '0';
+        if(link) link.style.opacity = '0'; // Hide button while open
     } else {
         panel.classList.remove('open');
         panel.style.maxHeight = "0px";
         panel.style.opacity = "0";
-        if(link) link.style.opacity = '1';
+        if(link) link.style.opacity = '1'; // Show button when closed
     }
 };
 
-// Handle UI State Switching
 function updateTaskUIState(isActive) {
     const statusLabel = document.getElementById('taskStatusLabel');
     const timerRow = document.getElementById('activeTimerRow');
@@ -56,6 +63,7 @@ function updateTaskUIState(isActive) {
     const upContainer = document.getElementById('uploadBtnContainer');
 
     if (isActive) {
+        // WORKING
         if(statusLabel) {
             statusLabel.innerHTML = "STATUS: <span style='color:var(--neon-green)'>WORKING</span>";
             statusLabel.className = "status-text-lg status-working";
@@ -64,6 +72,7 @@ function updateTaskUIState(isActive) {
         if(reqBtn) reqBtn.classList.add('hidden');
         if(upContainer) upContainer.classList.remove('hidden');
     } else {
+        // UNPRODUCTIVE
         if(statusLabel) {
             statusLabel.innerHTML = "STATUS: UNPRODUCTIVE";
             statusLabel.className = "status-text-lg status-unproductive";
@@ -75,29 +84,21 @@ function updateTaskUIState(isActive) {
     }
 }
 
-// --- 3. FIXED CLICK LISTENER (PREVENTS CONFLICT) ---
+// --- 3. THE GLOBAL LISTENER (SIMPLIFIED) ---
+// Only job: Close the panel if you click OUTSIDE of it.
 document.addEventListener('click', function(event) {
-    
-    // FIX: If clicking the actual link/button, IGNORE this global listener
-    // (Let the button handle itself)
-    if (event.target.closest('.see-task-link')) return;
-
-    // Only handle clicks on the GENERAL info block
-    const infoBlock = event.target.closest('.task-info-block');
-    if (infoBlock) {
-        const timerRow = document.getElementById('activeTimerRow');
-        if (timerRow && !timerRow.classList.contains('hidden')) {
-            window.toggleTaskDetails(null);
-        }
-    }
-
-    // Auto-close if clicking outside
     const card = document.getElementById('taskCard');
     const panel = document.getElementById('taskDetailPanel');
+    
+    // If clicked the toggle button, IGNORE (let the button handle it)
+    if (event.target.closest('.see-task-link')) return;
+
+    // If panel is open AND click is outside the card -> Close it
     if (panel && panel.classList.contains('open') && card && !card.contains(event.target)) {
         window.toggleTaskDetails(false);
     }
 });
+
 
 // --- 4. INITIALIZATION ---
 
@@ -135,7 +136,7 @@ function initDomProfile() {
 }
 initDomProfile();
 
-// --- 5. BRIDGE & DATA ---
+// --- 5. BRIDGE ---
 
 Bridge.listen((data) => {
     const ignoreList = ["CHAT_ECHO", "UPDATE_FULL_DATA", "UPDATE_DOM_STATUS", "instantUpdate", "instantReviewSuccess"];
@@ -255,6 +256,7 @@ window.addEventListener("message", (event) => {
                         restorePendingUI();
                         updateTaskUIState(true);
                         
+                        // Only auto-expand if it's NOT the first page load
                         if (!isInitialLoad) {
                              window.toggleTaskDetails(true);
                         }
@@ -284,7 +286,7 @@ window.addEventListener("message", (event) => {
 });
 
 // ==========================================
-// HELPERS & EXPORTS
+// HELPERS
 // ==========================================
 
 window.handleUploadStart = function(inputElement) {
@@ -389,7 +391,7 @@ function updateStats() {
     updateKneelingStatus(); 
 }
 
-// ... (Legacy code maintained for safety) ...
+// ... (Rest of legacy handlers - unchanged) ...
 let currentHuntIndex = 0;
 let filteredItems = [];
 let selectedReason = "";
