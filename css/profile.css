@@ -123,23 +123,24 @@ body {
 .view-wrapper { width: 100%; height: 100%; display: flex; flex-direction: column; }
 
 /* =========================================
-   4. TASK RIBBON & CONTROLS (FIXED)
+   4. TASK RIBBON & CONTROLS (FINAL)
    ========================================= */
 
-/* Main Container - The "Jail" for the task logic */
+/* Main Container */
 .task-ribbon-container {
     margin: 20px;
     padding: 0; 
     display: flex;
     flex-direction: column;
-    background: rgba(10,10,10,0.95); /* Slightly darker for contrast */
+    background: rgba(10,10,10,0.95);
     border: 1px solid #333;
-    border-radius: 4px; /* Slight rounding for luxury feel */
-    position: relative; /* Anchor for z-indexes */
+    border-radius: 4px;
+    position: relative;
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    z-index: 1; 
 }
 
-/* TOP ROW - The Control Center */
+/* TOP ROW */
 .task-header-row {
     display: flex;
     justify-content: space-between;
@@ -147,23 +148,21 @@ body {
     padding: 15px 25px;
     height: 100px;
     position: relative;
-    z-index: 50; /* High priority to sit above the slide panel */
+    z-index: 5; 
     background: rgba(5,5,5,0.8);
-    border-bottom: 1px solid transparent; /* Prepare for border transition */
-    transition: border-bottom 0.3s;
+    border-bottom: 1px solid transparent;
 }
 
-/* Status & Timer Block */
+/* LEFT: STATUS & TRIGGER */
 .task-info-block {
     position: relative;
-    z-index: 100; /* Sit above the header background */
+    z-index: 10;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    pointer-events: auto; /* Ensure clicks register */
+    pointer-events: auto;
 }
 
-/* STATUS TEXT */
 .status-text-lg {
     font-family: 'Orbitron', sans-serif;
     font-weight: 900;
@@ -174,109 +173,27 @@ body {
 .status-unproductive { color: #666; }
 .status-working { color: var(--neon-green); text-shadow: 0 0 10px rgba(0, 255, 0, 0.4); }
 
-/* TIMER */
 .ribbon-timer {
-    font-family: 'Orbitron'; 
-    font-size: 2rem; 
-    color: white; 
-    font-weight: 700; 
-    line-height: 1;
-    display: block;
+    font-family: 'Orbitron'; font-size: 2rem; color: white; font-weight: 700; line-height: 1;
 }
 
-/* THE BUTTON - MADE UNMISSABLE */
 .see-task-link {
-    font-family: 'Cinzel', serif; 
-    font-size: 0.7rem; 
-    color: var(--gold); 
-    font-weight: 700;
-    letter-spacing: 2px;
-    cursor: pointer; 
-    margin-top: 5px; 
-    
-    /* CLICK AREA EXPANSION */
-    padding: 10px 0; 
-    width: 100%;
-    text-align: left;
-    
-    /* Animation */
-    transition: all 0.2s ease;
-    opacity: 0.8;
+    font-family: 'Cinzel', serif; font-size: 0.7rem; color: var(--gold); 
+    font-weight: 700; letter-spacing: 2px; cursor: pointer; margin-top: 5px; 
+    padding: 15px 0; width: 100%; text-align: left;
+    position: relative; z-index: 20; pointer-events: auto !important;
 }
-.see-task-link:hover { 
-    color: #fff; 
-    opacity: 1; 
-    transform: translateX(5px); /* Visual feedback when hovering */
-}
+.see-task-link:hover { color: #fff; transform: translateX(5px); }
 
-/* DETAILS PANEL (The Slide Down) */
-.task-detail-panel {
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transform: translateY(-20px); /* Slide effect */
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    
-    background: rgba(15,15,15,0.98);
-    border-top: 1px solid #333;
-    position: relative;
-    z-index: 1; /* Sit below the header */
-}
-
-.task-detail-panel.open {
-    max-height: 400px; /* Plenty of room */
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.detail-content {
-    padding: 30px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.ribbon-status {
-    font-family: 'Inter', sans-serif;
-    font-size: 1.2rem;
-    color: #e0e0e0;
-    line-height: 1.6;
-}
-
-/* FOOTER BUTTONS */
-.panel-footer {
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center;
-    border-top: 1px solid #333; 
-    padding-top: 15px;
-    margin-top: 10px;
-}
-
-.text-btn {
-    background: none; 
-    border: none; 
-    font-family: 'Orbitron'; 
-    font-size: 0.7rem;
-    cursor: pointer; 
-    color: #888; 
-    letter-spacing: 1px;
-    transition: 0.2s;
-    padding: 10px; /* Easy to click */
-}
-.text-btn:hover { color: white; }
-
-.btn-skip { color: #888; border: 1px solid #333; padding: 5px 15px; border-radius: 4px; }
-.btn-skip:hover { color: var(--neon-red); border-color: var(--neon-red); background: rgba(255, 0, 60, 0.1); }
-
-/* CONTROLS (Right Side) */
+/* RIGHT: CONTROLS & BUTTONS */
 .task-controls-block {
-    z-index: 60; /* Above everything */
     position: relative;
+    z-index: 20;
+    display: flex;
+    align-items: center;
 }
 
-/* BUTTONS */
+/* --- THE SINGLE, WORKING BUTTON DEFINITION --- */
 .action-btn { 
     background: transparent; 
     border: 1px solid var(--gold); 
@@ -286,33 +203,88 @@ body {
     font-weight: 700; 
     cursor: pointer; 
     transition: 0.3s; 
+    
+    /* CRITICAL FIX: Z-Index to click above header */
+    position: relative;
+    z-index: 100; 
+    pointer-events: auto; 
 }
+
 .action-btn:hover { 
     background: var(--gold); 
     color: #000; 
-    box-shadow: 0 0 20px rgba(197, 160, 89, 0.4); 
+    box-shadow: 0 0 15px var(--gold); 
 }
 
-.btn-upload {
-    background: rgba(255, 215, 0, 0.1);
+.btn-upload { background: rgba(255, 215, 0, 0.1); }
+
+.btn-dim { 
+    border-color: #444; color: #666; padding: 12px 25px; 
+    background: transparent; cursor: pointer; font-family: 'Cinzel'; 
+    position: relative; z-index: 100;
 }
 
-/* Helpers */
-.hidden { display: none !important; }
+.icon-btn { 
+    background: transparent; border: none; color: var(--gold); 
+    font-size: 1.5rem; cursor: pointer; transition: 0.2s; 
+    position: relative; z-index: 100;
+}
 
-/* Buttons */
-.action-btn { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 12px 25px; font-family: 'Cinzel'; font-weight: 700; cursor: pointer; transition: 0.3s; }
-.action-btn:hover { background: var(--gold); color: #000; box-shadow: 0 0 15px var(--gold); }
-.btn-dim { border-color: #444; color: #666; padding: 12px 25px; background: transparent; cursor: pointer; font-family: 'Cinzel'; }
-.icon-btn { background: transparent; border: none; color: var(--gold); font-size: 1.5rem; cursor: pointer; transition: 0.2s; }
-
-/* Loading State for Button */
 .btn-loading {
-    background: #333 !important; color: var(--neon-yellow) !important; border-color: var(--neon-yellow) !important;
+    background: #333 !important; color: var(--neon-yellow) !important; 
+    border-color: var(--neon-yellow) !important;
     cursor: wait !important; pointer-events: none;
 }
+
+/* SLIDE DOWN PANEL */
+.task-detail-panel {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(15,15,15,0.98);
+    border-top: 1px solid #333;
+    position: relative;
+    z-index: 1;
+}
+
+.task-detail-panel.open {
+    max-height: 400px;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.detail-content {
+    padding: 30px;
+    text-align: center;
+}
+
+.ribbon-status {
+    font-family: 'Inter', sans-serif; font-size: 1.2rem; 
+    color: #e0e0e0; line-height: 1.6; margin-bottom: 20px;
+}
+
+.panel-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid #333; padding-top: 15px; margin-top: 10px;
+}
+
+.text-btn {
+    background: none; border: none; font-family: 'Orbitron'; font-size: 0.7rem;
+    cursor: pointer; color: #888; letter-spacing: 1px; padding: 10px;
+    position: relative; z-index: 10;
+}
+.text-btn:hover { color: white; }
+
+.btn-skip { color: #888; border: 1px solid #333; padding: 5px 15px; border-radius: 4px; }
+.btn-skip:hover { color: var(--neon-red); border-color: var(--neon-red); background: rgba(255, 0, 60, 0.1); }
+
 .blink { animation: blinker 1s linear infinite; }
 @keyframes blinker { 50% { opacity: 0; } }
+
+/* Utility */
+.hidden { display: none !important; }
 
 /* Timer Badge */
 #activeBadge {
