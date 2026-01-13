@@ -1,4 +1,5 @@
-// --- 1. FULL IMPORTS ---
+// main.js - RESTORED UI HELPERS FOR DRAWER
+
 import { CONFIG, URLS, LEVELS, FUNNY_SAYINGS, STREAM_PASSWORDS } from './config.js';
 import { 
     gameStats, stats, userProfile, currentTask, taskDatabase, galleryData, 
@@ -24,7 +25,91 @@ import { handleEvidenceUpload, handleProfileUpload, handleAdminUpload } from './
 import { handleHoldStart, handleHoldEnd, claimKneelReward, updateKneelingStatus } from '../profile/kneeling/kneeling.js';
 import { Bridge } from './bridge.js';
 
-// --- 2. INITIALIZATION ---
+// --- 2. THE MISSING UI HELPERS (DRAWER LOGIC) ---
+
+window.toggleTaskDetails = function(forceOpen = null) {
+    // Prevent click conflicts
+    if (window.event) window.event.stopPropagation();
+
+    const panel = document.getElementById('taskDetailPanel');
+    const link = document.querySelector('.see-task-link'); 
+    
+    if (!panel) return;
+
+    const isOpen = panel.classList.contains('open');
+    const shouldOpen = (forceOpen === true) || (forceOpen === null && !isOpen);
+
+    if (shouldOpen) {
+        panel.classList.add('open');
+        // Force style for smooth animation
+        panel.style.maxHeight = "500px"; 
+        panel.style.opacity = "1";
+        if(link) link.innerHTML = "▲ HIDE DIRECTIVE ▲";
+    } else {
+        panel.classList.remove('open');
+        panel.style.maxHeight = "0px";
+        panel.style.opacity = "0";
+        if(link) link.innerHTML = "▼ SEE DIRECTIVE ▼";
+    }
+};
+
+window.updateTaskUIState = function(isActive) {
+    const statusLabel = document.getElementById('taskStatusLabel');
+    const timerRow = document.getElementById('activeTimerRow');
+    const btnArea = document.getElementById('mainButtonsArea');
+    const uploadArea = document.getElementById('uploadBtnContainer');
+    const statusInd = document.getElementById('statusIndicator'); // For the 30/40/30 layout if used
+
+    if (isActive) {
+        // ACTIVE STATE
+        if(statusLabel) {
+            statusLabel.innerHTML = "STATUS: <span style='color:var(--neon-green)'>WORKING</span>";
+            statusLabel.className = "status-text-lg status-working";
+        }
+        if(statusInd) {
+            statusInd.innerHTML = "WORKING";
+            statusInd.className = "status-text-lg status-working";
+        }
+
+        if(timerRow) timerRow.classList.remove('hidden');
+        if(btnArea) btnArea.classList.add('hidden');
+        if(uploadArea) uploadArea.classList.remove('hidden');
+        
+    } else {
+        // IDLE STATE
+        if(statusLabel) {
+            statusLabel.innerHTML = "STATUS: UNPRODUCTIVE";
+            statusLabel.className = "status-text-lg status-unproductive";
+        }
+        if(statusInd) {
+            statusInd.innerHTML = "UNPRODUCTIVE";
+            statusInd.className = "status-text-lg status-unproductive";
+        }
+
+        if(timerRow) timerRow.classList.add('hidden');
+        if(btnArea) btnArea.classList.remove('hidden');
+        if(uploadArea) uploadArea.classList.add('hidden');
+        
+        // Auto-close drawer on reset
+        window.toggleTaskDetails(false);
+    }
+};
+
+// Global Click Listener to close drawer when clicking outside
+document.addEventListener('click', function(event) {
+    const card = document.getElementById('taskCard');
+    const panel = document.getElementById('taskDetailPanel');
+    
+    // Ignore clicks on the toggle button itself
+    if (event.target.closest('.see-task-link')) return;
+
+    if (panel && panel.classList.contains('open') && card && !card.contains(event.target)) {
+        window.toggleTaskDetails(false);
+    }
+});
+
+// --- 3. INITIALIZATION & BRIDGE ---
+
 document.addEventListener('click', () => {
     if (!window.audioUnlocked) {
         ['msgSound', 'coinSound', 'skipSound', 'sfx-buy', 'sfx-deny'].forEach(id => {
@@ -51,17 +136,7 @@ resizer.observe(document.body);
 function initDomProfile() {
     const frame = document.getElementById('twitchFrame');
     if(frame && !frame.src) {
-        const parents = [
-            "qkarin.com", 
-            "www.qkarin.com", 
-            "entire-ecosystem.vercel.app", 
-            "html-components.wixusercontent.com", 
-            "filesusr.com", 
-            "editor.wix.com", 
-            "manage.wix.com", 
-            "localhost"
-        ];
-        
+        const parents = ["qkarin.com", "www.qkarin.com", "entire-ecosystem.vercel.app", "html-components.wixusercontent.com", "filesusr.com", "editor.wix.com", "manage.wix.com", "localhost"];
         let parentString = "";
         parents.forEach(p => parentString += `&parent=${p}`);
         frame.src = `https://player.twitch.tv/?channel=${CONFIG.TWITCH_CHANNEL}${parentString}&muted=true&autoplay=true`;
@@ -69,17 +144,9 @@ function initDomProfile() {
 }
 initDomProfile();
 
-// --- 3. BRIDGE LISTENER ---
 Bridge.listen((data) => {
-    const ignoreList = [
-        "CHAT_ECHO", 
-        "UPDATE_FULL_DATA", 
-        "UPDATE_DOM_STATUS", 
-        "instantUpdate", 
-        "instantReviewSuccess"
-    ];
-
-    if (ignoreList.includes(data.type)) return;
+    const ignoreList = ["CHAT_ECHO", "UPDATE_FULL_DATA", "UPDATE_DOM_STATUS", "instantUpdate", "instantReviewSuccess"];
+    if (ignoreList.includes(data.type)) return; 
     window.postMessage(data, "*"); 
 });
 
@@ -155,7 +222,10 @@ window.addEventListener("message", (event) => {
                 renderRewardGrid();
                 if (data.profile.lastWorship) setLastWorshipTime(new Date(data.profile.lastWorship).getTime());
                 setStats(migrateGameStatsToStats(data.profile, stats));
-                if(data.profile.profilePicture) document.getElementById('profilePic').src = getOptimizedUrl(data.profile.profilePicture, 150);
+                if(data.profile.profilePicture) {
+                    const picEl = document.getElementById('profilePic');
+                    if(picEl) picEl.src = getOptimizedUrl(data.profile.profilePicture, 150);
+                }
                 updateStats(); 
             }
 
@@ -181,24 +251,24 @@ window.addEventListener("message", (event) => {
                 }
             }
 
+            // --- TASK UPDATE LOGIC ---
             if (payload.pendingState !== undefined) {
                 if (!taskJustFinished && !ignoreBackendUpdates) {
                     setPendingTaskState(payload.pendingState);
                     if (pendingTaskState) {
                         setCurrentTask(pendingTaskState.task);
                         restorePendingUI();
-                    } else if (!resetUiTimer) {
-                        document.getElementById('cooldownSection').classList.add('hidden');
-                        document.getElementById('activeBadge').classList.remove('show');
-                        document.getElementById('mainButtonsArea').classList.remove('hidden');
+                        // CALL THE HELPER
+                        window.updateTaskUIState(true);
                         
-                        document.getElementById('taskContent').innerHTML = `
-                            <h2 id="readyText">VACANT ASSET</h2>
-                            <p class="inter" style="color: var(--gold); opacity: 0.6; font-family: 'Orbitron'; font-size: 0.7rem; letter-spacing: 2px;">
-                                STATUS: UNPRODUCTIVE <br>
-                                SYSTEM: AWAITING ROYAL DECREE
-                            </p>
-                        `;
+                        // Auto-expand if reloading
+                        if (!isInitialLoad) {
+                             window.toggleTaskDetails(true);
+                        }
+                    } else if (!resetUiTimer) {
+                        window.updateTaskUIState(false);
+                        const rt = document.getElementById('readyText');
+                        if(rt) rt.innerText = "AWAITING ORDERS";
                     }
                 }
             }
@@ -218,8 +288,7 @@ window.addEventListener("message", (event) => {
     } catch(err) { console.error("Main error:", err); }
 });
 
-// --- 4. EXPOSE FUNCTIONS TO WINDOW (THE FIX) ---
-// This connects the imported functions to your HTML buttons
+// --- EXPORTS TO WINDOW ---
 window.getRandomTask = getRandomTask;
 window.cancelPendingTask = cancelPendingTask;
 window.handleEvidenceUpload = handleEvidenceUpload;
@@ -258,7 +327,7 @@ window.buyRealCoins = buyRealCoins;
 window.WISHLIST_ITEMS = WISHLIST_ITEMS;
 window.gameStats = gameStats;
 
-// Legacy updateStats needed for UI sync
+// Legacy updateStats (Must remain)
 function updateStats() {
     const subName = document.getElementById('subName');
     const subHierarchy = document.getElementById('subHierarchy');
@@ -302,35 +371,16 @@ function updateStats() {
     updateKneelingStatus(); 
 }
 
-// Tribute UI Helpers
+// Tribute logic
 let currentHuntIndex = 0, filteredItems = [], selectedReason = "", selectedNote = "", selectedItem = null;
-function toggleTributeHunt() {
-    const overlay = document.getElementById('tributeHuntOverlay');
-    if (overlay.classList.contains('hidden')) { selectedReason = ""; selectedItem = null; if(document.getElementById('huntNote')) document.getElementById('huntNote').value = ""; overlay.classList.remove('hidden'); showTributeStep(1); } else { overlay.classList.add('hidden'); resetTributeFlow(); }
-}
+function toggleTributeHunt() { const overlay = document.getElementById('tributeHuntOverlay'); if (overlay.classList.contains('hidden')) { selectedReason = ""; selectedItem = null; if(document.getElementById('huntNote')) document.getElementById('huntNote').value = ""; overlay.classList.remove('hidden'); showTributeStep(1); } else { overlay.classList.add('hidden'); resetTributeFlow(); } }
 function showTributeStep(step) { document.querySelectorAll('.tribute-step').forEach(el => el.classList.add('hidden')); const target = document.getElementById('tributeStep' + step); if (target) target.classList.remove('hidden'); const progressEl = document.getElementById('huntProgress'); if (progressEl) progressEl.innerText = ["", "INTENTION", "THE HUNT", "CONFESSION"][step] || ""; }
 function selectTributeReason(reason) { selectedReason = reason; renderHuntStore(gameStats.coins); showTributeStep(2); }
 function setTributeNote(note) { showTributeStep(3); }
 function filterByBudget(max) { renderHuntStore(max); showTributeStep(3); }
-function renderHuntStore(budget) {
-    const grid = document.getElementById('huntStoreGrid'); if (!grid) return;
-    filteredItems = (window.WISHLIST_ITEMS || []).filter(item => Number(item.price || item.Price || 0) <= budget);
-    currentHuntIndex = 0; if (filteredItems.length === 0) { grid.innerHTML = '<div style="color:#666; text-align:center; padding:40px;">NO TRIBUTES IN THIS TIER...</div>'; return; }
-    showTinderCard();
-}
-function showTinderCard() {
-    const grid = document.getElementById('huntStoreGrid'); const item = filteredItems[currentHuntIndex];
-    if (!item) { grid.innerHTML = `<div style="text-align:center; padding:40px;"><div style="font-size:2rem; margin-bottom:10px;">💨</div><div style="color:#666; font-size:0.7rem;">NO MORE ITEMS IN THIS TIER</div><button class="tab-btn" onclick="showTributeStep(2)" style="margin-top:15px; width:auto; padding:5px 15px;">CHANGE BUDGET</button></div>`; return; }
-    grid.style.perspective = "1000px"; grid.innerHTML = `<div id="tinderCard" class="tinder-card-main"><div id="likeLabel" class="swipe-indicator like">SACRIFICE</div><div id="nopeLabel" class="swipe-indicator nope">SKIP</div><img src="${item.img || item.image}" draggable="false"><div class="tinder-card-info"><div style="color:var(--neon-yellow); font-size:1.8rem; font-weight:900;">${item.price} 🪙</div><div style="color:white; letter-spacing:2px; font-weight:bold; font-size:0.8rem;">${item.name.toUpperCase()}</div></div></div>`;
-    initSwipeEvents(document.getElementById('tinderCard'), item);
-}
-function initSwipeEvents(card, item) {
-    let startX = 0; let currentX = 0;
-    const handleStart = (e) => { startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX; card.style.transition = 'none'; };
-    const handleMove = (e) => { if (!startX) return; currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX; const diff = currentX - startX; card.style.transform = `translateX(${diff}px) rotate(${diff / 15}deg)`; const likeLabel = document.getElementById('likeLabel'); const nopeLabel = document.getElementById('nopeLabel'); if(likeLabel) likeLabel.style.opacity = diff > 0 ? (diff / 100) : 0; if(nopeLabel) nopeLabel.style.opacity = diff < 0 ? (Math.abs(diff) / 100) : 0; };
-    const handleEnd = () => { const diff = currentX - startX; card.style.transition = 'transform 0.4s ease, opacity 0.4s ease'; if (diff > 120) { card.style.transform = `translateX(600px) rotate(45deg)`; selectedItem = item; if(document.getElementById('huntSelectedImg')) document.getElementById('huntSelectedImg').src = item.img || item.image; if(document.getElementById('huntSelectedName')) document.getElementById('huntSelectedName').innerText = item.name.toUpperCase(); if(document.getElementById('huntSelectedPrice')) document.getElementById('huntSelectedPrice').innerText = item.price + " 🪙"; setTimeout(() => { showTributeStep(4); }, 200); } else if (diff < -120) { card.style.transform = `translateX(-600px) rotate(-45deg)`; card.style.opacity = "0"; currentHuntIndex++; setTimeout(() => { showTinderCard(); }, 300); } else { card.style.transform = `translateX(0) rotate(0)`; if(document.getElementById('likeLabel')) document.getElementById('likeLabel').style.opacity = 0; if(document.getElementById('nopeLabel')) document.getElementById('nopeLabel').style.opacity = 0; } startX = 0; };
-    card.addEventListener('mousedown', handleStart); card.addEventListener('touchstart', handleStart); window.addEventListener('mousemove', handleMove); window.addEventListener('touchmove', handleMove); window.addEventListener('mouseup', handleEnd); window.addEventListener('touchend', handleEnd);
-}
+function renderHuntStore(budget) { const grid = document.getElementById('huntStoreGrid'); if (!grid) return; filteredItems = (window.WISHLIST_ITEMS || []).filter(item => Number(item.price || item.Price || 0) <= budget); currentHuntIndex = 0; if (filteredItems.length === 0) { grid.innerHTML = '<div style="color:#666; text-align:center; padding:40px;">NO TRIBUTES IN THIS TIER...</div>'; return; } showTinderCard(); }
+function showTinderCard() { const grid = document.getElementById('huntStoreGrid'); const item = filteredItems[currentHuntIndex]; if (!item) { grid.innerHTML = `<div style="text-align:center; padding:40px;"><div style="font-size:2rem; margin-bottom:10px;">💨</div><div style="color:#666; font-size:0.7rem;">NO MORE ITEMS IN THIS TIER</div><button class="tab-btn" onclick="showTributeStep(2)" style="margin-top:15px; width:auto; padding:5px 15px;">CHANGE BUDGET</button></div>`; return; } grid.style.perspective = "1000px"; grid.innerHTML = `<div id="tinderCard" class="tinder-card-main"><div id="likeLabel" class="swipe-indicator like">SACRIFICE</div><div id="nopeLabel" class="swipe-indicator nope">SKIP</div><img src="${item.img || item.image}" draggable="false"><div class="tinder-card-info"><div style="color:var(--neon-yellow); font-size:1.8rem; font-weight:900;">${item.price} 🪙</div><div style="color:white; letter-spacing:2px; font-weight:bold; font-size:0.8rem;">${item.name.toUpperCase()}</div></div></div>`; initSwipeEvents(document.getElementById('tinderCard'), item); }
+function initSwipeEvents(card, item) { let startX = 0; let currentX = 0; const handleStart = (e) => { startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX; card.style.transition = 'none'; }; const handleMove = (e) => { if (!startX) return; currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX; const diff = currentX - startX; card.style.transform = `translateX(${diff}px) rotate(${diff / 15}deg)`; const likeLabel = document.getElementById('likeLabel'); const nopeLabel = document.getElementById('nopeLabel'); if(likeLabel) likeLabel.style.opacity = diff > 0 ? (diff / 100) : 0; if(nopeLabel) nopeLabel.style.opacity = diff < 0 ? (Math.abs(diff) / 100) : 0; }; const handleEnd = () => { const diff = currentX - startX; card.style.transition = 'transform 0.4s ease, opacity 0.4s ease'; if (diff > 120) { card.style.transform = `translateX(600px) rotate(45deg)`; selectedItem = item; if(document.getElementById('huntSelectedImg')) document.getElementById('huntSelectedImg').src = item.img || item.image; if(document.getElementById('huntSelectedName')) document.getElementById('huntSelectedName').innerText = item.name.toUpperCase(); if(document.getElementById('huntSelectedPrice')) document.getElementById('huntSelectedPrice').innerText = item.price + " 🪙"; setTimeout(() => { showTributeStep(4); }, 200); } else if (diff < -120) { card.style.transform = `translateX(-600px) rotate(-45deg)`; card.style.opacity = "0"; currentHuntIndex++; setTimeout(() => { showTinderCard(); }, 300); } else { card.style.transform = `translateX(0) rotate(0)`; if(document.getElementById('likeLabel')) document.getElementById('likeLabel').style.opacity = 0; if(document.getElementById('nopeLabel')) document.getElementById('nopeLabel').style.opacity = 0; } startX = 0; }; card.addEventListener('mousedown', handleStart); card.addEventListener('touchstart', handleStart); window.addEventListener('mousemove', handleMove); window.addEventListener('touchmove', handleMove); window.addEventListener('mouseup', handleEnd); window.addEventListener('touchend', handleEnd); }
 function toggleHuntNote(show) { const container = document.getElementById('huntNoteContainer'); const btn = document.getElementById('btnShowNote'); if (!container || !btn) return; if (show) { container.classList.remove('hidden'); btn.classList.add('hidden'); document.getElementById('huntNote').focus(); } else { container.classList.add('hidden'); btn.classList.remove('hidden'); } }
 function finalizeSacrifice() { const noteEl = document.getElementById('huntNote'); const note = noteEl ? noteEl.value.trim() : ""; if (!selectedItem || !selectedReason) return; if (gameStats.coins < selectedItem.price) { triggerSound('sfx-deny'); alert('Insufficient coins!'); return; } const tributeMessage = `💝 TRIBUTE: ${selectedReason}\n🎁 ITEM: ${selectedItem.name}\n💰 COST: ${selectedItem.price}\n💌 "${note || "A silent tribute."}"`; window.parent.postMessage({ type: "PURCHASE_ITEM", itemName: selectedItem.name, cost: selectedItem.price, messageToDom: tributeMessage }, "*"); triggerSound('sfx-buy'); triggerCoinShower(); toggleTributeHunt(); }
 function buyRealCoins(amount) { triggerSound('sfx-buy'); window.parent.postMessage({ type: "INITIATE_STRIPE_PAYMENT", amount: amount }, "*"); }
