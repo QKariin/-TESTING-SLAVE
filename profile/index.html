@@ -113,156 +113,171 @@
 
     <!-- RIGHT SIDE -->
     <div class="layout-right">
+    
+    <!-- Header is empty/hidden to give room -->
+    <div class="right-header hidden"></div>
+
+    <div class="content-stage">
         
-        <!-- REWARD OVERLAY (Added here so it overlays everything on the right) -->
-        <div id="kneelRewardOverlay" class="hidden" style="position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 99999; backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: center;">
-            <div style="text-align: center; width: 100%; padding: 20px;">
-                <h2 style="font-family:'Orbitron'; font-weight: 900; color: white; font-size: 1.5rem; letter-spacing: 5px; margin-bottom: 30px; text-shadow: 0 0 20px white;">RECOGNITION GRANTED</h2>
-                
-                <div class="reward-slider-container" style="display:flex; flex-direction:column; gap:20px; width:80%; margin:0 auto;">
-                    <!-- OPTION 1: STATUS SLIDER -->
-                    <div class="iphone-slider slider-pink" onclick="claimKneelReward('points')">
-                        <div class="slider-track-text">CLAIM MERIT (+50 PTS)</div>
+        <!-- 1. CONSOLE (Task & Chat) -->
+        <div id="viewServingTop" class="view-wrapper" style="display: flex; flex-direction: column; height: 100%;">
+            
+            <!-- TASK CARD (Fixed) -->
+            <div id="taskCard" class="glass-card task-ribbon" style="margin: 20px 20px 0 20px; position: relative; z-index: 100; justify-content: space-between;">
+                <div class="ribbon-left" style="width: 30%; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                    <div class="ribbon-label">STATUS</div>
+                    <div id="statusIndicator" class="status-text-lg status-unproductive">UNPRODUCTIVE</div>
+                </div>
+                <div class="ribbon-center" style="width: 40%; border: none; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                    <div id="idleMessage" class="ribbon-status" style="opacity: 0.7;">AWAITING DIRECTIVE...</div>
+                    <div id="activeTimerRow" class="hidden" style="display: flex; flex-direction: column; align-items: center;">
+                        <span id="timerDisplay" class="ribbon-timer">00:00:00</span>
+                        <div class="see-task-link" onclick="window.toggleTaskDetails(null)">▼ SEE DIRECTIVE ▼</div>
+                    </div>
+                </div>
+                <div class="ribbon-right" style="width: 30%; display: flex; justify-content: center; align-items: center;">
+                    <div id="mainButtonsArea" style="width: 100%;">
+                        <button id="newTaskBtn" onclick="window.getRandomTask()" class="action-btn" style="width: 100%;">REQUEST TASK</button>
+                    </div>
+                    <div id="uploadBtnContainer" class="hidden" style="width: 100%;">
+                        <input type="file" id="evidenceInput" accept="image/*,video/*" class="hidden" onchange="window.handleUploadStart(this)">
+                        <button id="btnUpload" onclick="document.getElementById('evidenceInput').click()" class="action-btn btn-upload" style="width: 100%;">UPLOAD PROOF</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DRAWER (Slides Down) -->
+            <div id="taskDetailPanel" class="task-detail-panel">
+                <div class="detail-content">
+                    <div style="color: #666; font-size: 0.7rem; margin-bottom: 10px; font-family: 'Cinzel';">CURRENT ORDERS</div>
+                    <h2 id="readyText" class="drawer-task-text">LOADING...</h2>
+                    <div style="border-top: 1px solid #333; padding-top: 20px; width: 100%; display: flex; justify-content: center; gap: 20px;">
+                        <button onclick="window.toggleTaskDetails(false)" class="text-btn">▲ HIDE</button>
+                        <button id="btnSkip" onclick="window.cancelPendingTask()" class="btn-skip-small">SKIP TASK</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAT -->
+            <div id="chatCard" class="chat-container" style="flex-grow: 1; overflow: hidden; margin-top: 20px;">
+                <div id="chatBox" class="chat-body-frame">
+                    
+                    <!-- IN-CHAT OVERLAYS -->
+                    <div id="kneelRewardOverlay" class="hidden overlay-center">
+                        <div style="text-align: center;">
+                            <h2 style="color:white; margin-bottom: 20px; font-family:'Orbitron';">DEVOTION RECOGNIZED</h2>
+                            <div style="display:flex; gap:10px;">
+                                <button onclick="claimKneelReward('coins')" class="action-btn">COINS</button>
+                                <button onclick="claimKneelReward('points')" class="action-btn">POINTS</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="chatMediaOverlay" class="hidden overlay-center">
+                        <div id="mediaOverlayClose" onclick="closeChatPreview()" style="position: absolute; top: 20px; right: 20px; color: white; font-size: 2rem; cursor: pointer;">X</div>
+                        <div id="chatMediaOverlayContent"></div>
+                    </div>
+                    <div id="tributeHuntOverlay" class="hidden overlay-center" style="background:#000; padding:20px; flex-direction:column;">
+                        <button onclick="toggleTributeHunt()" style="color: white; align-self:flex-end; font-family:'Orbitron'; background:none; border:none; cursor:pointer;">CLOSE</button>
+                        <div id="huntStoreGrid" class="store-grid" style="margin-top: 20px;"></div>
+                        <textarea id="huntNote" class="hidden"></textarea>
+                        <div id="huntProgress" class="hidden"></div>
                     </div>
 
-                    <!-- OPTION 2: WEALTH SLIDER -->
-                    <div class="iphone-slider slider-gold" onclick="claimKneelReward('coins')">
-                        <div class="slider-track-text">CLAIM CAPITAL (+10 COINS)</div>
-                    </div>
-
-                    <div style="margin: 15px 0; color: #444; font-size: 0.8rem; letter-spacing: 2px;">— OR —</div>
-
-                    <div style="display:flex; flex-direction:column; gap:10px; width:100%;">
-                        <button onclick="handleRevealFragment()" class="action-btn" style="background:transparent; border:1px solid var(--neon-blue); color:var(--neon-blue); font-size:0.9rem;">
-                            REVEAL GIFT
-                        </button>
-                     </div>
+                    <div id="chatContent" class="chat-area"></div>
+                </div>
+                <div class="chat-footer">
+                    <button id="tributeHuntBtn" onclick="toggleTributeHunt()" class="icon-btn">🎁</button>
+                    <input type="text" id="chatMsgInput" class="chat-input" placeholder="AWAITING INPUT..." onkeypress="handleChatKey(event)">
+                    <button class="chat-send" onclick="sendChatMessage()" class="icon-btn">Send</button>
                 </div>
             </div>
         </div>
 
-        <div class="content-stage">
-            <!-- (Your existing Task/Chat/Gallery Content goes here - UNCHANGED) -->
-            <div id="viewServingTop" class="view-wrapper" style="display: flex; flex-direction: column; height: 100%;">
-                <!-- INSERT YOUR TASK CARD & CHAT HTML HERE (Use the last working version I gave you) -->
-                <!-- I assume you have the Task Card HTML from the previous step. If not, I can repost just that block. -->
-                
-                <!-- ... Task Card ... -->
-                <div id="taskCard" class="glass-card task-ribbon" style="margin: 20px 20px 0 20px; position: relative; z-index: 100; justify-content: space-between;">
-                    <div class="ribbon-left" style="width: 30%; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                        <div class="ribbon-label">STATUS</div>
-                        <div id="statusIndicator" class="status-text-lg status-unproductive">UNPRODUCTIVE</div>
-                    </div>
-                    <div class="ribbon-center" style="width: 40%; border: none; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                        <div id="idleMessage" class="ribbon-status" style="opacity: 0.7;">AWAITING DIRECTIVE...</div>
-                        <div id="activeTimerRow" class="hidden" style="display: flex; flex-direction: column; align-items: center;">
-                            <span id="timerDisplay" class="ribbon-timer">00:00:00</span>
-                            <div class="see-task-link" onclick="window.toggleTaskDetails(null)">▼ SEE DIRECTIVE ▼</div>
-                        </div>
-                    </div>
-                    <div class="ribbon-right" style="width: 30%; display: flex; justify-content: center; align-items: center;">
-                        <div id="mainButtonsArea" style="width: 100%;">
-                            <button id="newTaskBtn" onclick="window.getRandomTask()" class="action-btn" style="width: 100%;">REQUEST TASK</button>
-                        </div>
-                        <div id="uploadBtnContainer" class="hidden" style="width: 100%;">
-                            <input type="file" id="evidenceInput" accept="image/*,video/*" class="hidden" onchange="window.handleUploadStart(this)">
-                            <button id="btnUpload" onclick="document.getElementById('evidenceInput').click()" class="action-btn btn-upload" style="width: 100%;">UPLOAD PROOF</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="taskDetailPanel" class="task-detail-panel">
-                    <div class="detail-content">
-                        <div style="color: #666; font-size: 0.7rem; margin-bottom: 10px; font-family: 'Cinzel';">CURRENT ORDERS</div>
-                        <h2 id="readyText" class="drawer-task-text">LOADING...</h2>
-                        <div style="border-top: 1px solid #333; padding-top: 20px; width: 100%; display: flex; justify-content: center; gap: 20px;">
-                            <button onclick="window.toggleTaskDetails(false)" class="text-btn">▲ HIDE</button>
-                            <button id="btnSkip" onclick="window.cancelPendingTask()" class="btn-skip-small">SKIP TASK</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="chatCard" class="chat-container" style="flex-grow: 1; overflow: hidden; margin-top: 20px;">
-                    <div id="chatBox" class="chat-body-frame">
-                        <div id="chatContent" class="chat-area"></div>
-                    </div>
-                    <div class="chat-footer">
-                        <button id="tributeHuntBtn" onclick="toggleTributeHunt()" class="icon-btn">🎁</button>
-                        <input type="text" id="chatMsgInput" class="chat-input" placeholder="AWAITING INPUT..." onkeypress="handleChatKey(event)">
-                        <button class="chat-send" onclick="sendChatMessage()" class="icon-btn">Send</button>
-                    </div>
-                </div>
-                <!-- ... End Task/Chat ... -->
+        <!-- 2. EXCHEQUER (RESTORED) -->
+        <div id="viewBuy" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
+            <div class="glass-card" style="margin-bottom: 20px;"><h2 style="text-align: center; color: var(--neon-yellow); font-family:'Cinzel';">EXCHEQUER</h2></div>
+            <div class="store-grid">
+                <div class="store-item"><div>1K</div><button class="si-btn" onclick="buyRealCoins(1000)">€10.00</button></div>
+                <div class="store-item"><div>5.5K</div><button class="si-btn" onclick="buyRealCoins(5500)">€50.00</button></div>
+                <div class="store-item"><div>12K</div><button class="si-btn" onclick="buyRealCoins(12000)">€100.00</button></div>
+                <div class="store-item"><div>30K</div><button class="si-btn" onclick="buyRealCoins(30000)">€250.00</button></div>
+                <div class="store-item"><div>70K</div><button class="si-btn" onclick="buyRealCoins(70000)">€500.00</button></div>
+                <div class="store-item"><div>150K</div><button class="si-btn" onclick="buyRealCoins(150000)">€1000.00</button></div>
             </div>
-            
-            <!-- (Other Views: History, Store, etc. - Keep them here) -->
-            <div id="historySection" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
-                <div class="section-header">EVIDENCE LOG</div>
+        </div>
+
+        <!-- 3. EVIDENCE LOG (RESTORED) -->
+        <div id="historySection" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto; position: relative; min-height: 500px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:15px; padding-left:5px;">
+                <div style="width:6px; height:6px; background:var(--neon-yellow); border-radius:50%;"></div> 
+                <span style="font-family:'Orbitron'; font-weight:bold; font-size:0.9rem; color:white;">EVIDENCE LOG</span>
+            </div>
+            <div id="pendingSection" class="hidden" style="width:100%; margin-bottom: 25px;">
+                <div class="section-header" style="color:var(--neon-yellow); border-color:rgba(255,215,0,0.3);">PENDING REVIEW</div>
                 <div id="pendingGrid" class="pending-grid"></div>
-                <div id="historyGrid" class="gallery-grid"></div>
             </div>
-                <div id="pendingSection" class="hidden" style="width:100%; margin-bottom: 25px;">
-                    <div class="section-header" style="color:var(--neon-yellow); border-color:rgba(255,215,0,0.3);">PENDING REVIEW</div>
-                    <div id="pendingGrid" class="pending-grid"></div>
-                </div>
-                <div class="section-header">HISTORY LOG</div>
-                <div id="historyGrid" class="gallery-grid"></div>
-                <button id="loadMoreBtn" onclick="document.getElementById('historyGrid').style.maxHeight='none'; if(typeof loadMoreHistory === 'function') loadMoreHistory();" class="action-btn" style="display:block; margin:20px auto;">LOAD MORE...</button>
-            </div>
+            <div class="section-header">HISTORY LOG</div>
+            <div id="historyGrid" class="gallery-grid"></div>
+            <button id="loadMoreBtn" onclick="document.getElementById('historyGrid').style.maxHeight='none'; if(typeof loadMoreHistory === 'function') loadMoreHistory();" class="action-btn" style="display:block; margin:20px auto;">LOAD MORE...</button>
+        </div>
 
-            <div id="viewNews" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
-                <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2 style="font-family:'Cinzel';">QUEEN KARIN</h2></div>
-                <div id="newsGrid" class="gallery-grid"></div>
-            </div>
+        <!-- 4. QUEEN KARIN NEWS (RESTORED) -->
+        <div id="viewNews" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
+            <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2 style="font-family:'Cinzel';">QUEEN KARIN</h2></div>
+            <div id="newsGrid" class="gallery-grid"></div>
+        </div>
 
-            <div id="viewVault" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
-                <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2 style="font-family:'Cinzel';">VAULT</h2></div>
-                <div id="vaultGrid" class="gallery-grid"></div>
-            </div>
+        <!-- 5. VAULT (RESTORED) -->
+        <div id="viewVault" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
+            <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2 style="font-family:'Cinzel';">VAULT</h2></div>
+            <div id="vaultGrid" class="gallery-grid"></div>
+        </div>
 
-            <div id="viewProtocol" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
-                <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2 style="font-family:'Cinzel';">PROTOCOL</h2></div>
-                <div style="color: #ccc; text-align: center; font-family:'Cinzel';">Obedience is the only currency.</div>
-            </div>
+        <!-- 6. PROTOCOL (RESTORED) -->
+        <div id="viewProtocol" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
+            <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2 style="font-family:'Cinzel';">PROTOCOL</h2></div>
+            <div style="color: #ccc; text-align: center; font-family:'Cinzel';">Obedience is the only currency.</div>
+        </div>
 
-            <div id="viewRewards" class="hidden"></div>
-            <div id="viewHierarchy" class="hidden"></div>
-            <div id="viewSession" class="hidden"></div>
+        <div id="viewRewards" class="hidden"></div>
+        <div id="viewHierarchy" class="hidden"></div>
+        <div id="viewSession" class="hidden"></div>
 
-            <div id="glassModal" class="glass-modal">
-                <div id="modalMediaContainer" class="modal-bg-photo"></div>
-                <div id="modalGlassOverlay" class="modal-glass-overlay" onclick="restoreOverlay(event)">
-                    <div id="modalCloseX" onclick="closeModal(null)" style="position:absolute; top:10px; right:20px; font-size:2rem; cursor:pointer; color:white; z-index:100;">×</div>
-                    <div class="theater-content">
-                        <div id="modalInfoView" class="sub-view">
-                            <div class="stamp-container">
-                                <img id="modalStatusSticker" src="" class="m-status-sticker-lg" style="height:120px; width:auto; margin-bottom:15px;">
-                            </div>
-                            <div class="reward-container">
-                                <div id="modalPoints" class="m-points-lg" style="font-size:2rem; color:var(--neon-yellow);">+0 PTS</div>
-                                <div id="modalSticker"></div>
-                            </div>
+        <!-- MODAL (RESTORED) -->
+        <div id="glassModal" class="glass-modal">
+            <div id="modalMediaContainer" class="modal-bg-photo"></div>
+            <div id="modalGlassOverlay" class="modal-glass-overlay" onclick="restoreOverlay(event)">
+                <div id="modalCloseX" onclick="closeModal(null)" style="position:absolute; top:10px; right:20px; font-size:2rem; cursor:pointer; color:white; z-index:100;">×</div>
+                <div class="theater-content">
+                    <div id="modalInfoView" class="sub-view">
+                        <div class="stamp-container">
+                            <img id="modalStatusSticker" src="" class="m-status-sticker-lg" style="height:120px; width:auto; margin-bottom:15px;">
                         </div>
-                        <div id="modalFeedbackView" class="sub-view hidden">
-                            <h3 class="view-label">QUEEN'S FEEDBACK</h3>
-                            <div id="modalFeedbackMedia" class="fb-media-theater"></div>
-                            <div id="modalFeedbackText" class="theater-text-box"></div>
-                        </div>
-                        <div id="modalTaskView" class="sub-view hidden">
-                            <h3 class="view-label">THE ASSIGNMENT</h3>
-                            <div id="modalOrderText" class="theater-text-box"></div>
+                        <div class="reward-container">
+                            <div id="modalPoints" class="m-points-lg" style="font-size:2rem; color:var(--neon-yellow);">+0 PTS</div>
+                            <div id="modalSticker"></div>
                         </div>
                     </div>
-                    <div class="modal-footer-menu" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; margin-top:auto;">
-                        <button onclick="event.stopPropagation(); toggleHistoryView('feedback')" class="history-action-btn">FEEDBACK</button>
-                        <button onclick="event.stopPropagation(); toggleHistoryView('task')" class="history-action-btn">THE TASK</button>
-                        <button onclick="event.stopPropagation(); toggleHistoryView('proof')" class="history-action-btn" style="border-color:var(--neon-yellow); color:var(--neon-yellow);">SEE PROOF</button>
-                        <button onclick="event.stopPropagation(); toggleHistoryView('info')" class="history-action-btn">STATUS</button>
-                        <button onclick="event.stopPropagation(); closeModal(null)" class="history-action-btn btn-close-red" style="grid-column: span 2;">CLOSE</button>
+                    <div id="modalFeedbackView" class="sub-view hidden">
+                        <h3 class="view-label">QUEEN'S FEEDBACK</h3>
+                        <div id="modalFeedbackMedia" class="fb-media-theater"></div>
+                        <div id="modalFeedbackText" class="theater-text-box"></div>
+                    </div>
+                    <div id="modalTaskView" class="sub-view hidden">
+                        <h3 class="view-label">THE ASSIGNMENT</h3>
+                        <div id="modalOrderText" class="theater-text-box"></div>
                     </div>
                 </div>
+                <div class="modal-footer-menu" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; margin-top:auto;">
+                    <button onclick="event.stopPropagation(); toggleHistoryView('feedback')" class="history-action-btn">FEEDBACK</button>
+                    <button onclick="event.stopPropagation(); toggleHistoryView('task')" class="history-action-btn">THE TASK</button>
+                    <button onclick="event.stopPropagation(); toggleHistoryView('proof')" class="history-action-btn" style="border-color:var(--neon-yellow); color:var(--neon-yellow);">SEE PROOF</button>
+                    <button onclick="event.stopPropagation(); toggleHistoryView('info')" class="history-action-btn">STATUS</button>
+                    <button onclick="event.stopPropagation(); closeModal(null)" class="history-action-btn btn-close-red" style="grid-column: span 2;">CLOSE</button>
+                </div>
             </div>
-        
+        </div>
+
     </div> 
 </div>
 </body>
