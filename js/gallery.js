@@ -197,7 +197,7 @@ export function openHistoryModal(index) {
     setCurrentHistoryIndex(index);
     const item = historyItems[index];
 
-    // 1. HANDLE MEDIA (Left Side)
+    // 1. Media stays in the background/left
     const isVideo = item.proofUrl.match(/\.(mp4|webm|mov)($|\?)/i);
     const mediaContainer = document.getElementById('modalMediaContainer');
     if (mediaContainer) {
@@ -206,20 +206,11 @@ export function openHistoryModal(index) {
             : `<img src="${item.proofUrl}" style="width:100%; height:100%; object-fit:contain;">`;
     }
 
-    // 2. HANDLE DATA (Right Side Dossier)
     const overlay = document.getElementById('modalGlassOverlay');
     if (overlay) {
-        // Clean up stickers
-        let safeSticker = item.sticker;
-        if (safeSticker && (safeSticker.includes("profile") || safeSticker.includes("avatar"))) safeSticker = null;
-        const rewardStickerHTML = safeSticker ? `<img src="${safeSticker}" style="width:80px; height:80px; object-fit:contain; margin-top:10px;">` : "";
-
-        // Status Stamp
+        const pts = getPoints(item);
         const s = (item.status || "").toLowerCase();
         const statusImg = s.includes('app') ? STICKER_APPROVE : STICKER_DENIED;
-        
-        // Points (The Fix)
-        const pts = getPoints(item);
 
         overlay.innerHTML = `
             <div id="modalCloseX" onclick="window.closeModal(event)" style="position:absolute; top:20px; right:20px; font-size:2rem; cursor:pointer; color:white; z-index:110;">×</div>
@@ -227,46 +218,42 @@ export function openHistoryModal(index) {
             <div class="theater-content dossier-layout">
                 <div class="dossier-sidebar">
                     
-                    <div class="dossier-block">
-                        <div class="dossier-label">SYSTEM VERDICT</div>
-                        <div class="stamp-container">
-                            <img id="modalStatusSticker" src="${statusImg}" class="m-status-sticker-lg" style="height:100px; width:auto; transform: rotate(-10deg); opacity:0.8;">
+                    <div id="modalInfoView" class="sub-view">
+                        <div class="dossier-block">
+                            <div class="dossier-label">SYSTEM VERDICT</div>
+                            <img src="${statusImg}" style="height:80px; width:auto; transform: rotate(-10deg);">
+                        </div>
+                        <div class="dossier-block">
+                            <div class="dossier-label">MERIT ACQUIRED</div>
+                            <div id="modalPoints" class="m-points-lg" style="color:var(--gold); font-family:'Rajdhani'; font-size:3.5rem; font-weight:700;">+${pts}</div>
                         </div>
                     </div>
 
-                    <div class="dossier-block">
-                        <div class="dossier-label">MERIT ACQUIRED</div>
-                        <div class="reward-container">
-                            <div id="modalPoints" class="m-points-lg" style="color:var(--gold); font-family:'Rajdhani'; font-size:3rem; font-weight:700;">+${pts}</div>
-                            ${rewardStickerHTML}
-                        </div>
-                    </div>
-
-                    <div id="modalFeedbackView" class="sub-view">
+                    <div id="modalFeedbackView" class="sub-view hidden">
                         <div class="dossier-label">QUEEN'S FEEDBACK</div>
-                        <div id="modalFeedbackText" class="theater-text-box">${(item.adminComment || "The Queen has observed your work.").replace(/\n/g, '<br>')}</div>
+                        <div class="theater-text-box">${(item.adminComment || "No comment recorded.").replace(/\n/g, '<br>')}</div>
                     </div>
 
                     <div id="modalTaskView" class="sub-view hidden">
-                        <div class="dossier-label">ORIGINAL ASSIGNMENT</div>
-                        <div id="modalOrderText" class="theater-text-box">${(item.text || "No description.").replace(/\n/g, '<br>')}</div>
+                        <div class="dossier-label">ORIGINAL DIRECTIVE</div>
+                        <div class="theater-text-box">${(item.text || "No description.").replace(/\n/g, '<br>')}</div>
                     </div>
 
                 </div>
             </div>
 
-            <div class="modal-footer-menu dossier-footer" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; margin-top:auto; padding:20px; background:rgba(0,0,0,0.9); border-top:1px solid #333;">
+            <div class="modal-footer-menu" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; margin-top:auto; padding:20px; background:rgba(0,0,0,0.95); z-index:100;">
                 <button onclick="event.stopPropagation(); window.toggleHistoryView('feedback')" class="history-action-btn">FEEDBACK</button>
                 <button onclick="event.stopPropagation(); window.toggleHistoryView('task')" class="history-action-btn">THE TASK</button>
                 <button onclick="event.stopPropagation(); window.toggleHistoryView('proof')" class="history-action-btn" style="border-color:var(--gold); color:var(--gold);">SEE PROOF</button>
                 <button onclick="event.stopPropagation(); window.toggleHistoryView('info')" class="history-action-btn">STATUS</button>
-                <button onclick="event.stopPropagation(); window.closeModal(event)" class="history-action-btn btn-close-red" style="grid-column: span 2; color:#ff003c; border-color:#ff003c; margin-top:10px;">CLOSE ARCHIVE</button>
+                <button onclick="event.stopPropagation(); closeModal(null)" class="history-action-btn btn-close-red" style="grid-column: span 2; margin-top:10px;">CLOSE ARCHIVE</button>
             </div>
         `;
     }
 
-    // Default to show feedback
-    window.toggleHistoryView('feedback');
+    // This makes sure ONLY the Info/Status shows first
+    window.toggleHistoryView('info');
     document.getElementById('glassModal').classList.add('active');
 }
 export function toggleHistoryView(view) {
