@@ -1,4 +1,4 @@
-// gallery.js - SUPER AGGRESSIVE NORMALIZATION VERSION
+// gallery.js - SAFE VERSION (Prevents Image Vanishing)
 
 import { 
     galleryData, pendingLimit, historyLimit, currentHistoryIndex, touchStartX, 
@@ -10,52 +10,44 @@ import { signUpcdnUrl } from './bytescale.js';
 // YOUR STICKER LINKS
 const STICKER_APPROVE = "https://static.wixstatic.com/media/ce3e5b_a19d81b7f45c4a31a4aeaf03a41b999f~mv2.png";
 const STICKER_DENIED = "https://static.wixstatic.com/media/ce3e5b_63a0c8320e29416896d071d5b46541d7~mv2.png";
+const PLACEHOLDER_IMG = "https://static.wixstatic.com/media/ce3e5b_1bd27ba758ce465fa89a36d70a68f355~mv2.png"; // Fallback if broken
 
 let isInProofMode = false; 
 
-// --- HELPER: THE SUPER AGGRESSIVE URL FINDER ---
+// --- HELPER: Aggressive URL Finder ---
 function normalizeGalleryItem(item) {
-    // 1. If it already has what we want, clean it and return.
-    if (item.proofUrl && typeof item.proofUrl === 'string') return item;
+    // If we already have a valid proofUrl, don't touch it.
+    if (item.proofUrl && typeof item.proofUrl === 'string' && item.proofUrl.length > 5) return item;
 
-    // 2. Define the "Likely Suspects" - Wix often uses these keys
+    // 1. Look for common Wix/Velo keys
     const candidates = [
-        'proof', 'proofUrl', 'proof_url', 'ProofUrl', 'evidence', 'Evidence',
-        'media', 'mediaUrl', 'Media', 'image', 'Image', 'img', 'picture', 
-        'file', 'fileUrl', 'src', 'url', 'link', 'attachment', 'upload'
+        'proof', 'proofUrl', 'evidence', 'media', 'mediaUrl', 
+        'image', 'img', 'file', 'fileUrl', 'url', 'src', 'attachment'
     ];
 
-    // 3. Check specific candidates first
     for (let key of candidates) {
-        if (item[key] && typeof item[key] === 'string' && item[key].length > 5) {
+        // Case A: Simple String
+        if (item[key] && typeof item[key] === 'string') {
             item.proofUrl = item[key];
             return item;
         }
-        // Handle Wix Object structure (e.g. item.image.src)
+        // Case B: Nested Object (e.g. item.image.src)
         if (item[key] && typeof item[key] === 'object' && item[key].src) {
             item.proofUrl = item[key].src;
             return item;
         }
     }
 
-    // 4. "Scorched Earth" Search: Look at EVERY property for a URL string
-    const allKeys = Object.keys(item);
-    for (let key of allKeys) {
-        const val = item[key];
-        if (typeof val === 'string') {
-            // Does it look like an image URL?
-            if (val.match(/\.(jpeg|jpg|gif|png|webp|mp4|mov|webm)/i) || val.startsWith('http') || val.startsWith('wix:')) {
-                item.proofUrl = val;
-                return item;
-            }
+    // 2. If still nothing, look at EVERYTHING
+    Object.keys(item).forEach(k => {
+        const val = item[k];
+        if (typeof val === 'string' && (val.startsWith('http') || val.startsWith('wix:'))) {
+            item.proofUrl = val;
         }
-    }
+    });
 
-    // 5. Fallback for Text
-    if (!item.text) {
-        // Try to find ANY text field
-        item.text = item.description || item.caption || item.message || item.comment || item.notes || "No description.";
-    }
+    // 3. Fallback description
+    if (!item.text) item.text = item.description || item.title || "Record entry.";
 
     return item;
 }
@@ -63,55 +55,78 @@ function normalizeGalleryItem(item) {
 export async function renderGallery() {
     if (!galleryData || !Array.isArray(galleryData)) return;
 
-    // --- STEP 1: RUN NORMALIZATION ---
-    galleryData.forEach(item => normalizeGalleryItem(item));
+    // --- STEP 1: Normalize Data (Fixes missing fields) ---
+    galleryData.forEach(normalizeGalleryItem);
 
-    // --- STEP 2: HANDLE SECURE URLS (Bytescale) ---
+    // --- STEP 2: Render IMMEDIATELY (Fixes the "Flash" lag) ---
+    // We render once with raw URLs so the user sees something immediately.
+    renderGridHTML(); 
+
+    // --- STEP 3: Sign URLs in Background (Fixes the "Disappear") ---
+    // We only update if the signing is SUCCESSFUL.
+    let needsUpdate = false;
+    
     const signingPromises = galleryData.map(async (item) => {
-        if (item.proofUrl && item.proofUrl.startsWith("https://upcdn.io/")) {
+        if (item.proofUrl && item.proofUrl.includes("upcdn.io")) {
             try {
-                // Try to get thumbnail version first for grid
-                const thumb = item.proofUrl.replace("/raw/", "/thumbnail/");
-                item.proofUrlThumb = await signUpcdnUrl(thumb);
+                // Generate Thumbnail URL
+                const rawThumb = item.proofUrl.replace("/raw/", "/thumbnail/");
+                const signedThumb = await signUpcdnUrl(rawThumb);
                 
-                // Get full version
+                // Only overwrite if we got a valid string back
+                if (signedThumb && signedThumb.length > 10) {
+                    item.proofUrlThumb = signedThumb;
+                }
+
+                // Generate Full URL
                 const signedFull = await signUpcdnUrl(item.proofUrl);
-                if (signedFull) item.proofUrl = signedFull;
+                
+                // CRITICAL FIX: Only overwrite if signedFull is valid!
+                if (signedFull && signedFull.length > 10) {
+                    if (item.proofUrl !== signedFull) {
+                        item.proofUrl = signedFull;
+                        needsUpdate = true;
+                    }
+                }
             } catch (e) {
-                console.warn("Signing failed for:", item.proofUrl);
+                console.warn("Signing skipped for item, keeping raw URL.");
             }
         }
     });
-    
-    await Promise.all(signingPromises);
 
-    // --- STEP 3: RENDER GRIDS ---
+    // Wait for signing, then re-render ONLY if data changed
+    await Promise.all(signingPromises);
+    if (needsUpdate) {
+        renderGridHTML();
+    }
+}
+
+// --- HELPER: The Actual HTML Renderer ---
+function renderGridHTML() {
     const pGrid = document.getElementById('pendingGrid');
     const hGrid = document.getElementById('historyGrid');
     
-    // Filter for Pending
-    const pItems = galleryData.filter(i => (i.status || "").toLowerCase() === 'pending' && i.proofUrl);
-    
+    // 1. Pending Items
+    const pItems = galleryData.filter(i => (i.status || "").toLowerCase() === 'pending');
     if (pGrid) {
         pGrid.innerHTML = pItems.slice(0, pendingLimit).map(createPendingCardHTML).join('');
     }
-    
     const pSection = document.getElementById('pendingSection');
     if (pSection) pSection.style.display = pItems.length > 0 ? 'block' : 'none';
-    
-    // Filter for History (Approved/Rejected)
+
+    // 2. History Items (Approved/Rejected)
     const hItems = galleryData.filter(i => {
         const s = (i.status || "").toLowerCase();
-        return (s.includes('app') || s.includes('rej')) && i.proofUrl;
+        return (s.includes('app') || s.includes('rej'));
     });
 
     if (hGrid) {
         hGrid.innerHTML = hItems.slice(0, historyLimit).map((item, index) => createGalleryItemHTML(item, index)).join('');
     }
-    
+
     const hSection = document.getElementById('historySection');
     if (hSection) hSection.style.display = (hItems.length > 0 || pItems.length === 0) ? 'block' : 'none';
-    
+
     const loadBtn = document.getElementById('loadMoreBtn');
     if (loadBtn) loadBtn.style.display = hItems.length > historyLimit ? 'block' : 'none';
 }
@@ -122,19 +137,22 @@ export function loadMoreHistory() {
 }
 
 function createPendingCardHTML(item) {
-    const cleanText = cleanHTML(item.text).replace(/"/g, '&quot;');
-    const isVideo = item.proofUrl.match(/\.(mp4|webm|mov)($|\?)/i);
-    // Use the thumb if we have it, otherwise fallback to the main url
-    let thumb = item.proofUrlThumb || item.proofUrl;
-    
-    const encUrl = encodeURIComponent(item.proofUrl || "");
+    const cleanText = cleanHTML(item.text || "").replace(/"/g, '&quot;');
+    const url = item.proofUrl || PLACEHOLDER_IMG;
+    const isVideo = url.match(/\.(mp4|webm|mov)($|\?)/i);
+    let thumb = item.proofUrlThumb || url;
+
+    // Safety: If thumb is undefined, use placeholder
+    if (!thumb || thumb === 'undefined') thumb = PLACEHOLDER_IMG;
+
+    const encUrl = encodeURIComponent(url);
     const encText = encodeURIComponent(item.text || "");
     
     return `<div class="pending-card" onclick='window.openModal("${encUrl}", "PENDING", "${encText}", ${isVideo ? true : false})'>
                 <div class="pc-media">
                     ${isVideo 
                         ? `<video src="${thumb}" class="pc-thumb" muted style="object-fit:cover;"></video>` 
-                        : `<img src="${thumb}" class="pc-thumb" loading="lazy">`
+                        : `<img src="${thumb}" class="pc-thumb" loading="lazy" onerror="this.src='${PLACEHOLDER_IMG}'">`
                     }
                     <div class="pc-gradient"></div>
                     <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
@@ -146,26 +164,29 @@ function createPendingCardHTML(item) {
 }
 
 function createGalleryItemHTML(item, index) {
-    let thumbUrl = item.proofUrlThumb || item.proofUrl;
+    let url = item.proofUrlThumb || item.proofUrl || PLACEHOLDER_IMG;
+    if (url === 'undefined') url = PLACEHOLDER_IMG;
+
     const s = (item.status || "").toLowerCase();
     const statusSticker = s.includes('app') ? STICKER_APPROVE : STICKER_DENIED;
-    const isVideo = item.proofUrl.match(/\.(mp4|webm|mov)($|\?)/i);
+    const isVideo = (item.proofUrl || "").match(/\.(mp4|webm|mov)($|\?)/i);
 
     return `
         <div class="gallery-item" onclick='window.openHistoryModal(${index})'>
             ${isVideo 
-                ? `<video src="${thumbUrl}" class="gi-thumb" muted style="width:100%; height:100%; object-fit:cover; opacity: ${s.includes('rej') ? '0.3' : '0.7'};"></video>` 
-                : `<img src="${thumbUrl}" class="gi-thumb" loading="lazy" style="opacity: ${s.includes('rej') ? '0.3' : '0.7'};">`
+                ? `<video src="${url}" class="gi-thumb" muted style="width:100%; height:100%; object-fit:cover; opacity: ${s.includes('rej') ? '0.3' : '0.7'};"></video>` 
+                : `<img src="${url}" class="gi-thumb" loading="lazy" style="opacity: ${s.includes('rej') ? '0.3' : '0.7'};" onerror="this.src='${PLACEHOLDER_IMG}'">`
             }
             <img src="${statusSticker}" class="gi-status-sticker" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:70%; height:70%; z-index:10; pointer-events:none;">
             ${item.sticker ? `<img src="${item.sticker}" class="gi-reward-sticker" style="position:absolute; bottom:5px; left:5px; width:30px; height:30px; z-index:10;">` : ''}
         </div>`;
 }
 
+// --- MODAL FUNCTIONS (Standard) ---
 export function openHistoryModal(index) {
     const hItems = galleryData.filter(i => {
         const s = (i.status || "").toLowerCase();
-        return (s.includes('app') || s.includes('rej')) && i.proofUrl;
+        return (s.includes('app') || s.includes('rej'));
     });
 
     const item = hItems[index]; 
@@ -173,13 +194,14 @@ export function openHistoryModal(index) {
 
     setCurrentHistoryIndex(index);
 
-    const isVideo = item.proofUrl.match(/\.(mp4|webm|mov)($|\?)/i);
+    const url = item.proofUrl || PLACEHOLDER_IMG;
+    const isVideo = url.match(/\.(mp4|webm|mov)($|\?)/i);
     const mediaContainer = document.getElementById('modalMediaContainer');
     
     if (mediaContainer) {
         mediaContainer.innerHTML = isVideo 
-            ? `<video src="${item.proofUrl}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:contain;"></video>`
-            : `<img src="${item.proofUrl}" style="width:100%; height:100%; object-fit:contain;">`;
+            ? `<video src="${url}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:contain;"></video>`
+            : `<img src="${url}" style="width:100%; height:100%; object-fit:contain;">`;
     }
 
     const pointsEl = document.getElementById('modalPoints');
@@ -279,7 +301,7 @@ export function initModalSwipeDetection() {
         if (Math.abs(diff) > 80) {
             const hItems = galleryData.filter(i => {
                 const s = (i.status || "").toLowerCase();
-                return (s.includes('app') || s.includes('rej')) && i.proofUrl;
+                return (s.includes('app') || s.includes('rej'));
             });
             
             let nextIndex = currentHistoryIndex;
