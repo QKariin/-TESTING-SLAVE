@@ -1,4 +1,4 @@
-// main.js - FIXED: BUTTON ALWAYS VISIBLE
+// main.js - FIXED: BUTTON NEVER HIDES
 
 // --- 1. FULL IMPORTS ---
 import { CONFIG, URLS, LEVELS, FUNNY_SAYINGS, STREAM_PASSWORDS } from './config.js';
@@ -30,8 +30,7 @@ import { Bridge } from './bridge.js';
 
 // Toggle the slide-down panel - NO HIDING THE BUTTON
 window.toggleTaskDetails = function(forceOpen = null) {
-    // Stop the click from bubbling up
-    if (window.event) window.event.stopPropagation();
+    if (window.event) window.event.stopPropagation(); // Stop click conflicts
 
     const panel = document.getElementById('taskDetailPanel');
     const link = document.querySelector('.see-task-link'); 
@@ -45,14 +44,21 @@ window.toggleTaskDetails = function(forceOpen = null) {
         panel.classList.add('open');
         panel.style.maxHeight = "500px";
         panel.style.opacity = "1";
-        // REMOVED: link.style.opacity = '0'; (This was hiding your button)
-        if(link) link.innerHTML = "▲ HIDE DIRECTIVE ▲"; // Change text instead
+        
+        // HERE IS THE FIX: Do NOT set opacity to 0. Just change text.
+        if(link) {
+            link.innerHTML = "▲ HIDE DIRECTIVE ▲";
+            link.style.opacity = "1"; 
+        }
     } else {
         panel.classList.remove('open');
         panel.style.maxHeight = "0px";
         panel.style.opacity = "0";
-        // REMOVED: link.style.opacity = '1';
-        if(link) link.innerHTML = "▼ SEE DIRECTIVE ▼";
+        
+        if(link) {
+            link.innerHTML = "▼ SEE DIRECTIVE ▼";
+            link.style.opacity = "1";
+        }
     }
 };
 
@@ -71,7 +77,7 @@ function updateTaskUIState(isActive) {
         }
         if(timerRow) {
             timerRow.classList.remove('hidden');
-            timerRow.style.display = 'flex'; // FORCE DISPLAY
+            timerRow.style.display = 'flex'; // Force show
         }
         if(reqBtn) reqBtn.classList.add('hidden');
         if(upContainer) upContainer.classList.remove('hidden');
@@ -83,7 +89,7 @@ function updateTaskUIState(isActive) {
         }
         if(timerRow) {
             timerRow.classList.add('hidden');
-            timerRow.style.display = 'none';
+            timerRow.style.display = 'none'; // Force hide
         }
         if(reqBtn) reqBtn.classList.remove('hidden');
         if(upContainer) upContainer.classList.add('hidden');
@@ -93,14 +99,14 @@ function updateTaskUIState(isActive) {
 }
 
 // --- 3. CLICK LISTENER ---
-// Only closes if clicking OUTSIDE. Never interferes with the button.
 document.addEventListener('click', function(event) {
     const card = document.getElementById('taskCard');
     const panel = document.getElementById('taskDetailPanel');
     
-    // If clicked the button, STOP here. Let the button function handle it.
+    // IMPORTANT: If clicking the button itself, do NOTHING. Let the button work.
     if (event.target.closest('.see-task-link')) return;
 
+    // Only auto-close if clicking OUTSIDE the card while it is open
     if (panel && panel.classList.contains('open') && card && !card.contains(event.target)) {
         window.toggleTaskDetails(false);
     }
@@ -262,7 +268,6 @@ window.addEventListener("message", (event) => {
                         restorePendingUI();
                         updateTaskUIState(true);
                         
-                        // If user reloads page, open task so they see it
                         if (!isInitialLoad) {
                              window.toggleTaskDetails(true);
                         }
@@ -397,7 +402,7 @@ function updateStats() {
     updateKneelingStatus(); 
 }
 
-// ... (Rest of code remains unchanged) ...
+// ... (Rest of legacy code - unchanged) ...
 let currentHuntIndex = 0;
 let filteredItems = [];
 let selectedReason = "";
