@@ -1,10 +1,10 @@
-// gallery.js - FIXED EXPORTS & FILTERING
+// gallery.js - FIXED PENDING VISIBILITY
 
 import { 
     galleryData, pendingLimit, historyLimit, currentHistoryIndex, touchStartX, 
     setCurrentHistoryIndex, setHistoryLimit, setTouchStartX 
 } from './state.js';
-import { getOptimizedUrl, cleanHTML } from './utils.js';
+import { getOptimizedUrl, cleanHTML, triggerSound } from './utils.js';
 
 // STICKERS
 const STICKER_APPROVE = "https://static.wixstatic.com/media/ce3e5b_a19d81b7f45c4a31a4aeaf03a41b999f~mv2.png";
@@ -90,9 +90,8 @@ window.setGalleryFilter = function(filterType) {
     renderGallery(); 
 };
 
-// --- 4. EXPORTED FUNCTIONS ---
+// --- 4. RENDER GALLERY (FIXED VISIBILITY) ---
 
-// ** THIS WAS THE MISSING LINK **
 export function loadMoreHistory() {
     setHistoryLimit(historyLimit + 25);
     renderGallery();
@@ -105,22 +104,34 @@ export function renderGallery() {
     const pGrid = document.getElementById('pendingGrid');
     const hGrid = document.getElementById('historyGrid');
     const pSection = document.getElementById('pendingSection');
+    const hSection = document.getElementById('historySection');
     
     renderStickerFilters();
 
-    // PENDING
+    // 1. PENDING ITEMS
     const showPending = (activeStickerFilter === 'ALL' || activeStickerFilter === 'PENDING');
     const pItems = galleryData.filter(i => (i.status || "").toLowerCase() === 'pending' && i.proofUrl);
     
     if (pGrid) pGrid.innerHTML = pItems.slice(0, pendingLimit).map(createPendingCardHTML).join('');
-    if (pSection) pSection.style.display = (showPending && pItems.length > 0) ? 'block' : 'none';
     
-    // HISTORY
+    // FIX: Force remove 'hidden' class if items exist
+    if (pSection) {
+        if (showPending && pItems.length > 0) {
+            pSection.classList.remove('hidden');
+            pSection.style.display = 'block';
+        } else {
+            pSection.classList.add('hidden');
+            pSection.style.display = 'none';
+        }
+    }
+    
+    // 2. HISTORY ITEMS
     const showHistory = (activeStickerFilter !== 'PENDING');
     const hItems = getGalleryList(); 
 
     if (hGrid) {
         hGrid.innerHTML = hItems.slice(0, historyLimit).map((item, index) => createGalleryItemHTML(item, index)).join('');
+        // We only hide the grid, not the whole section (so filters stay visible)
         hGrid.style.display = (showHistory && hItems.length > 0) ? 'grid' : 'none';
     }
     
@@ -141,6 +152,7 @@ function createPendingCardHTML(item) {
                         ? `<video src="${thumb}" class="pc-thumb" muted style="object-fit:cover;"></video>` 
                         : `<img src="${thumb}" class="pc-thumb" loading="lazy">`
                     }
+                    <div class="pc-gradient"></div>
                 </div>
                 <div class="pc-content"><div class="pc-badge">PENDING</div><div class="pc-title">${cleanText}</div></div>
             </div>`;
@@ -171,6 +183,8 @@ function createGalleryItemHTML(item, index) {
         </div>`;
 }
 
+// --- MODAL CLICK HANDLERS ---
+
 export function openHistoryModal(index) {
     const historyItems = getGalleryList();
     if (!historyItems[index]) return;
@@ -198,6 +212,7 @@ export function openHistoryModal(index) {
 
         overlay.innerHTML = `
             <div id="modalCloseX" onclick="window.closeModal(event)" style="position:absolute; top:20px; right:20px; font-size:2.5rem; cursor:pointer; color:white; z-index:9999;">×</div>
+            
             <div class="theater-content">
                 <div id="modalInfoView" class="sub-view">
                     ${statusHTML}
@@ -213,6 +228,7 @@ export function openHistoryModal(index) {
                     <div class="theater-text-box">${(item.text || "No description.").replace(/\n/g, '<br>')}</div>
                 </div>
             </div>
+
             <div class="modal-footer-menu">
                 <button onclick="event.stopPropagation(); window.toggleHistoryView('feedback')" class="history-action-btn">FEEDBACK</button>
                 <button onclick="event.stopPropagation(); window.toggleHistoryView('task')" class="history-action-btn">THE TASK</button>
