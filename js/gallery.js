@@ -98,35 +98,22 @@ function createGalleryItemHTML(item, index) {
     const isRejected = s.includes('rej');
     const pts = getPoints(item);
 
-    // --- TEXTURAL HIERARCHY LOGIC ---
-    let styleClass = "style-shadow"; // Default (Design 1)
+    // --- STYLE SELECTION ---
+    let styleClass = "style-normal"; // Default (Design 1)
+    let innerContent = "";
 
     if (isPending) {
-        styleClass = "style-shadow"; // Pending sits deep in the wall
+        styleClass = "style-pending";
+        innerContent = `<div class="pending-overlay"><div style="font-size:2rem;">⏳</div></div>`;
     } 
     else if (isRejected) {
-        styleClass = "style-sealed"; // Denied is sealed shut (Design 12)
+        styleClass = "style-fail"; // Design 12
+        innerContent = `<div class="fail-overlay"><div class="fail-icon">❌</div></div>`;
     } 
     else if (pts > 145) {
-        styleClass = "style-hud"; // Elite gets the Gold Grid (Design 11)
-    }
-
-    // --- OVERLAYS ---
-    let overlayHTML = "";
-    
-    // Elite Badge
-    if (pts > 145 && !isRejected) {
-        overlayHTML += `<div style="position:absolute; bottom:5px; right:5px; color:var(--gold); font-family:'Rajdhani'; font-weight:700; background:rgba(0,0,0,0.8); padding:0 4px; border:1px solid var(--gold); z-index:30;">+${pts}</div>`;
-    }
-
-    // Pending Icon
-    if (isPending) {
-        overlayHTML += `<div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:10;"><div style="font-size:2rem; text-shadow:0 0 10px gold;">⏳</div></div>`;
-    }
-
-    // Denied Stamp
-    if (isRejected) {
-        overlayHTML += `<div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:10;"><div style="font-family:'Black Ops One'; color:#333; font-size:1.2rem; transform:rotate(-15deg); border:2px solid #333; padding:5px;">SEALED</div></div>`;
+        styleClass = "style-gold"; // Design 11
+        // The Massive Number Overlay
+        innerContent = `<div class="gold-number-overlay">${pts}</div>`;
     }
 
     const isVideo = (item.proofUrl || "").match(/\.(mp4|webm|mov)($|\?)/i);
@@ -137,7 +124,7 @@ function createGalleryItemHTML(item, index) {
                 ? `<video src="${thumbUrl}" class="gi-thumb" muted loop></video>` 
                 : `<img src="${thumbUrl}" class="gi-thumb" loading="lazy">`
             }
-            ${overlayHTML}
+            ${innerContent}
         </div>`;
 }
 
