@@ -477,30 +477,62 @@ body {
 .si-btn { background: transparent; border: 1px solid #666; color: #888; padding: 8px; width: 100%; cursor: pointer; font-family: 'Cinzel'; }
 .si-btn:hover { border-color: #fff; color: #fff; }
 
-#historySection { position: relative !important; min-height: 500px; overflow: hidden !important; }
-.pending-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; width: 100%; margin-bottom: 30px; }
-.pending-card { background: #000; border: 1px solid #333; border-radius: 4px; overflow: hidden; position: relative; aspect-ratio: 16 / 9; cursor: pointer; transition: transform 0.2s; }
-.pc-content { position: relative; z-index: 2; margin-top: auto; padding: 12px; }
-.pc-badge { font-family: 'Cinzel'; font-size: 0.6rem; color: var(--gold); border: 1px solid var(--gold); padding: 2px 6px; background: #000; border-radius: 0; display: inline-block; margin-bottom: 4px; }
-.pc-title { font-family: 'Cinzel'; font-size: 0.95rem; color: #ccc; line-height: 1.1; font-weight: bold; }
+/* =========================================
+   7. HISTORY & GALLERY (TACTICAL DOSSIER)
+   ========================================= */
 
-/* --- GALLERY GRID: COMPACT & TACTICAL --- */
+#historySection {
+    padding: 20px;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.section-header {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    border-bottom: 1px solid #333;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+    margin-top: 20px;
+    font-size: 0.9rem;
+    letter-spacing: 3px;
+}
+
+/* --- THE GRID --- */
 .gallery-grid { 
     display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); /* Slightly larger for detail */
-    gap: 3px; /* Tighter gap for a solid wall look */
+    /* Slightly wider cards for the portrait look */
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+    gap: 8px; 
     width: 100%; 
     padding-bottom: 50px; 
 }
 
+/* --- THE CARD (TACTICAL PORTRAIT) --- */
 .gallery-item { 
     position: relative; 
-    aspect-ratio: 1 / 1; 
-    background: #050505; 
-    border: 1px solid rgba(197, 160, 89, 0.15); 
+    aspect-ratio: 4 / 5; /* Taller, like a File/Card */
+    background: #0a0a0a; 
+    
+    /* THE TECH CUT CORNERS */
+    clip-path: polygon(
+        10px 0, 100% 0, 
+        100% calc(100% - 10px), calc(100% - 10px) 100%, 
+        0 100%, 0 10px
+    );
+    
     overflow: hidden; 
     cursor: pointer; 
-    transition: transform 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    
+    /* Gold Border Simulation via Shadow (since border gets clipped) */
+    box-shadow: inset 0 0 0 1px rgba(197, 160, 89, 0.2);
+}
+
+.gallery-item:hover { 
+    box-shadow: inset 0 0 0 2px var(--gold); /* Glows on hover */
+    transform: translateY(-5px); /* Lifts up */
+    z-index: 10;
 }
 
 /* Image/Video Styling */
@@ -508,64 +540,125 @@ body {
     width: 100%; 
     height: 100%; 
     object-fit: cover; 
-    filter: grayscale(100%) brightness(0.6); /* Muted by default */
+    filter: grayscale(100%) contrast(1.2) brightness(0.7); /* Gritty Dossier Look */
     transition: all 0.5s ease; 
 }
 
 .gallery-item:hover .gi-thumb { 
-    filter: grayscale(0%) brightness(1); 
-    transform: scale(1.08); 
+    filter: grayscale(0%) contrast(1) brightness(1); 
+    transform: scale(1.1); 
 }
 
-/* --- THE MERIT TAG (High-End Plaque) --- */
+/* --- THE POINTS LABEL (Bottom Bar) --- */
 .merit-tag {
     position: absolute;
-    top: 0;
+    bottom: 0;
+    left: 0;
     right: 0;
-    background: var(--gold);
-    color: #000;
-    padding: 2px 8px;
-    z-index: 25;
-    /* This creates the sharp angled dossier look */
-    clip-path: polygon(15% 0, 100% 0, 100% 100%, 0% 100%);
-    box-shadow: -2px 2px 8px rgba(0,0,0,0.4);
-    text-align: right;
+    height: 25px;
+    background: rgba(10, 10, 10, 0.9);
+    border-top: 1px solid var(--gold-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+    z-index: 20;
 }
 
-.tag-label { font-size: 0.4rem; font-family: 'Cinzel'; font-weight: 900; line-height: 1; }
-.tag-val { font-size: 0.85rem; font-family: 'Rajdhani'; font-weight: 700; line-height: 1; }
+.tag-label { 
+    font-size: 0.5rem; 
+    font-family: 'Cinzel', serif; 
+    color: #888;
+    letter-spacing: 1px;
+}
 
-/* --- SUBTLE STATUS STAMP --- */
+.tag-val { 
+    font-size: 0.9rem; 
+    font-family: 'Rajdhani', sans-serif; 
+    font-weight: 700; 
+    color: var(--gold);
+    line-height: 1; 
+}
+
+/* --- STATUS STAMP (Floating Hologram) --- */
 .gi-status-overlay {
     position: absolute;
-    top: 50%;
+    top: 40%;
     left: 50%;
-    transform: translate(-50%, -50%) rotate(-12deg);
-    width: 60%;
-    opacity: 0.15; /* Nearly invisible until hover */
+    transform: translate(-50%, -50%) rotate(-15deg);
+    width: 70%;
+    opacity: 0.3; /* Subtle watermark */
     pointer-events: none;
     transition: opacity 0.4s ease;
+    filter: drop-shadow(0 0 5px rgba(0,0,0,0.8));
 }
 
 .gallery-item:hover .gi-status-overlay {
-    opacity: 0.6;
+    opacity: 0.9; /* Pops on hover */
+    transform: translate(-50%, -50%) rotate(0deg) scale(1.1); /* Straightens out */
 }
 
-/* --- TACTICAL CORNERS --- */
-.corner-target {
+/* Reward Sticker (Small Icon top right) */
+.gi-reward-sticker {
     position: absolute;
-    width: 6px;
-    height: 6px;
-    border: 1px solid var(--gold);
-    opacity: 0;
-    transition: 0.3s;
+    top: 5px;
+    right: 5px;
+    width: 25px;
+    height: 25px;
+    object-fit: contain;
+    z-index: 20;
+    filter: drop-shadow(0 0 2px black);
 }
 
-.gallery-item:hover .corner-target { opacity: 1; }
-.tl { top: 4px; left: 4px; border-right: none; border-bottom: none; }
-.tr { top: 4px; right: 4px; border-left: none; border-bottom: none; }
-.bl { bottom: 4px; left: 4px; border-right: none; border-top: none; }
-.br { bottom: 4px; right: 4px; border-left: none; border-top: none; }
+/* --- PENDING / GHOST STATE --- */
+.gallery-item.is-pending {
+    background: repeating-linear-gradient(
+        45deg,
+        #111,
+        #111 10px,
+        #1a1a1a 10px,
+        #1a1a1a 20px
+    );
+}
+
+.gallery-item.is-pending .gi-thumb {
+    opacity: 0.2;
+}
+
+.pending-overlay {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; 
+    align-items: center; justify-content: center;
+    z-index: 15;
+}
+
+.pending-icon {
+    font-size: 1.5rem;
+    animation: pulse 2s infinite;
+    margin-bottom: 5px;
+}
+
+.pending-text {
+    font-family: 'Orbitron'; 
+    font-size: 0.6rem; 
+    color: var(--neon-yellow);
+    letter-spacing: 1px;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.4; }
+    50% { opacity: 1; }
+    100% { opacity: 0.4; }
+}
+
+/* --- FILTER BAR (Cleaned up) --- */
+.filter-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding: 5px 0;
+}
 /* MODALS */
 .glass-modal { display: none; position: absolute; inset: 0; z-index: 999; background: #000; flex-direction: column; overflow: hidden; }
 .glass-modal.active { display: flex; animation: fadeIn 0.3s; }
