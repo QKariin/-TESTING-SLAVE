@@ -1,4 +1,4 @@
-// gallery.js - SINGLE GRID RESTORED & FIXED
+// gallery.js - FINAL SINGLE GRID
 
 import { 
     galleryData, pendingLimit, historyLimit, currentHistoryIndex, touchStartX, 
@@ -15,6 +15,7 @@ let activeStickerFilter = "ALL";
 
 // --- HELPER: POINTS ---
 function getPoints(item) {
+    // Check all possible names the database might use
     let val = item.points || item.score || item.value || item.amount || item.reward || 0;
     return Number(val);
 }
@@ -25,11 +26,11 @@ function getGalleryList() {
 
     let items = galleryData.filter(i => {
         const s = (i.status || "").toLowerCase();
-        // Show Pending, Approved, and Rejected
+        // Show Pending, Approved, and Rejected if they have an image/file
         return (s.includes('pending') || s.includes('app') || s.includes('rej')) && (i.proofUrl || i.media || i.file);
     });
 
-    // Apply Filter
+    // Apply Active Filter
     if (activeStickerFilter === "DENIED") {
         items = items.filter(item => (item.status || "").toLowerCase().includes('rej'));
     } 
@@ -38,6 +39,7 @@ function getGalleryList() {
     }
 
     // Sort by Date (Newest First)
+    // This naturally puts Pending (newest) at the top
     return items.sort((a, b) => new Date(b._createdDate) - new Date(a._createdDate));
 }
 
@@ -83,7 +85,7 @@ window.setGalleryFilter = function(filterType) {
 export function renderGallery() {
     if (!galleryData) return;
 
-    // Normalization loop
+    // 1. Normalize Data (Fix missing proofUrl fields)
     galleryData.forEach(item => {
          if (!item.proofUrl) {
             const c = ['media', 'file', 'evidence', 'url', 'image', 'src'];
@@ -93,7 +95,7 @@ export function renderGallery() {
 
     const hGrid = document.getElementById('historyGrid');
     
-    // Safety check to prevent crash if HTML is missing
+    // Safety check
     if (!hGrid) return;
 
     renderStickerFilters();
@@ -101,11 +103,12 @@ export function renderGallery() {
     const showPending = (activeStickerFilter === 'ALL' || activeStickerFilter === 'PENDING');
     const items = getGalleryList(); 
 
-    // Strict PENDING filter
+    // Apply strict PENDING filter here if that button is clicked
     let displayItems = items;
     if (activeStickerFilter === 'PENDING') {
         displayItems = items.filter(i => (i.status || "").toLowerCase().includes('pending'));
     } else if (!showPending) {
+        // If filter is NOT All/Pending, hide pending items
         displayItems = items.filter(i => !(i.status || "").toLowerCase().includes('pending'));
     }
 
@@ -125,7 +128,7 @@ function createGalleryItemHTML(item, index) {
     const isRejected = s.includes('rej');
     const pts = getPoints(item);
 
-    // --- TIER LOGIC ---
+    // --- TIER LOGIC (Border Colors) ---
     let tierClass = "item-tier-silver";
     if (isPending) tierClass = "item-tier-pending";
     else if (isRejected) tierClass = "item-tier-denied";
@@ -157,7 +160,7 @@ function createGalleryItemHTML(item, index) {
 
 // --- REDEMPTION LOGIC ---
 window.atoneForTask = function(index) {
-    const items = getGalleryList(); // Use the getter to ensure index alignment
+    const items = getGalleryList();
     const task = items[index];
     if (!task) return;
 
@@ -319,7 +322,9 @@ export function closeModal(e) {
     }
 }
 
-export function openModal() {} 
+export function openModal(url, status, text, isVideo) {
+    // Legacy support
+}
 
 export function loadMoreHistory() {
     setHistoryLimit(historyLimit + 25);
@@ -346,7 +351,7 @@ export function initModalSwipeDetection() {
     }, { passive: true });
 }
 
-// FORCE EXPORT
+// FORCE EXPORT TO WINDOW
 window.renderGallery = renderGallery;
 window.openHistoryModal = openHistoryModal;
 window.toggleHistoryView = toggleHistoryView;
