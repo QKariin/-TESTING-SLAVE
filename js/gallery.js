@@ -98,33 +98,55 @@ function createGalleryItemHTML(item, index) {
     const isRejected = s.includes('rej');
     const pts = getPoints(item);
 
-    // --- STYLE SELECTION ---
-    let styleClass = "style-normal"; // Default (Design 1)
-    let innerContent = "";
+    const isVideo = (item.proofUrl || "").match(/\.(mp4|webm|mov)($|\?)/i);
+    const mediaHTML = isVideo 
+        ? `<video src="${thumbUrl}" class="gi-thumb" muted loop></video>` 
+        : `<img src="${thumbUrl}" class="gi-thumb" loading="lazy">`;
 
-    if (isPending) {
-        styleClass = "style-pending";
-        innerContent = `<div class="pending-overlay"><div style="font-size:2rem;">⏳</div></div>`;
-    } 
-    else if (isRejected) {
-        styleClass = "style-fail"; // Design 12
-        innerContent = `<div class="fail-overlay"><div class="fail-icon">❌</div></div>`;
-    } 
-    else if (pts > 145) {
-        styleClass = "style-gold"; // Design 11
-        // The Massive Number Overlay
-        innerContent = `<div class="gold-number-overlay">${pts}</div>`;
+    // --- LOGIC: CHOOSE THE ARCHITECTURE ---
+    
+    // 1. FAIL = HANGING SCROLL (Style 12)
+    if (isRejected) {
+        return `
+            <div class="gallery-item style-scroll" onclick='window.openHistoryModal(${index})'>
+                <div class="scroll-roller-top"></div>
+                <div class="scroll-body">
+                    ${mediaHTML}
+                    <div class="scroll-stamp">PURGED</div>
+                </div>
+                <div class="scroll-roller-bottom"></div>
+            </div>`;
     }
 
-    const isVideo = (item.proofUrl || "").match(/\.(mp4|webm|mov)($|\?)/i);
+    // 2. ELITE = BLUEPRINT (Style 11)
+    if (pts > 145) {
+        return `
+            <div class="gallery-item style-blueprint" onclick='window.openHistoryModal(${index})'>
+                ${mediaHTML}
+                <div class="tech-data td-tl">SEC: ${item._createdDate ? new Date(item._createdDate).getSeconds() : '00'}</div>
+                <div class="tech-data td-br">VAL: ${pts}</div>
+            </div>`;
+    }
 
+    // 3. PENDING = GHOST
+    if (isPending) {
+        return `
+            <div class="gallery-item style-pending" onclick='window.openHistoryModal(${index})'>
+                ${mediaHTML}
+                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+                    <div class="pending-text">ANALYZING</div>
+                </div>
+            </div>`;
+    }
+
+    // 4. NORMAL = DARK MINIMALIST (Style 1)
+    // (Everything else falls here)
     return `
-        <div class="gallery-item ${styleClass}" onclick='window.openHistoryModal(${index})'>
-            ${isVideo 
-                ? `<video src="${thumbUrl}" class="gi-thumb" muted loop></video>` 
-                : `<img src="${thumbUrl}" class="gi-thumb" loading="lazy">`
-            }
-            ${innerContent}
+        <div class="gallery-item style-minimal" onclick='window.openHistoryModal(${index})'>
+            ${mediaHTML}
+            <div class="minimal-overlay">
+                <span class="minimal-text">EVIDENCE</span>
+            </div>
         </div>`;
 }
 
