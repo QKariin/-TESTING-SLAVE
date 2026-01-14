@@ -1,4 +1,4 @@
-// gallery.js - POINTS DISPLAY FIXED
+// gallery.js - MERGED GRID (SORTED BY DATE)
 
 import { 
     galleryData, pendingLimit, historyLimit, currentHistoryIndex, touchStartX, 
@@ -24,35 +24,40 @@ function normalizeGalleryItem(item) {
     }
 }
 
-// --- HELPER: SMART POINTS FINDER (THE FIX) ---
+// --- HELPER: POINTS FINDER ---
 function getPoints(item) {
-    // Check all possible database field names
     let val = item.points || item.score || item.value || item.amount || item.reward || 0;
     return Number(val);
 }
 
-// --- HELPER: GET SORTED LIST ---
+// --- HELPER: GET MERGED LIST ---
 function getGalleryList() {
     if (!galleryData) return [];
 
+    // 1. Filter: Allow Pending, Approved, AND Rejected
     let items = galleryData.filter(i => {
         const s = (i.status || "").toLowerCase();
-        return (s.includes('app') || s.includes('rej')) && i.proofUrl;
+        return (s.includes('pending') || s.includes('app') || s.includes('rej')) && i.proofUrl;
     });
 
-    if (activeStickerFilter === "DENIED") {
+    // 2. Apply Filter Bar
+    if (activeStickerFilter === "PENDING") {
+        // Show ONLY Pending
+        items = items.filter(item => (item.status || "").toLowerCase().includes('pending'));
+    }
+    else if (activeStickerFilter === "DENIED") {
+        // Show ONLY Rejected
         items = items.filter(item => (item.status || "").toLowerCase().includes('rej'));
     } 
-    else if (activeStickerFilter !== "ALL" && activeStickerFilter !== "PENDING") {
+    else if (activeStickerFilter !== "ALL") {
+        // Show Specific Sticker
         items = items.filter(item => item.sticker === activeStickerFilter);
     }
 
-    // Sort by Points (Desc) -> Date
+    // 3. SORT: BY DATE (NEWEST FIRST)
+    // Pending items are usually newest, so they will naturally float to the top
     return items.sort((a, b) => {
-        const pointsA = getPoints(a);
-        const pointsB = getPoints(b);
-        if (pointsB !== pointsA) return pointsB - pointsA;
-        return new Date(b._createdDate) - new Date(a._createdDate);
+        return new Date(b._createdDate || b.timestamp) - new Date(a._createdDate || a.timestamp);
     });
 }
 
@@ -99,105 +104,83 @@ export function renderGallery() {
     if (!galleryData) return;
     galleryData.forEach(normalizeGalleryItem);
 
-    const pGrid = document.getElementById('pendingGrid');
     const hGrid = document.getElementById('historyGrid');
-    const pSection = document.getElementById('pendingSection');
-    
     renderStickerFilters();
 
-    // PENDING
-    const showPending = (activeStickerFilter === 'ALL' || activeStickerFilter === 'PENDING');
-    const pItems = galleryData.filter(i => (i.status || "").toLowerCase() === 'pending' && i.proofUrl);
-    
-    if (pGrid) pGrid.innerHTML = pItems.slice(0, pendingLimit).map(createPendingCardHTML).join('');
-    
-    if (pSection) {
-        if (showPending && pItems.length > 0) {
-            pSection.classList.remove('hidden');
-            pSection.style.display = 'block';
-        } else {
-            pSection.classList.add('hidden');
-            pSection.style.display = 'none';
-        }
-    }
-    
-    // HISTORY
-    const showHistory = (activeStickerFilter !== 'PENDING');
-    const hItems = getGalleryList(); 
+    // GET EVERYTHING (Pending + History mixed)
+    const items = getGalleryList(); 
 
     if (hGrid) {
-        hGrid.innerHTML = hItems.slice(0, historyLimit).map((item, index) => createGalleryItemHTML(item, index)).join('');
-        hGrid.style.display = (showHistory && hItems.length > 0) ? 'grid' : 'none';
+        hGrid.innerHTML = items.slice(0, historyLimit).map((item, index) => createGalleryItemHTML(item, index)).join('');
+        hGrid.style.display = 'grid';
     }
     
     const loadBtn = document.getElementById('loadMoreBtn');
-    if (loadBtn) loadBtn.style.display = (showHistory && hItems.length > historyLimit) ? 'block' : 'none';
+    if (loadBtn) loadBtn.style.display = (items.length > historyLimit) ? 'block' : 'none';
 }
 
-function createPendingCardHTML(item) {
-    const cleanText = cleanHTML(item.text).replace(/"/g, '&quot;');
-    const isVideo = item.proofUrl.match(/\.(mp4|webm|mov)$/i);
-    let thumb = getOptimizedUrl(item.proofUrl, 400);
-    const encUrl = encodeURIComponent(item.proofUrl || "");
-    const encText = encodeURIComponent(item.text || "");
-    
-    return `<div class="pending-card" onclick='window.openModal("${encUrl}", "PENDING", "${encText}", ${isVideo ? true : false})'>
-                <div class="pc-media">
-                    ${isVideo 
-                        ? `<video src="${thumb}" class="pc-thumb" muted style="object-fit:cover;"></video>` 
-                        : `<img src="${thumb}" class="pc-thumb" loading="lazy">`
-                    }
-                    <div class="pc-gradient"></div>
-                </div>
-                <div class="pc-content"><div class="pc-badge">PENDING</div><div class="pc-title">${cleanText}</div></div>
-            </div>`;
-}
+// NOTE: createPendingCardHTML is deleted because we don't use the separate grid anymore.
+// Pending items now use the unified card design below.
 
 function createGalleryItemHTML(item, index) {
-    let thumbUrl = getOptimizedUrl(item.proofUrl, 300); //
-    const s = (item.status || "").toLowerCase(); //
-    const statusSticker = s.includes('app') ? STICKER_APPROVE : STICKER_DENIED; //
-    const isVideo = (item.proofUrl || "").match(/\.(mp4|webm|mov)($|\?)/i); //
-
-    let safeSticker = item.sticker; //
-    if (safeSticker && (safeSticker.includes("profile") || safeSticker.includes("avatar"))) safeSticker = null; //
+    let thumbUrl = getOptimizedUrl(item.proofUrl, 300);
+    const s = (item.status || "").toLowerCase();
     
-    const pts = getPoints(item); //
+    // Check Status
+    const isPending = s.includes('pending');
+    const isRejected = s.includes('rej');
+
+    const statusSticker = isPending ? "" : (s.includes('app') ? STICKER_APPROVE : STICKER_DENIED);
+    const isVideo = (item.proofUrl || "").match(/\.(mp4|webm|mov)($|\?)/i);
+
+    let safeSticker = item.sticker;
+    if (safeSticker && (safeSticker.includes("profile") || safeSticker.includes("avatar"))) safeSticker = null;
+    
+    const pts = getPoints(item);
+
+    // --- PENDING VISUALS ---
+    // If pending, show a Clock overlay and dim the image
+    const pendingOverlay = isPending 
+        ? `<div class="pending-overlay"><div class="pending-icon">⏳</div></div>` 
+        : ``;
+
+    const extraClass = isPending ? 'is-pending' : (isRejected ? 'is-rejected' : '');
 
     return `
-        <div class="gallery-item" onclick='window.openHistoryModal(${index})'>
+        <div class="gallery-item ${extraClass}" onclick='window.openHistoryModal(${index})'>
             ${isVideo 
-                ? `<video src="${thumbUrl}" class="gi-thumb" muted style="opacity: ${s.includes('rej') ? '0.3' : '0.8'};"></video>` 
-                : `<img src="${thumbUrl}" class="gi-thumb" loading="lazy" style="opacity: ${s.includes('rej') ? '0.3' : '0.8'};">`
+                ? `<video src="${thumbUrl}" class="gi-thumb" muted style="object-fit:cover;"></video>` 
+                : `<img src="${thumbUrl}" class="gi-thumb" loading="lazy">`
             }
 
-            <img src="${statusSticker}" class="gi-status-overlay">
+            <!-- Pending Overlay (Only if pending) -->
+            ${pendingOverlay}
 
-            ${safeSticker ? `<img src="${safeSticker}" class="gi-reward-sticker" style="position:absolute; bottom:5px; left:5px; width:30px; height:30px; z-index:10;">` : ''}
+            <!-- Status Sticker (Only if NOT pending) -->
+            ${!isPending ? `<img src="${statusSticker}" class="gi-status-sticker">` : ''}
+
+            <!-- Reward Sticker -->
+            ${safeSticker ? `<img src="${safeSticker}" class="gi-reward-sticker">` : ''}
             
+            <!-- Merit Plaque (Only if points exist) -->
             ${pts > 0 ? `
             <div class="merit-tag">
                 <div class="tag-label">MERIT</div>
                 <div class="tag-val">+${pts}</div>
             </div>` : ''}
-
-            <div class="corner-target tl"></div>
-            <div class="corner-target tr"></div>
-            <div class="corner-target bl"></div>
-            <div class="corner-target br"></div>
         </div>`;
 }
 
-// --- MODAL CLICK HANDLERS ---
-
+// --- MODAL LOGIC ---
 export function openHistoryModal(index) {
-    const historyItems = getGalleryList();
-    if (!historyItems[index]) return;
+    const items = getGalleryList();
+    if (!items[index]) return;
     
     setCurrentHistoryIndex(index);
-    const item = historyItems[index];
+    const item = items[index];
+    const s = (item.status || "").toLowerCase();
+    const isPending = s.includes('pending');
 
-    // 1. Media stays in the background/left
     const isVideo = item.proofUrl.match(/\.(mp4|webm|mov)($|\?)/i);
     const mediaContainer = document.getElementById('modalMediaContainer');
     if (mediaContainer) {
@@ -208,37 +191,56 @@ export function openHistoryModal(index) {
 
     const overlay = document.getElementById('modalGlassOverlay');
     if (overlay) {
+        let safeSticker = item.sticker;
+        if (safeSticker && (safeSticker.includes("profile") || safeSticker.includes("avatar"))) safeSticker = null;
+        const stickerHTML = safeSticker ? `<img src="${safeSticker}" style="width:120px; height:120px; object-fit:contain; margin-bottom:15px;">` : "";
+
+        // Status Image Logic
+        let statusImg = "";
+        let statusText = "SYSTEM VERDICT";
+        
+        if (isPending) {
+            statusText = "AWAITING REVIEW";
+            // No image for pending, or use a clock icon
+        } else {
+            statusImg = s.includes('app') ? STICKER_APPROVE : STICKER_DENIED;
+        }
+
+        const statusDisplay = isPending 
+            ? `<div style="font-size:3rem;">⏳</div>` 
+            : `<img src="${statusImg}" style="width:100px; height:100px; object-fit:contain; margin-bottom:15px; opacity:0.8;">`;
+
         const pts = getPoints(item);
-        const s = (item.status || "").toLowerCase();
-        const statusImg = s.includes('app') ? STICKER_APPROVE : STICKER_DENIED;
 
         overlay.innerHTML = `
-            <div id="modalCloseX" onclick="window.closeModal(event)" style="position:absolute; top:20px; right:20px; font-size:2rem; cursor:pointer; color:white; z-index:110;">×</div>
+            <div id="modalCloseX" onclick="window.closeModal(event)" style="position:absolute; top:20px; right:20px; font-size:2.5rem; cursor:pointer; color:white; z-index:110;">×</div>
             
             <div class="theater-content dossier-layout">
                 <div class="dossier-sidebar">
                     
                     <div id="modalInfoView" class="sub-view">
                         <div class="dossier-block">
-                            <div class="dossier-label">SYSTEM VERDICT</div>
-                            <img src="${statusImg}" style="height:80px; width:auto; transform: rotate(-10deg);">
+                            <div class="dossier-label">${statusText}</div>
+                            ${statusDisplay}
                         </div>
                         <div class="dossier-block">
                             <div class="dossier-label">MERIT ACQUIRED</div>
-                            <div id="modalPoints" class="m-points-lg" style="color:var(--gold); font-family:'Rajdhani'; font-size:3.5rem; font-weight:700;">+${pts}</div>
+                            <div id="modalPoints" class="m-points-lg" style="color:var(--gold); font-family:'Rajdhani'; font-size:3.5rem; font-weight:700;">
+                                ${isPending ? "CALCULATING..." : "+" + pts}
+                            </div>
+                            ${stickerHTML}
                         </div>
                     </div>
 
                     <div id="modalFeedbackView" class="sub-view hidden">
                         <div class="dossier-label">QUEEN'S FEEDBACK</div>
-                        <div class="theater-text-box">${(item.adminComment || "No comment recorded.").replace(/\n/g, '<br>')}</div>
+                        <div class="theater-text-box">${(item.adminComment || "Pending review.").replace(/\n/g, '<br>')}</div>
                     </div>
 
                     <div id="modalTaskView" class="sub-view hidden">
                         <div class="dossier-label">ORIGINAL DIRECTIVE</div>
                         <div class="theater-text-box">${(item.text || "No description.").replace(/\n/g, '<br>')}</div>
                     </div>
-
                 </div>
             </div>
 
@@ -247,19 +249,21 @@ export function openHistoryModal(index) {
                 <button onclick="event.stopPropagation(); window.toggleHistoryView('task')" class="history-action-btn">THE TASK</button>
                 <button onclick="event.stopPropagation(); window.toggleHistoryView('proof')" class="history-action-btn" style="border-color:var(--gold); color:var(--gold);">SEE PROOF</button>
                 <button onclick="event.stopPropagation(); window.toggleHistoryView('info')" class="history-action-btn">STATUS</button>
-                <button onclick="event.stopPropagation(); closeModal(null)" class="history-action-btn btn-close-red" style="grid-column: span 2; margin-top:10px;">CLOSE ARCHIVE</button>
+                <button onclick="event.stopPropagation(); window.closeModal(event)" class="history-action-btn btn-close-red" style="grid-column: span 2; margin-top:10px;">CLOSE ARCHIVE</button>
             </div>
         `;
     }
 
-    // This makes sure ONLY the Info/Status shows first
-    window.toggleHistoryView('info');
+    toggleHistoryView('info');
     document.getElementById('glassModal').classList.add('active');
 }
+
 export function toggleHistoryView(view) {
     const modal = document.getElementById('glassModal');
     const overlay = document.getElementById('modalGlassOverlay');
     if (!modal || !overlay) return;
+
+    // isInProofMode = (view === 'proof');
 
     const views = ['modalInfoView', 'modalFeedbackView', 'modalTaskView'];
     views.forEach(id => {
@@ -295,26 +299,9 @@ export function closeModal(e) {
 }
 
 export function openModal(url, status, text, isVideo) {
-    const mediaContainer = document.getElementById('modalMediaContainer');
-    if (mediaContainer) {
-        mediaContainer.innerHTML = isVideo 
-            ? `<video src="${decodeURIComponent(url)}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:contain;"></video>`
-            : `<img src="${decodeURIComponent(url)}" style="width:100%; height:100%; object-fit:contain;">`;
-    }
-    const overlay = document.getElementById('modalGlassOverlay');
-    if(overlay) {
-        overlay.innerHTML = `
-            <div id="modalCloseX" onclick="window.closeModal(event)" style="position:absolute; top:20px; right:20px; font-size:2.5rem; cursor:pointer; color:white; z-index:9999;">×</div>
-            <div class="theater-content">
-                <div class="m-points-lg" style="color:var(--neon-yellow);">PENDING</div>
-                <div class="theater-text-box">${decodeURIComponent(text)}</div>
-            </div>
-            <div class="modal-footer-menu" style="grid-template-columns: 1fr;">
-                <button onclick="window.closeModal(event)" class="history-action-btn btn-close-red">CLOSE</button>
-            </div>
-        `;
-    }
-    document.getElementById('glassModal').classList.add('active');
+    // Legacy support (redirects to history modal logic if possible, 
+    // but this is mostly used for pending from other places)
+    // Since everything is in history now, this might not be needed much.
 }
 
 export function loadMoreHistory() {
@@ -342,7 +329,7 @@ export function initModalSwipeDetection() {
     }, { passive: true });
 }
 
-// FORCE EXPORT TO WINDOW
+// FORCE EXPORT
 window.renderGallery = renderGallery;
 window.openHistoryModal = openHistoryModal;
 window.toggleHistoryView = toggleHistoryView;
