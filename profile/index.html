@@ -250,10 +250,19 @@
           <div id="historySection" class="view-wrapper hidden" style="padding: 0; overflow: hidden; height: 100%; display: flex; flex-direction: column; background: #020202;">
               
               <!-- TOP: THE ALTAR (Relics) -->
+             <!-- TOP: THE 3D ALTAR (PERFECT > 145) -->
               <div class="trilogy-section section-altar">
                   <div class="trilogy-label label-altar">HALL OF MERIT</div>
-                  <div class="god-ray"></div> <!-- Atmospheric Light -->
-                  <div id="gridPerfect" class="horizontal-scroll-track altar-track"></div>
+                  
+                  <!-- 3D Scene Container -->
+                  <div class="altar-scene">
+                      <div id="gridPerfect" class="altar-carousel">
+                          <!-- Items injected by JS -->
+                      </div>
+                  </div>
+                  
+                  <!-- Floor Reflection Gradient -->
+                  <div class="altar-floor"></div>
               </div>
           
               <!-- MIDDLE: THE ARCHIVE (Reference Image Style) -->
