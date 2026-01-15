@@ -156,7 +156,10 @@ export function mediaTypeBytescale(url) {
 
 export function getThumbnailBytescale(url) {
   if (!isBytescaleUrl(url)) return url;
-  return url + `?width=${400}&height=${400}&fit=cover&format=jpg`;
+  return url.replace("/raw/", "/thumbnail/");
+  /*return url
+    .replace("/raw/", "/raw/") // keep raw
+    + `?width=${size}&height=${size}&fit=cover&format=jpg`;*/
 
 }
 
