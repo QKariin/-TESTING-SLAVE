@@ -558,28 +558,45 @@ body {
 
 
 /* =========================================
-   MIDDLE: THE ARCHIVE (RESTORED BLUEPRINT LAYOUT)
+   MIDDLE: THE ARCHIVE (STRICT FIX)
    ========================================= */
-.section-archive { flex: 1; position: relative; }
+.section-archive { 
+    flex: 1; 
+    position: relative; 
+}
 
-/* The Container (9:16 Portrait) */
+/* The Container (Strict Cage) */
 .item-blueprint {
-    min-width: 120px; height: 210px;
-    margin-right: 15px; position: relative; cursor: pointer;
+    /* THE FIX: Lock the width */
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+    flex-shrink: 0 !important; /* Never let it squash or grow */
+    
+    height: 210px !important;
+    margin-right: 15px;
+    position: relative;
+    cursor: pointer;
     background: rgba(0, 0, 0, 0.3); 
     border: 1px solid rgba(255, 255, 255, 0.1); 
-    overflow: hidden;
+    overflow: hidden !important; /* FORCE CROP */
 }
 
 /* Image Layer */
 .blueprint-img {
-    width: 100%; height: 100%; object-fit: cover;
-    opacity: 0.5; filter: grayscale(100%); transition: all 0.4s ease;
+    width: 100% !important; 
+    height: 100% !important; 
+    object-fit: cover !important; /* Key property to crop, not stretch */
+    opacity: 0.5; 
+    filter: grayscale(100%); 
+    transition: all 0.4s ease;
     z-index: 1;
+    display: block;
 }
+
 .item-blueprint:hover .blueprint-img { opacity: 1; filter: grayscale(0%); transform: scale(1.05); }
 
-/* LAYOUT: The Technical Corners (Restored) */
+/* LAYOUT: The Technical Corners */
 .bp-corner {
     position: absolute; width: 10px; height: 10px;
     border-color: rgba(255, 255, 255, 0.5); border-style: solid;
@@ -607,7 +624,6 @@ body {
     padding: 2px 5px; transform: rotate(-10deg); pointer-events: none; z-index: 15;
 }
 .item-blueprint:hover::after { color: var(--gold); border-color: var(--gold); opacity: 1; }
-
 
 /* =========================================
    BOTTOM: THE HEAP (RESTORED TRASH LAYOUT)
