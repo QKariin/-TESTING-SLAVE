@@ -112,6 +112,7 @@ export function renderGallery() {
 
     const gridFailed = document.getElementById('gridFailed'); 
     const gridOkay = document.getElementById('gridOkay');     
+    const historySection = document.getElementById('historySection'); // Parent Container
     
     // Altar Elements
     const slot1 = { card: document.getElementById('altarSlot1'), img: document.getElementById('imgSlot1'), ref: document.getElementById('reflectSlot1') };
@@ -125,7 +126,16 @@ export function renderGallery() {
 
     const allItems = getGalleryList(); 
 
+    // --- SOLO MODE CHECK ---
+    // If 0 items, Add Class. If >0 items, Remove Class.
+    if (allItems.length === 0) {
+        historySection.classList.add('solo-mode');
+    } else {
+        historySection.classList.remove('solo-mode');
+    }
+
     // --- 1. TOP 3 (THE ALTAR) ---
+    // (This runs nicely even if empty, because we have the placeholder fallback)
     let bestOf = [...allItems]
         .filter(item => {
             const s = (item.status || "").toLowerCase();
@@ -180,21 +190,18 @@ export function renderGallery() {
         return !s.includes('rej') && !s.includes('fail');
     });
 
-    if (middleItems.length === 0) {
-        // Empty State
+    // CHANGE: Only show placeholders if NOT in Solo Mode (allItems > 0)
+    if (middleItems.length === 0 && allItems.length > 0) {
         for(let i=0; i<6; i++) {
             gridOkay.innerHTML += `<div class="item-placeholder-slot"><img src="${IMG_MIDDLE_EMPTY}"></div>`;
         }
-    } else {
-        // Content State (Blueprint Layout)
+    } else if (middleItems.length > 0) {
         middleItems.forEach(item => {
             let thumb = getOptimizedUrl(item.proofUrl || item.media, 300);
             let realIndex = allItems.indexOf(item);
             let isPending = (item.status || "").toLowerCase().includes('pending');
-            
             let overlay = isPending ? `<div class="pending-overlay"><div class="pending-icon">⏳</div></div>` : ``;
 
-            // INJECTING BLUEPRINT CORNERS
             gridOkay.innerHTML += `
                 <div class="item-blueprint" onclick="window.openHistoryModal(${realIndex})">
                     <img class="blueprint-img" src="${thumb}">
@@ -213,18 +220,15 @@ export function renderGallery() {
         return s.includes('rej') || s.includes('fail');
     });
 
-    if (failedItems.length === 0) {
-        // Empty State
+    // CHANGE: Only show placeholders if NOT in Solo Mode
+    if (failedItems.length === 0 && allItems.length > 0) {
         for(let i=0; i<6; i++) {
             gridFailed.innerHTML += `<div class="item-placeholder-slot"><img src="${IMG_BOTTOM_EMPTY}"></div>`;
         }
-    } else {
-        // Content State (Trash Layout)
+    } else if (failedItems.length > 0) {
         failedItems.forEach(item => {
             let thumb = getOptimizedUrl(item.proofUrl || item.media, 300);
             let realIndex = allItems.indexOf(item);
-            
-            // INJECTING TRASH STAMP
             gridFailed.innerHTML += `
                 <div class="item-trash" onclick="window.openHistoryModal(${realIndex})">
                     <img class="trash-img" src="${thumb}">
