@@ -45,7 +45,12 @@ export async function getPrivateFile(filePath) {
 export function isBytescaleUrl(url) {
   if (!url || typeof url !== "string") return false;
   if (!url.includes("upcdn.io")) return false;
-  if (!url.includes("/raw/")) return false;
+}
+
+export function isNotSigned(url) {
+  if (!url || typeof url !== "string") return false;
+  if (!url.includes("upcdn.io")) return false;
+  //if (!url.includes("/raw/")) return false;
 
   const hasQuery = url.includes("?");
   if (!hasQuery) return true; // raw, unsigned
@@ -57,7 +62,7 @@ export function isBytescaleUrl(url) {
   if (params.has("sig")) return false;
 
   // Any other query param → transformed → DO NOT SIGN
-  return false;
+  return true;
 }
 
 function extractQueryString(url) {
@@ -99,7 +104,7 @@ async function processMediaElement(el) {
 
   for (const attr of attrs) {
     const original = el.getAttribute(attr);
-    if (isBytescaleUrl(original)) {
+    if (isNotSigned(original)) {
       const signed = await signUrl(original);
       el.setAttribute(attr, signed);
     }
