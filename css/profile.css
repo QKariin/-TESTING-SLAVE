@@ -527,97 +527,102 @@ body {
 }
 
 /* =========================================
-   TOP SECTION: THE GOLDEN TRIPTYCH (COMPLETE)
+   TOP SECTION: SQUARE GOLDEN TRIPTYCH
    ========================================= */
 
 /* 1. THE STAGE (Container) */
 .section-altar.triptych-stage {
-    /* LOCK DIMENSIONS */
-    flex: 0 0 260px !important;
+    flex: 0 0 260px !important;    /* LOCKED HEIGHT */
     height: 260px !important;
     min-height: 260px !important;
-
-    /* ALIGNMENT */
+    
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
     position: relative !important;
     
-    /* VISUALS */
     background: transparent !important;
     border-bottom: 1px solid rgba(197, 160, 89, 0.3);
     z-index: 10;
-    overflow: visible !important; /* Let the glow shine out */
+    overflow: visible !important;
 }
 
-/* 2. THE HALO (Background Light) */
+/* 2. THE HALO */
 .altar-halo {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 350px; height: 350px;
+    background: radial-gradient(closest-side, rgba(255, 215, 0, 0.15), transparent);
+    z-index: 0; pointer-events: none;
+}
+
+/* 3. THE CARDS (SQUARES) */
+
+/* SHARED CARD STYLES */
+.altar-card {
     position: absolute;
+    background: #000;
+    display: flex; flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+
+/* PERSISTENT OVERLAY (The "Example Photo" Effect) */
+/* This sits ON TOP of the image always */
+.altar-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 25; /* Above image, below gold bars */
+    pointer-events: none;
+    /* Vignette + Scanline + Slight Gold Tint */
+    background: 
+        radial-gradient(circle, transparent 40%, rgba(0,0,0,0.6) 100%),
+        linear-gradient(to bottom, rgba(255,215,0,0.05), transparent);
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+}
+
+/* CENTER IDOL (Rank 1) - SQUARE */
+.center-idol {
+    width: 180px;  /* SQUARE */
+    height: 180px; /* SQUARE */
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 400px; height: 400px;
-    background: radial-gradient(closest-side, rgba(255, 215, 0, 0.15), transparent);
-    z-index: 0;
-    pointer-events: none;
-}
-
-/* 3. THE CARDS (Positioning) */
-
-/* CENTER IDOL (Rank 1) */
-.center-idol {
-    width: 150px; 
-    height: 200px;
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%); /* DEAD CENTER */
     z-index: 20;
-    
-    /* Gold Frame & Glow */
     border: 1px solid rgba(255, 215, 0, 0.5);
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
-    background: #000;
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.25);
 }
 
-/* SIDE OFFERINGS (Rank 2 & 3) */
+/* SIDES (Rank 2 & 3) - SQUARE */
 .left-offering, .right-offering {
-    width: 120px; 
-    height: 160px;
-    position: absolute;
-    top: 50%; 
-    z-index: 10;
-    background: #000;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+    width: 130px;  /* SQUARE */
+    height: 130px; /* SQUARE */
+    top: 50%; z-index: 10;
     opacity: 0.9;
 }
 
 .left-offering {
     left: 50%;
-    transform: translate(-140%, -50%); /* Left Side */
+    transform: translate(-140%, -50%);
 }
 
 .right-offering {
     left: 50%;
-    transform: translate(40%, -50%); /* Right Side */
+    transform: translate(40%, -50%);
 }
 
-/* 4. IMAGES & REFLECTIONS (The Fix) */
-
+/* 4. IMAGES */
 .altar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+    width: 100%; height: 100%; object-fit: cover; display: block;
 }
 
-/* THE CRITICAL FIX: Constrain the Reflection */
+/* 5. REFLECTION (Adjusted for Squares) */
 .reflection-mask {
     position: absolute;
-    top: 100%; /* Directly below */
+    top: 100%; 
     left: 0; 
     width: 100%;
-    height: 50px; /* Limit height */
-    overflow: hidden !important; /* CUT OFF THE EXCESS */
-    transform: scaleY(-1); /* Flip it */
+    height: 60px; /* Fade height */
+    overflow: hidden !important; /* CRITICAL */
+    transform: scaleY(-1);
     opacity: 0.4;
     mask-image: linear-gradient(to top, transparent 0%, black 100%);
     -webkit-mask-image: linear-gradient(to top, transparent 0%, black 100%);
@@ -627,45 +632,23 @@ body {
 }
 
 .reflect-img {
-    width: 100%;
-    height: 200px; /* Match parent card height */
+    width: 100%; 
+    height: 180px; /* Match Center Height */
     object-fit: cover;
-    display: block;
 }
 
-/* 5. GOLD BARS & DECORATION */
+/* 6. GOLD BARS & HAIRLINE */
 .gold-bar {
     width: 100%; height: 6px; 
     background: linear-gradient(90deg, #8a6e3c, #ffd700, #fffdd0, #ffd700, #8a6e3c);
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-    z-index: 30;
-    position: relative;
+    z-index: 30; position: relative;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
 }
 
 .inner-hairline {
     position: absolute; inset: 6px; 
     border: 1px solid rgba(255,255,255,0.4); 
-    pointer-events: none; z-index: 25;
-}
-
-/* 6. GHOST SLOT STYLING (For Middle/Bottom Rows) */
-.item-placeholder-slot {
-    min-width: 140px; 
-    height: 140px; 
-    margin-right: 15px; 
-    opacity: 0.6;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: rgba(0,0,0,0.4);
-    overflow: hidden;
-}
-.item-placeholder-slot img {
-    width: 100%; 
-    height: 100%; 
-    object-fit: cover; /* Prevents stretching/tiling */
-    filter: grayscale(100%) brightness(0.6);
+    pointer-events: none; z-index: 26;
 }
 /* =========================================
    MIDDLE: THE ARCHIVE (Recessed, Clean)
