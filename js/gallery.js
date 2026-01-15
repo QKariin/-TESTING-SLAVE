@@ -1,4 +1,4 @@
-// gallery.js - FIXED & CONNECTED
+// gallery.js - ORDER OF OPERATIONS FIXED
 
 import { 
     galleryData, pendingLimit, historyLimit, currentHistoryIndex, touchStartX, 
@@ -20,26 +20,31 @@ function getPoints(item) {
     return Number(val);
 }
 
-// --- HELPER: FIND IMAGE ---
-function getValidImage(item) {
-    const candidates = [item.proofUrl, item.media, item.file, item.image, item.src, item.url, item.attachment];
-    for (let c of candidates) {
-        if (c && typeof c === 'string' && c.length > 5) return c;
+// --- HELPER: NORMALIZE DATA (The Fix) ---
+function normalizeGalleryItem(item) {
+    // If proofUrl exists, we are good. If not, hunt for it.
+    if (item.proofUrl && item.proofUrl.length > 5) return;
+
+    const candidates = ['media', 'file', 'evidence', 'url', 'image', 'src', 'attachment'];
+    for (let key of candidates) {
+        if (item[key] && typeof item[key] === 'string' && item[key].length > 5) {
+            item.proofUrl = item[key];
+            return;
+        }
     }
-    return PLACEHOLDER_IMG;
 }
 
 // --- HELPER: GET SORTED LIST ---
 function getGalleryList() {
     if (!galleryData || !Array.isArray(galleryData)) return [];
 
-    // Filter Items
     let items = galleryData.filter(i => {
-        // Must have data object
-        return i && typeof i === 'object';
+        const s = (i.status || "").toLowerCase();
+        // Since we normalized FIRST, i.proofUrl is guaranteed if an image exists
+        return (s.includes('pending') || s.includes('app') || s.includes('rej')) && i.proofUrl;
     });
 
-    // Apply Filters
+    // Apply Filter
     if (activeStickerFilter === "DENIED") {
         items = items.filter(item => (item.status || "").toLowerCase().includes('rej'));
     } 
@@ -88,9 +93,21 @@ function renderStickerFilters() {
     filterBar.innerHTML = html;
 }
 
+window.setGalleryFilter = function(filterType) {
+    activeStickerFilter = filterType;
+    renderGallery(); 
+};
+
 export function renderGallery() {
+    if (!galleryData) return;
+
+    // 1. EXECUTE NORMALIZATION FIRST (This fixes the missing images)
+    galleryData.forEach(normalizeGalleryItem);
+
     const hGrid = document.getElementById('historyGrid');
-    if (!hGrid) return; 
+    
+    // Safety check
+    if (!hGrid) return;
 
     renderStickerFilters();
 
@@ -108,8 +125,8 @@ export function renderGallery() {
 }
 
 function createGalleryItemHTML(item, index) {
-    let rawUrl = getValidImage(item);
-    let thumbUrl = getOptimizedUrl(rawUrl, 300);
+    let url = item.proofUrl || PLACEHOLDER_IMG;
+    let thumbUrl = getOptimizedUrl(url, 300);
     const s = (item.status || "").toLowerCase();
     
     const isPending = s.includes('pending') || s === "";
@@ -128,7 +145,7 @@ function createGalleryItemHTML(item, index) {
     if (isPending) barText = "WAIT";
     if (isRejected) barText = "DENIED";
 
-    const isVideo = (rawUrl || "").match(/\.(mp4|webm|mov)($|\?)/i);
+    const isVideo = (url || "").match(/\.(mp4|webm|mov)($|\?)/i);
 
     return `
         <div class="gallery-item ${tierClass}" onclick='window.openHistoryModal(${index})'>
@@ -197,7 +214,9 @@ export function openHistoryModal(index) {
     
     setCurrentHistoryIndex(index);
     const item = items[index];
-    let url = getValidImage(item);
+    
+    // We already normalized, so proofUrl is safe to use
+    let url = item.proofUrl;
     
     const isVideo = url.match(/\.(mp4|webm|mov)($|\?)/i);
     const mediaContainer = document.getElementById('modalMediaContainer');
@@ -229,7 +248,7 @@ export function openHistoryModal(index) {
 
         let footerAction = `<button onclick="event.stopPropagation(); window.closeModal(event)" class="history-action-btn btn-close-red" style="grid-column: span 2;">CLOSE FILE</button>`;
         if (isRejected) {
-            footerAction = `<button onclick="event.stopPropagation(); window.atoneForTask(${index})" class="btn-skip-small" style="grid-column: span 2; border-color:var(--neon-red); color:var(--neon-red); width:100%;">ATONE (-100 🪙)</button>`;
+            footerAction = `<button onclick="event.stopPropagation(); window.atoneForTask(${index})" class="btn-dim" style="grid-column: span 2; border-color:var(--neon-red); color:var(--neon-red); width:100%;">ATONE (-100 🪙)</button>`;
         }
 
         overlay.innerHTML = `
@@ -279,7 +298,8 @@ export function openHistoryModal(index) {
 // --- VIEW HELPERS ---
 export function toggleHistoryView(view) {
     const modal = document.getElementById('glassModal');
-    if (!modal) return;
+    const overlay = document.getElementById('modalGlassOverlay');
+    if (!modal || !overlay) return;
 
     const views = ['modalInfoView', 'modalFeedbackView', 'modalTaskView'];
     views.forEach(id => {
@@ -289,14 +309,10 @@ export function toggleHistoryView(view) {
 
     if (view === 'proof') {
         modal.classList.add('proof-mode-active');
-        // Hide sidebar for full view
-        const sidebar = document.querySelector('.dossier-sidebar');
-        if(sidebar) sidebar.style.display = 'none';
+        overlay.classList.add('clean');
     } else {
         modal.classList.remove('proof-mode-active');
-        const sidebar = document.querySelector('.dossier-sidebar');
-        if(sidebar) sidebar.style.display = 'flex';
-        
+        overlay.classList.remove('clean');
         let targetId = 'modalInfoView';
         if (view === 'feedback') targetId = 'modalFeedbackView';
         if (view === 'task') targetId = 'modalTaskView';
@@ -306,24 +322,52 @@ export function toggleHistoryView(view) {
 }
 
 export function closeModal(e) {
-    document.getElementById('glassModal').classList.remove('active');
-    document.getElementById('modalMediaContainer').innerHTML = "";
+    if (e && (e.target.id === 'modalCloseX' || e.target.classList.contains('btn-close-red'))) {
+        document.getElementById('glassModal').classList.remove('active');
+        document.getElementById('modalMediaContainer').innerHTML = "";
+        return;
+    }
+    const overlay = document.getElementById('modalGlassOverlay');
+    if (overlay && overlay.classList.contains('clean')) {
+        toggleHistoryView('info'); 
+        return;
+    }
 }
 
-// FORCE EXPORTS FOR WINDOW
-window.setGalleryFilter = function(filterType) {
-    activeStickerFilter = filterType;
-    renderGallery(); 
-};
+export function openModal() {}
+export function loadMoreHistory() {
+    setHistoryLimit(historyLimit + 25);
+    renderGallery();
+}
+
+export function initModalSwipeDetection() {
+    const modalEl = document.getElementById('glassModal');
+    if (!modalEl) return;
+    modalEl.addEventListener('touchstart', e => setTouchStartX(e.changedTouches[0].screenX), { passive: true });
+    modalEl.addEventListener('touchend', e => {
+        const touchEndX = e.changedTouches[0].screenX;
+        const diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 80) {
+            let historyItems = getGalleryList();
+            let nextIndex = currentHistoryIndex;
+            if (diff > 0) nextIndex++; 
+            else nextIndex--; 
+            
+            if (nextIndex >= 0 && nextIndex < historyItems.length) {
+                openHistoryModal(nextIndex);
+            }
+        }
+    }, { passive: true });
+}
+
+// FORCE EXPORT
 window.renderGallery = renderGallery;
 window.openHistoryModal = openHistoryModal;
 window.toggleHistoryView = toggleHistoryView;
 window.closeModal = closeModal;
 window.atoneForTask = window.atoneForTask;
-export function loadMoreHistory() {
-    setHistoryLimit(historyLimit + 25);
-    renderGallery();
-}
 window.loadMoreHistory = loadMoreHistory;
-export function openModal() {} 
-export function initModalSwipeDetection() {}
+window.setGalleryFilter = function(filterType) {
+    activeStickerFilter = filterType;
+    renderGallery(); 
+};
