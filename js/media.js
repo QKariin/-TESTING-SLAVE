@@ -1,5 +1,5 @@
 // media.js
-import { getThumbnailBytescale } from "./mediaBytescale.js";
+import { getThumbnailBytescale, isBytescaleUrl } from "./mediaBytescale.js";
 
 export function fileType(file) {
   if (!file) return "unknown";
@@ -23,7 +23,7 @@ export function mediaType(url) {
   const originalUrl = url.toLowerCase();
 
   // 1. Thumbnail always means image — even if it ends with .mp4
-  if (url.isBytescaleUrl) return mediaTypeBytescale(url);
+  if (isBytescaleUrl(url)) return mediaTypeBytescale(url);
 
   // 2. Raw keeps the original type — so extension matters
   //    (If neither raw nor thumbnail is present, treat like raw)
@@ -40,7 +40,7 @@ export function getThumbnail(url) {
   if (!url) return url;
 
   // Only operate on Bytescale URLs
-  if (url.isBytescaleUrl) return getThumbnailBytescale(url);
+  if (isBytescaleUrl(url)) return getThumbnailBytescale(url);
   
   return url;
 }
