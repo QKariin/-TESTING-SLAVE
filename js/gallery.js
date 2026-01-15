@@ -1,15 +1,15 @@
-// gallery.js - TRILOGY LAYOUT FIXED
+// gallery.js - THE TRILOGY (Triptych / Aperture / Vault)
 
 import { 
-    galleryData, currentHistoryIndex, setCurrentHistoryIndex, setHistoryLimit
+    galleryData, pendingLimit, historyLimit, currentHistoryIndex, touchStartX, 
+    setCurrentHistoryIndex, setHistoryLimit, setTouchStartX,
+    gameStats, setGameStats, setCurrentTask, setPendingTaskState, setIgnoreBackendUpdates
 } from './state.js';
 import { getOptimizedUrl, cleanHTML, triggerSound } from './utils.js';
 
 // STICKERS
 const STICKER_APPROVE = "https://static.wixstatic.com/media/ce3e5b_a19d81b7f45c4a31a4aeaf03a41b999f~mv2.png";
 const STICKER_DENIED = "https://static.wixstatic.com/media/ce3e5b_63a0c8320e29416896d071d5b46541d7~mv2.png";
-const DEFAULT_THUMB = "https://static.wixstatic.com/media/ce3e5b_1bd27ba758ce465fa89a36d70a68f355~mv2.png";
-
 
 // --- HELPER: POINTS ---
 function getPoints(item) {
@@ -24,66 +24,123 @@ function getSortedGallery() {
     return [...galleryData].sort((a, b) => new Date(b._createdDate) - new Date(a._createdDate));
 }
 
-// --- MAIN RENDERER (TRILOGY SPLIT) ---
+// --- MAIN RENDERER ---
 export function renderGallery() {
     if (!galleryData) return;
 
-    const gridPerfect = document.getElementById('gridPerfect');
-    const gridFailed = document.getElementById('gridFailed');
-    const gridOkay = document.getElementById('gridOkay');
+    // Get Containers
+    const gridPerfect = document.getElementById('gridPerfect'); // Top (Triptych)
+    const gridFailed = document.getElementById('gridFailed');   // Bottom (Vaults)
+    const gridOkay = document.getElementById('gridOkay');       // Middle (Apertures)
 
+    // Safety
     if (!gridPerfect || !gridFailed || !gridOkay) return;
 
+    // Clear
     gridPerfect.innerHTML = "";
     gridFailed.innerHTML = "";
     gridOkay.innerHTML = "";
 
     const sortedData = getSortedGallery();
     
+    // Buckets
+    let perfectItems = [];
+    let failedItems = [];
+    let okayItems = [];
+
+    // 1. SORT INTO BUCKETS
     sortedData.forEach((item, index) => {
-        // Use fallback if URL is missing/broken
-        let url = item.proofUrl || item.media || item.file || DEFAULT_THUMB;
-        let thumb = getOptimizedUrl(url, 300);
+        let url = item.proofUrl || item.media || item.file;
+        if (!url) return;
+        
+        item.globalIndex = index; // Save index for modal
         
         let pts = getPoints(item);
         let status = (item.status || "").toLowerCase();
         let isRejected = status.includes('rej') || status.includes('fail');
-        let isPending = status.includes('pending');
-        
-        item.globalIndex = index; 
 
-        // 1. BOTTOM: FAILED (VAULT)
         if (isRejected) {
-            gridFailed.innerHTML += `
-                <div class="item-vault" onclick="window.openHistoryModal(${index})">
-                    <div class="vault-stamp">VOID</div>
-                    <img src="${thumb}" class="vault-img" onerror="this.src='${DEFAULT_THUMB}'">
-                </div>`;
-        } 
-        // 2. TOP: ELITE (HALL OF MERIT)
-        else if (pts > 145) {
-            gridPerfect.innerHTML += `
-                <div class="item-relic" onclick="window.openHistoryModal(${index})">
-                    <img src="${thumb}" class="relic-img" onerror="this.src='${DEFAULT_THUMB}'">
-                    <div class="relic-value">+${pts}</div>
-                </div>`;
-        } 
-        // 3. MIDDLE: PROCESSING (BLUEPRINT)
-        else {
-            const label = isPending ? 
-                `<div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:cyan; font-family:'Orbitron'; font-size:0.6rem;">ANALYZING</div>` 
-                : ``;
-
-            gridOkay.innerHTML += `
-                <div class="item-blueprint" onclick="window.openHistoryModal(${index})">
-                    <img src="${thumb}" onerror="this.src='${DEFAULT_THUMB}'">
-                    ${label}
-                </div>`;
+            failedItems.push(item);
+        } else if (pts > 145) {
+            perfectItems.push(item);
+        } else {
+            okayItems.push(item);
         }
     });
+
+    // 2. RENDER BOTTOM: THE VAULT (FAILED)
+    failedItems.forEach(item => {
+        let thumb = getOptimizedUrl(item.proofUrl || item.media || item.file, 300);
+        gridFailed.innerHTML += `
+            <div class="item-vault" onclick="window.openHistoryModal(${item.globalIndex})">
+                <div class="vault-bolt vb-tl"></div><div class="vault-bolt vb-tr"></div>
+                <div class="vault-bolt vb-bl"></div><div class="vault-bolt vb-br"></div>
+                <div class="vault-led"></div>
+                <div class="vault-bar"><div class="vault-cog"></div></div>
+                <img src="${thumb}" class="vault-img">
+            </div>`;
+    });
+
+    // 3. RENDER MIDDLE: THE APERTURE (OKAY/PENDING)
+    okayItems.forEach(item => {
+        let thumb = getOptimizedUrl(item.proofUrl || item.media || item.file, 300);
+        let isPending = (item.status || "").toLowerCase().includes('pending');
+        gridOkay.innerHTML += `
+            <div class="item-aperture" onclick="window.openHistoryModal(${item.globalIndex})">
+                <div class="shutter-mech">
+                    <div class="blade b1"></div><div class="blade b2"></div>
+                    <div class="blade b3"></div><div class="blade b4"></div>
+                    <div class="blade b5"></div><div class="blade b6"></div>
+                </div>
+                <img src="${thumb}" class="aperture-img">
+                ${isPending ? '<div style="position:absolute; inset:0; z-index:20; display:flex; align-items:center; justify-content:center; color:cyan; font-family:Orbitron; font-size:0.6rem; pointer-events:none;">WAIT</div>' : ''}
+            </div>`;
+    });
+
+    // 4. RENDER TOP: THE GOLDEN TRIPTYCH (ELITE)
+    if (perfectItems.length > 0) {
+        let html = `<div class="triptych-stage">`;
+        
+        // LEFT SAINT (2nd Best)
+        if (perfectItems[1]) {
+            let thumb = getOptimizedUrl(perfectItems[1].proofUrl || perfectItems[1].media, 300);
+            html += `
+            <div class="trip-card trip-side" onclick="window.openHistoryModal(${perfectItems[1].globalIndex})">
+                <img src="${thumb}" class="trip-img">
+                <div class="trip-inner-frame"></div>
+                <div class="trip-plaque">+${getPoints(perfectItems[1])}</div>
+            </div>`;
+        }
+
+        // CENTER IDOL (The Best/Newest)
+        if (perfectItems[0]) {
+            let thumb = getOptimizedUrl(perfectItems[0].proofUrl || perfectItems[0].media, 300);
+            html += `
+            <div class="trip-card trip-center" onclick="window.openHistoryModal(${perfectItems[0].globalIndex})">
+                <img src="${thumb}" class="trip-img">
+                <div class="trip-inner-frame"></div>
+                <div class="trip-plaque">+${getPoints(perfectItems[0])}</div>
+            </div>`;
+        }
+
+        // RIGHT SAINT (3rd Best)
+        if (perfectItems[2]) {
+            let thumb = getOptimizedUrl(perfectItems[2].proofUrl || perfectItems[2].media, 300);
+            html += `
+            <div class="trip-card trip-side" onclick="window.openHistoryModal(${perfectItems[2].globalIndex})">
+                <img src="${thumb}" class="trip-img">
+                <div class="trip-inner-frame"></div>
+                <div class="trip-plaque">+${getPoints(perfectItems[2])}</div>
+            </div>`;
+        }
+
+        html += `</div>`;
+        gridPerfect.innerHTML = html;
+    }
 }
 
 // --- MODAL LOGIC (DOSSIER STYLE) ---
+
 export function openHistoryModal(index) {
     const items = getSortedGallery();
     const item = items[index];
@@ -194,6 +251,7 @@ window.atoneForTask = function(index) {
     
     window.closeModal(); 
     
+    // Switch to Active UI
     if(window.restorePendingUI) window.restorePendingUI();
     if(window.updateTaskUIState) window.updateTaskUIState(true);
     if(window.toggleTaskDetails) window.toggleTaskDetails(true);
@@ -251,13 +309,15 @@ export function closeModal(e) {
     }
 }
 
-// REQUIRED EXPORT for main.js to not crash
+export function openModal() {} 
+
 export function loadMoreHistory() {
     renderGallery();
 }
 
-export function openModal() {} 
-export function initModalSwipeDetection() {}
+export function initModalSwipeDetection() {
+    // Swipe logic can be re-added here if needed
+}
 
 // FORCE WINDOW EXPORTS
 window.renderGallery = renderGallery;
