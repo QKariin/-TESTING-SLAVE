@@ -104,14 +104,16 @@ export async function signUpcdnUrl(url) {
 
   try {
     const result = await getPrivateFile(filePath);
-    console.log("Backend returned:", result);
-    const signed = result?.signedUrl || url;
+
+    // Backend returns a STRING
+    const signed = typeof result === "string" ? result : url;
 
     // If backend already includes query params, do not append
     if (signed.includes("?")) return signed;
 
     // Otherwise re-append original transforms
     return query ? `${signed}${query}` : signed;
+
   } catch (err) {
     console.error("Failed to sign Upcdn URL:", url, err);
     return url;
