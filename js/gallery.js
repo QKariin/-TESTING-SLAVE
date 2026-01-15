@@ -111,7 +111,6 @@ function renderStickerFilters() {
 export function renderGallery() {
     if (!galleryData) return;
 
-    // 1. Get Containers
     const gridFailed = document.getElementById('gridFailed'); 
     const gridOkay = document.getElementById('gridOkay');     
     
@@ -120,15 +119,14 @@ export function renderGallery() {
     const slot2 = { card: document.getElementById('altarSlot2'), img: document.getElementById('imgSlot2') };
     const slot3 = { card: document.getElementById('altarSlot3'), img: document.getElementById('imgSlot3') };
 
-    // Safety
     if (!gridFailed || !gridOkay || !slot1.card) return;
 
-    // Clear Lists
     gridFailed.innerHTML = "";
     gridOkay.innerHTML = "";
 
-    // 2. Get All Items & Find Top 3
     const allItems = getGalleryList(); 
+
+    // --- TOP ALTAR LOGIC ---
     let bestOf = [...allItems]
         .filter(item => {
             const s = (item.status || "").toLowerCase();
@@ -137,10 +135,8 @@ export function renderGallery() {
         .sort((a, b) => getPoints(b) - getPoints(a))
         .slice(0, 3);
 
-    // --- RENDER TOP ALTAR (With Placeholders) ---
-    
-    // CENTER (Queen)
-    slot1.card.style.display = 'flex'; // Always show
+    // Center
+    slot1.card.style.display = 'flex';
     if (bestOf[0]) {
         let thumb = getOptimizedUrl(bestOf[0].proofUrl || bestOf[0].media, 400);
         let realIndex = allItems.indexOf(bestOf[0]);
@@ -149,14 +145,13 @@ export function renderGallery() {
         slot1.card.onclick = () => window.openHistoryModal(realIndex);
         slot1.img.style.filter = "none";
     } else {
-        // Empty State
         slot1.img.src = IMG_QUEEN_MAIN;
         if(slot1.ref) slot1.ref.src = IMG_QUEEN_MAIN;
         slot1.card.onclick = null;
-        slot1.img.style.filter = "grayscale(30%)"; // Slight style for default
+        slot1.img.style.filter = "grayscale(30%)"; 
     }
 
-    // LEFT (Side Statue)
+    // Left
     slot2.card.style.display = 'flex';
     if (bestOf[1]) {
         let thumb = getOptimizedUrl(bestOf[1].proofUrl || bestOf[1].media, 300);
@@ -168,7 +163,7 @@ export function renderGallery() {
         slot2.card.onclick = null;
     }
 
-    // RIGHT (Side Statue)
+    // Right
     slot3.card.style.display = 'flex';
     if (bestOf[2]) {
         let thumb = getOptimizedUrl(bestOf[2].proofUrl || bestOf[2].media, 300);
@@ -180,16 +175,21 @@ export function renderGallery() {
         slot3.card.onclick = null;
     }
 
-    // --- RENDER MIDDLE (Archive) ---
+    // --- MIDDLE (Archive) LOGIC ---
     const middleItems = allItems.filter(item => {
-        if (bestOf.includes(item)) return false; // Not in top 3
+        if (bestOf.includes(item)) return false; 
         const s = (item.status || "").toLowerCase();
-        return !s.includes('rej') && !s.includes('fail'); // Not failed
+        return !s.includes('rej') && !s.includes('fail');
     });
 
     if (middleItems.length === 0) {
-        // Show Middle Placeholder
-        gridOkay.innerHTML = `<img src="${IMG_MIDDLE_EMPTY}" class="empty-placeholder">`;
+        // RENDER 6 PLACEHOLDERS
+        for(let i=0; i<6; i++) {
+            gridOkay.innerHTML += `
+                <div class="item-placeholder-slot">
+                    <img src="${IMG_MIDDLE_EMPTY}">
+                </div>`;
+        }
     } else {
         middleItems.forEach(item => {
             let thumb = getOptimizedUrl(item.proofUrl || item.media, 300);
@@ -205,15 +205,20 @@ export function renderGallery() {
         });
     }
 
-    // --- RENDER BOTTOM (Heap/Failed) ---
+    // --- BOTTOM (Heap) LOGIC ---
     const failedItems = allItems.filter(item => {
         const s = (item.status || "").toLowerCase();
         return s.includes('rej') || s.includes('fail');
     });
 
     if (failedItems.length === 0) {
-        // Show Bottom Placeholder
-        gridFailed.innerHTML = `<img src="${IMG_BOTTOM_EMPTY}" class="empty-placeholder">`;
+        // RENDER 6 PLACEHOLDERS
+        for(let i=0; i<6; i++) {
+            gridFailed.innerHTML += `
+                <div class="item-placeholder-slot">
+                    <img src="${IMG_BOTTOM_EMPTY}">
+                </div>`;
+        }
     } else {
         failedItems.forEach(item => {
             let thumb = getOptimizedUrl(item.proofUrl || item.media, 300);
