@@ -1,176 +1,190 @@
-import { 
-    galleryData, pendingLimit, historyLimit, currentHistoryIndex, touchStartX, 
-    setCurrentHistoryIndex, setHistoryLimit, setTouchStartX,
-    gameStats, setGameStats, setCurrentTask, setPendingTaskState, setIgnoreBackendUpdates
-} from './state.js';
-import { getOptimizedUrl, cleanHTML, triggerSound } from './utils.js';
+const gridPerfect = document.getElementById('gridPerfect');
+const gridFailed = document.getElementById('gridFailed');
+const gridOkay = document.getElementById('gridOkay');
 
-// --- HELPER: POINTS ---
-function getPoints(item) {
-    let val = item.points || item.score || item.value || item.amount || item.reward || 0;
-    return Number(val);
-}
+if (!gridPerfect || !gridFailed || !gridOkay) return;
 
-// ... (Imports & Helper functions remain the same) ...
+gridPerfect.innerHTML = "";
+gridFailed.innerHTML = "";
+gridOkay.innerHTML = "";
 
-// --- HELPER: GET SORTED LIST ---
-function getSortedGallery() {
-    if (!galleryData) return [];
-    return [...galleryData].sort((a, b) => new Date(b._createdDate) - new Date(a._createdDate));
-}
+const sortedData = getSortedGallery();
 
-// --- MAIN RENDERER ---
-export function renderGallery() {
-    if (!galleryData) return;
-
-    const gridPerfect = document.getElementById('gridPerfect');
-    const gridFailed = document.getElementById('gridFailed');
-    const gridOkay = document.getElementById('gridOkay');
-
-    if (!gridPerfect || !gridFailed || !gridOkay) return;
-
-    gridPerfect.innerHTML = "";
-    gridFailed.innerHTML = "";
-    gridOkay.innerHTML = "";
-
-    const sortedData = getSortedGallery();
+sortedData.forEach((item, index) => {
+    let url = item.proofUrl || item.media || item.file;
+    if (!url) return;
     
-    // Arrays to hold items for the Top Section Clustering
-    let perfectItems = [];
+    let thumb = getOptimizedUrl(url, 300);
+    let pts = getPoints(item);
+    let status = (item.status || "").toLowerCase();
+    let isRejected = status.includes('rej') || status.includes('fail');
+    let isPending = status.includes('pending');
 
-    // 1. DISTRIBUTE ITEMS
-    sortedData.forEach((item, index) => {
-        let url = item.proofUrl || item.media || item.file;
-        if (!url) return;
-        
-        let thumb = getOptimizedUrl(url, 300);
-        let pts = getPoints(item);
-        let status = (item.status || "").toLowerCase();
-        let isRejected = status.includes('rej') || status.includes('fail');
-        
-        // Pass index for modal opening
-        item.globalIndex = index; 
+    item.globalIndex = index; 
 
-        if (isRejected) {
-            // BOTTOM: REINFORCED CONTAINER
-            gridFailed.innerHTML += `
-                <div class="item-reinforced" onclick="window.openHistoryModal(${index})">
-                    <div class="rivet rv-tl"></div><div class="rivet rv-tr"></div>
-                    <div class="rivet rv-bl"></div><div class="rivet rv-br"></div>
-                    <div class="status-led"></div>
-                    <div class="lock-bar"><div class="lock-cog"></div></div>
-                    <img src="${thumb}" class="reinforced-img">
-                </div>`;
-        } 
-        else if (pts > 145) {
-            // Add to Perfect Array for Clustering later
-            perfectItems.push({ ...item, thumb });
-        } 
-        else {
-            // MIDDLE: NOIR VAULT
-            gridOkay.innerHTML += `
-                <div class="item-noir" onclick="window.openHistoryModal(${index})">
-                    <img src="${thumb}" class="noir-img">
-                    <div class="noir-seal">VERIFIED</div>
-                </div>`;
-        }
-    });
+    // 1. THE HEAP (FAILED) - BOTTOM
+    if (isRejected) {
+        gridFailed.innerHTML += `
+            <div class="item-trash" onclick="window.openHistoryModal(${index})">
+                <img src="${thumb}" class="trash-img">
+                <div class="trash-stamp">DENIED</div>
+            </div>`;
+    } 
+    // 2. THE ALTAR (ELITE) - TOP (> 145)
+    else if (pts > 145) {
+        gridPerfect.innerHTML += `
+            <div class="item-relic" onclick="window.openHistoryModal(${index})">
+                <img src="${thumb}" class="relic-img">
+                <div class="relic-value">+${pts}</div>
+            </div>`;
+    } 
+    // 3. THE ARCHIVE (OKAY) - MIDDLE
+    else {
+        const pendingHTML = isPending ? 
+            `<div class="pending-ghost">⏳ ANALYZING</div>` : ``;
 
-    // 2. RENDER TOP SECTION (COLLAGE CLUSTERS)
-    // We group them into chunks of 3 (1 Anchor + 2 Satellites)
-    for (let i = 0; i < perfectItems.length; i += 3) {
-        let group = perfectItems.slice(i, i + 3);
-        let clusterHTML = `<div class="collage-cluster">
-            <div class="collage-line"></div>
-            <div class="collage-ghost-num">0${Math.floor(i/3) + 1}</div>`;
-        
-        // Item 1: Anchor (Tall)
-        if (group[0]) {
-            clusterHTML += `
-                <div class="img-anchor" onclick="window.openHistoryModal(${group[0].globalIndex})">
-                    <img src="${group[0].thumb}" class="collage-img">
-                </div>`;
-        }
-        
-        // Items 2 & 3: Satellites (Stack)
-        if (group[1] || group[2]) {
-            clusterHTML += `<div class="collage-stack">`;
-            if (group[1]) {
-                clusterHTML += `<div class="img-satellite sat-top" onclick="window.openHistoryModal(${group[1].globalIndex})"><img src="${group[1].thumb}" class="collage-img"></div>`;
-            }
-            if (group[2]) {
-                clusterHTML += `<div class="img-satellite sat-bot" onclick="window.openHistoryModal(${group[2].globalIndex})"><img src="${group[2].thumb}" class="collage-img"></div>`;
-            }
-            clusterHTML += `</div>`;
-        }
-        
-        clusterHTML += `</div>`;
-        gridPerfect.innerHTML += clusterHTML;
+        gridOkay.innerHTML += `
+            <div class="item-archive" onclick="window.openHistoryModal(${index})">
+                <img src="${thumb}" class="archive-img">
+                ${pendingHTML}
+            </div>`;
     }
-    
-    // Add Parallax Listener
-    const perfContainer = document.getElementById('gridPerfect');
-    if(perfContainer) {
-        perfContainer.addEventListener('scroll', () => {
-            const numbers = perfContainer.querySelectorAll('.collage-ghost-num');
-            numbers.forEach(num => {
-                // Move numbers slower than the scroll (Parallax)
-                num.style.transform = `translateX(${perfContainer.scrollLeft * 0.5}px)`;
-            });
-        });
-    }
-}
-
-// --- CRITICAL FIX: EXPORT THIS EMPTY FUNCTION TO PREVENT CRASH ---
-export function loadMoreHistory() {
-    // Horizontal scrolls usually auto-load, but we keep this to satisfy main.js import
-    console.log("History loaded via scroll");
-}
-
+});
+// --- MODAL LOGIC (DOSSIER STYLE) ---
 export function openHistoryModal(index) {
     const items = getSortedGallery();
     const item = items[index];
     if (!item) return;
     
-    // ... (Your existing Modal Logic works here, I can repost if needed) ...
-    // For now, let's just make sure the profile loads first!
-    if(window.openModalInternal) window.openModalInternal(item); 
-    // ^ This assumes we attach the modal logic to window, see below
-    
-    // Temporary Direct Call to ensure it works immediately
-    buildAndShowModal(item);
-}
+    setCurrentHistoryIndex(index);
 
-function buildAndShowModal(item) {
-    // (Simplified Dossier Modal Builder for immediate function)
+    const isVideo = (item.proofUrl || "").match(/\.(mp4|webm|mov)($|\?)/i);
+    const mediaContainer = document.getElementById('modalMediaContainer');
+    if (mediaContainer) {
+        mediaContainer.innerHTML = isVideo 
+            ? `<video src="${item.proofUrl}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:contain;"></video>`
+            : `<img src="${item.proofUrl}" style="width:100%; height:100%; object-fit:contain;">`;
+    }
+
     const overlay = document.getElementById('modalGlassOverlay');
-    if(!overlay) return;
-    
-    const pts = getPoints(item);
-    overlay.innerHTML = `
-        <div id="modalCloseX" onclick="window.closeModal(event)" style="position:absolute; top:20px; right:20px; font-size:2.5rem; cursor:pointer; color:white; z-index:110;">×</div>
-        <div class="theater-content dossier-layout">
-            <div class="dossier-sidebar">
-                <div class="dossier-block"><div class="dossier-label">VALUE</div><div class="m-points-lg">+${pts}</div></div>
-                <div class="dossier-block"><div class="dossier-label">DIRECTIVE</div><div class="theater-text-box">${item.text}</div></div>
+    if (overlay) {
+        const pts = getPoints(item);
+        const s = (item.status || "").toLowerCase();
+        const isRejected = s.includes('rej') || s.includes('fail');
+        const isPending = s.includes('pending');
+        
+        let statusImg = "";
+        let statusText = "SYSTEM VERDICT";
+        
+        if (isPending) {
+            statusText = "AWAITING REVIEW";
+        } else {
+            statusImg = s.includes('app') ? STICKER_APPROVE : (isRejected ? STICKER_DENIED : "");
+        }
+
+        const statusDisplay = isPending 
+            ? `<div style="font-size:3rem;">⏳</div>` 
+            : `<img src="${statusImg}" style="width:100px; height:100px; object-fit:contain; margin-bottom:15px; opacity:0.8;">`;
+
+        let footerAction = `<button onclick="event.stopPropagation(); window.closeModal(event)" class="history-action-btn btn-close-red" style="grid-column: span 2;">CLOSE FILE</button>`;
+        if (isRejected) {
+            footerAction = `<button onclick="event.stopPropagation(); window.atoneForTask(${index})" class="btn-dim" style="grid-column: span 2; border-color:var(--neon-red); color:var(--neon-red); width:100%;">ATONE (-100 🪙)</button>`;
+        }
+
+        overlay.innerHTML = `
+            <div id="modalCloseX" onclick="window.closeModal(event)" style="position:absolute; top:20px; right:20px; font-size:2.5rem; cursor:pointer; color:white; z-index:110;">×</div>
+            
+            <div class="theater-content dossier-layout">
+                <div class="dossier-sidebar">
+                    <div id="modalInfoView" class="sub-view">
+                        <div class="dossier-block">
+                            <div class="dossier-label">${statusText}</div>
+                            ${statusDisplay}
+                        </div>
+                        <div class="dossier-block">
+                            <div class="dossier-label">MERIT VALUE</div>
+                            <div class="m-points-lg" style="color:${isRejected ? 'red' : (isPending ? 'cyan' : 'gold')}">
+                                ${isPending ? "CALCULATING" : "+" + pts}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="modalFeedbackView" class="sub-view hidden">
+                        <div class="dossier-label">OFFICER NOTES</div>
+                        <div class="theater-text-box">${(item.adminComment || "No notes.").replace(/\n/g, '<br>')}</div>
+                    </div>
+                    
+                    <div id="modalTaskView" class="sub-view hidden">
+                         <div class="dossier-label">DIRECTIVE</div>
+                         <div class="theater-text-box">${(item.text || "").replace(/\n/g, '<br>')}</div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="modal-footer-menu">
-            <button onclick="window.closeModal(event)" class="history-action-btn btn-close-red" style="grid-column: span 2;">CLOSE</button>
-        </div>
-    `;
+
+            <div class="modal-footer-menu">
+                <button onclick="event.stopPropagation(); window.toggleHistoryView('feedback')" class="history-action-btn">NOTES</button>
+                <button onclick="event.stopPropagation(); window.toggleHistoryView('task')" class="history-action-btn">ORDER</button>
+                <button onclick="event.stopPropagation(); window.toggleHistoryView('proof')" class="history-action-btn">EVIDENCE</button>
+                <button onclick="event.stopPropagation(); window.toggleHistoryView('info')" class="history-action-btn">DATA</button>
+                ${footerAction}
+            </div>
+        `;
+    }
+
+    toggleHistoryView('info');
     document.getElementById('glassModal').classList.add('active');
 }
 
-// Standard Exports
-export function toggleHistoryView() {}
+// --- REDEMPTION LOGIC ---
+window.atoneForTask = function(index) {
+    const items = getSortedGallery();
+    const task = items[index];
+    if (!task) return;
+
+    // (This calls backend logic - assumed imported in main bundle or handled globally)
+    // For now, visual logic:
+    window.closeModal(); 
+    if(window.updateTaskUIState) window.updateTaskUIState(true);
+    
+    // Trigger Main PostMessage
+    window.parent.postMessage({ 
+        type: "PURCHASE_ITEM", 
+        itemName: "Redemption",
+        cost: 100,
+        messageToDom: "Slave paid 100 coins to retry failed task." 
+    }, "*");
+};
+
+// --- REQUIRED EXPORTS TO PREVENT CRASH ---
+export function toggleHistoryView(view) {
+    const views = ['modalInfoView', 'modalFeedbackView', 'modalTaskView'];
+    views.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.classList.add('hidden');
+    });
+    const target = document.getElementById(view === 'feedback' ? 'modalFeedbackView' : (view === 'task' ? 'modalTaskView' : 'modalInfoView'));
+    if(target) target.classList.remove('hidden');
+    
+    const modal = document.getElementById('glassModal');
+    if (view === 'proof') modal.classList.add('proof-mode-active');
+    else modal.classList.remove('proof-mode-active');
+}
+
 export function closeModal(e) {
     document.getElementById('glassModal').classList.remove('active');
+    document.getElementById('modalMediaContainer').innerHTML = "";
 }
-export function openModal() {} 
+
+// IMPORTANT: main.js calls this, it must exist
+export function loadMoreHistory() {
+    renderGallery();
+}
+
+export function openModal() {}
 export function initModalSwipeDetection() {}
 
-// FORCE WINDOW EXPORTS
+// FORCE WINDOW BINDING
 window.renderGallery = renderGallery;
 window.openHistoryModal = openHistoryModal;
+window.toggleHistoryView = toggleHistoryView;
 window.closeModal = closeModal;
