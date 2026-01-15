@@ -104,6 +104,7 @@ export async function signUpcdnUrl(url) {
 
   try {
     const result = await getPrivateFile(filePath);
+    console.log("Backend returned:", result);
     const signed = result?.signedUrl || url;
 
     // If backend already includes query params, do not append
