@@ -85,3 +85,15 @@ export function getOptimizedUrl(url, width = 400) {
   // 7. FALLBACK
   return url;
 }
+
+export async function getSignedUrl(url) {
+  if (!url) return "";
+
+  // Only sign Bytescale URLs
+  if (isBytescaleUrl(url)) {
+    return await signUpcdnUrl(url);
+  }
+
+  // Everything else passes through unchanged
+  return url;
+}

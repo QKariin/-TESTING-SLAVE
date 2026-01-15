@@ -14,7 +14,7 @@ import {
     setPendingTaskState
 } from './state.js';
 import { triggerSound } from './utils.js';
-import { getOptimizedUrl, getThumbnail } from './media.js';
+import { getOptimizedUrl, getThumbnail, getSignedUrl } from './media.js';
 
 // STICKERS
 const STICKER_APPROVE = "https://static.wixstatic.com/media/ce3e5b_a19d81b7f45c4a31a4aeaf03a41b999f~mv2.png";
@@ -109,7 +109,7 @@ function renderStickerFilters() {
 }
 
 // REPLACE your renderGallery function with this:
-export function renderGallery() {
+export async function renderGallery() {
     if (!galleryData) return;
 
     const gridFailed = document.getElementById('gridFailed'); 
@@ -150,6 +150,7 @@ export function renderGallery() {
     slot1.card.style.display = 'flex';
     if (bestOf[0]) {
         let thumb = getThumbnail(getOptimizedUrl(bestOf[0].proofUrl || bestOf[0].media, 400));
+        thumb = await getSignedUrl(thumb);
         let realIndex = allItems.indexOf(bestOf[0]);
         slot1.img.src = thumb;
         if(slot1.ref) slot1.ref.src = thumb;
@@ -165,6 +166,7 @@ export function renderGallery() {
     slot2.card.style.display = 'flex';
     if (bestOf[1]) {
         let thumb = getThumbnail(getOptimizedUrl(bestOf[1].proofUrl || bestOf[1].media, 300));
+        thumb = await getSignedUrl(thumb);
         let realIndex = allItems.indexOf(bestOf[1]);
         slot2.img.src = thumb;
         slot2.card.onclick = () => window.openHistoryModal(realIndex);
@@ -176,6 +178,7 @@ export function renderGallery() {
     slot3.card.style.display = 'flex';
     if (bestOf[2]) {
         let thumb = getThumbnail(getOptimizedUrl(bestOf[2].proofUrl || bestOf[2].media, 300));
+        thumb = await getSignedUrl(thumb);
         let realIndex = allItems.indexOf(bestOf[2]);
         slot3.img.src = thumb;
         slot3.card.onclick = () => window.openHistoryModal(realIndex);
