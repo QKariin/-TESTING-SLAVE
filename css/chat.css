@@ -190,63 +190,54 @@
 }
 
 /* =========================================
-   MOBILE CHAT FIX (STRICT & COMPACT)
+   MOBILE CHAT FIX (FULL WIDTH & GHOST LOGS)
    ========================================= */
 @media screen and (max-width: 768px) {
 
-    /* 1. CONTAINER: Add breathing room on sides */
+    /* 1. REMOVE THE "DOUBLE PADDING" */
     .chat-body-frame {
-        padding: 10px 15px !important; 
+        padding: 10px 6px !important; /* Almost edge-to-edge */
         width: 100% !important;
+        box-sizing: border-box !important;
     }
 
-    /* 2. MESSAGE BUBBLES: Constrain Width & Size */
+    /* 2. MESSAGE BUBBLES (Wider) */
     .msg {
-        max-width: 80% !important; /* NEVER touch both edges */
-        font-size: 0.75rem !important; /* Smaller tactical text */
-        line-height: 1.3 !important; /* Tighter spacing */
-        padding: 6px 10px !important; /* Compact padding */
-        margin: 0 !important;
-        background: rgba(0,0,0,0.3) !important; /* Slight dark tint for readability */
-        box-shadow: none !important;
-        border: none !important;
+        max-width: 88% !important; /* Use more screen space */
+        font-size: 0.8rem !important;
+        line-height: 1.3 !important;
+        padding: 6px 10px !important;
+        margin-bottom: 4px !important;
     }
 
-    /* 3. ROW SPACING */
-    .msg-row {
-        margin-bottom: 6px !important; /* Tighter gap between messages */
+    /* 3. SERVICE MESSAGES (The "Ghost" Fix) */
+    .msg-system {
+        font-size: 0.55rem !important; /* TINY text */
+        opacity: 0.6 !important;        /* 60-70% Visible (Ghost Mode) */
+        
+        background: transparent !important; /* No heavy block background */
+        border: none !important;            /* No heavy borders */
+        border-bottom: 1px solid rgba(255,255,255,0.1) !important; /* Just a faint line */
+        
+        padding: 4px 0 !important;
+        margin: 8px 0 !important;
+        letter-spacing: 1px !important; /* Tighter tracking */
         width: 100% !important;
     }
 
-    /* 4. SLAVE (Right Side) */
-    .mr-out { justify-content: flex-end !important; }
-    .m-slave {
-        border-right: 2px solid var(--pink) !important; /* Pink Vertical Line */
-        text-align: right !important;
-        border-radius: 4px 0 0 4px !important;
-    }
-
-    /* 5. QUEEN (Left Side) */
-    .mr-in { justify-content: flex-start !important; }
-    .m-queen {
-        border-left: 2px solid var(--gold) !important; /* Gold Vertical Line */
-        text-align: left !important;
-        border-radius: 0 4px 4px 0 !important;
-    }
-
-    /* 6. INPUT AREA (Anti-Zoom & Compact) */
+    /* 4. INPUT AREA (Compact) */
     .chat-footer {
-        padding: 8px 10px !important;
+        padding: 8px !important;
         padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
-        background: #050505 !important;
+        background: #080808 !important;
     }
 
     .chat-input {
-        font-size: 16px !important; /* CRITICAL: Prevents iPhone Zoom */
-        padding: 8px !important;
+        font-size: 16px !important; /* No Zoom */
+        padding: 8px 10px !important;
         height: 40px !important;
     }
     
-    /* Hide the Time on mobile to save space */
+    /* Hide Timestamps to save space */
     .msg-time { display: none !important; }
 }
