@@ -460,6 +460,69 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// =========================================
+// STEP 4: THE WIX IFRAME FIX (VISUAL VIEWPORT MAGNET)
+// =========================================
+
+function anchorMobileFooter() {
+    const footer = document.getElementById('mobileGlassFooter');
+    if (!footer) return;
+
+    // This is the API that ignores Wix and talks to the Phone Hardware
+    const viewport = window.visualViewport;
+
+    function updatePosition() {
+        if (!viewport) return;
+
+        // 1. Ask: "Where is the scroll currently?"
+        // (If the iframe is scrolled down, we need to know)
+        const scrollY = viewport.pageTop; // Better than window.scrollY in iframes
+
+        // 2. Ask: "How tall is the actual glass right now?"
+        const visibleHeight = viewport.height;
+
+        // 3. Math: Scroll + Height - Footer Size (80px)
+        // This calculates the exact pixel coordinate of the bottom of the glass
+        const targetTop = scrollY + visibleHeight - 80;
+
+        // 4. Force the footer to that pixel
+        footer.style.top = `${targetTop}px`;
+        
+        // 5. Reveal it (Visual polish)
+        if (!footer.classList.contains('anchored')) {
+            footer.classList.add('anchored');
+        }
+    }
+
+    // LISTENERS: Recalculate instantly if anything changes
+    if (viewport) {
+        viewport.addEventListener('resize', updatePosition); // Keyboard opens/closes
+        viewport.addEventListener('scroll', updatePosition); // User scrolls
+        window.addEventListener('scroll', updatePosition);   // Iframe scrolls
+        window.addEventListener('resize', updatePosition);   // Orientation change
+    }
+
+    // Run it immediately to set initial spot
+    updatePosition();
+    
+    // Run it again after 100ms and 500ms to catch any Wix loading lag
+    setTimeout(updatePosition, 100);
+    setTimeout(updatePosition, 500);
+}
+
+// Start the Magnet
+if (window.visualViewport) {
+    anchorMobileFooter();
+} else {
+    // Fallback for very old phones (Rare)
+    const footer = document.getElementById('mobileGlassFooter');
+    if(footer) { 
+        footer.style.position = 'fixed'; 
+        footer.style.bottom = '0';
+        footer.classList.add('anchored');
+    }
+}
+
 // Tribute logic
 let currentHuntIndex = 0, filteredItems = [], selectedReason = "", selectedNote = "", selectedItem = null;
 function toggleTributeHunt() { const overlay = document.getElementById('tributeHuntOverlay'); if (overlay.classList.contains('hidden')) { selectedReason = ""; selectedItem = null; if(document.getElementById('huntNote')) document.getElementById('huntNote').value = ""; overlay.classList.remove('hidden'); showTributeStep(1); } else { overlay.classList.add('hidden'); resetTributeFlow(); } }
