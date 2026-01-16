@@ -139,7 +139,17 @@ export async function renderChat(messages) {
             } else if (m.message.startsWith('http')) {
                 contentHtml = `<div class="msg ${msgClass}"><a href="${srcUrl}" target="_blank" rel="noopener noreferrer">${srcUrl}</a></div>`;
             }
+            
+            return `
+                <div class="msg-row ${isMe ? 'mr-out' : 'mr-in'}">
+                    ${avatar}
+                    <div class="msg-col" style="justify-content:${isMe ? 'flex-end' : 'flex-start'};">
+                        ${contentHtml}
+                        <div class="msg-time">${timeStr}</div>
+                    </div>
+                </div>`;
         }
+        else {
 
       // Inside your renderChat map function
             return `
@@ -149,7 +159,8 @@ export async function renderChat(messages) {
                         <div class="msg-time">${timeStr}</div>
                     </div>
                 </div>`;
-            }).join(''); // Keep the glue
+        }
+    }).join(''); // Keep the glue
 
     // Load Listeners
     chatContent.querySelectorAll("img").forEach(img => {
