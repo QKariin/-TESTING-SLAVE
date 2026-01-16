@@ -150,7 +150,7 @@ export async function renderGallery() {
     slot1.card.style.display = 'flex';
     if (bestOf[0]) {
         let thumb = getThumbnail(getOptimizedUrl(bestOf[0].proofUrl || bestOf[0].media, 400));
-        //thumb = await getSignedUrl(thumb);
+        thumb = await getSignedUrl(thumb);
         let realIndex = allItems.indexOf(bestOf[0]);
         slot1.img.src = thumb;
         if(slot1.ref) slot1.ref.src = thumb;
@@ -166,7 +166,7 @@ export async function renderGallery() {
     slot2.card.style.display = 'flex';
     if (bestOf[1]) {
         let thumb = getThumbnail(getOptimizedUrl(bestOf[1].proofUrl || bestOf[1].media, 300));
-        //thumb = await getSignedUrl(thumb);
+        thumb = await getSignedUrl(thumb);
         let realIndex = allItems.indexOf(bestOf[1]);
         slot2.img.src = thumb;
         slot2.card.onclick = () => window.openHistoryModal(realIndex);
@@ -178,7 +178,7 @@ export async function renderGallery() {
     slot3.card.style.display = 'flex';
     if (bestOf[2]) {
         let thumb = getThumbnail(getOptimizedUrl(bestOf[2].proofUrl || bestOf[2].media, 300));
-        //thumb = await getSignedUrl(thumb);
+        thumb = await getSignedUrl(thumb);
         let realIndex = allItems.indexOf(bestOf[2]);
         slot3.img.src = thumb;
         slot3.card.onclick = () => window.openHistoryModal(realIndex);
