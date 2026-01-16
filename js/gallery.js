@@ -234,8 +234,9 @@ export async function renderGallery() {
             gridFailed.innerHTML += `<div class="item-placeholder-slot"><img src="${IMG_BOTTOM_EMPTY}"></div>`;
         }
     } else if (failedItems.length > 0) {
-        failedItems.forEach(item => {
+        for (const item of failedItems) {
             let thumb = getOptimizedUrl(item.proofUrl || item.media, 300);
+            thumb = await getSignedUrl(thumb);
             let realIndex = allItems.indexOf(item);
             gridFailed.innerHTML += `
                 <div class="item-trash" onclick="window.openHistoryModal(${realIndex})">
