@@ -398,33 +398,26 @@ function updateStats() {
 }
 
 // =========================================
-// STEP 3: MOBILE INTERACTION LOGIC
+// PART 1: BUTTON LOGIC (KEEP THIS)
 // =========================================
 
-// 1. PROFILE BUTTON: Toggles the Sidebar Drawer
+// 1. PROFILE BUTTON
 window.toggleMobileMenu = function() {
     const sidebar = document.querySelector('.layout-left');
-    if (sidebar) {
-        sidebar.classList.toggle('mobile-open');
-    }
+    if (sidebar) sidebar.classList.toggle('mobile-open');
 };
 
-// 2. KNEEL BUTTON: Opens Drawer & Highlights the Real Button
+// 2. KNEEL BUTTON
 window.triggerKneel = function() {
     const sidebar = document.querySelector('.layout-left');
     const realBtn = document.querySelector('.kneel-bar-graphic');
 
-    // Open the drawer so they can reach the button
-    if (sidebar) {
-        sidebar.classList.add('mobile-open');
-    }
+    if (sidebar) sidebar.classList.add('mobile-open'); // Open drawer
 
-    // Highlight the button to show them where to press
     if (realBtn) {
+        // Highlight logic
         realBtn.style.boxShadow = "0 0 20px var(--neon-red)";
         realBtn.style.borderColor = "var(--neon-red)";
-        
-        // Remove highlight after 1 second
         setTimeout(() => {
             realBtn.style.boxShadow = "";
             realBtn.style.borderColor = "";
@@ -432,77 +425,104 @@ window.triggerKneel = function() {
     }
 };
 
-// 3. LOGS BUTTON: Scrolls to Chat
+// 3. LOGS BUTTON (With Chat Scroll Fix)
 window.toggleMobileView = function(viewName) {
-    // If we want to show chat, scroll to it
     if (viewName === 'chat') {
-        const chat = document.querySelector('.chat-container');
-        if (chat) {
-            chat.scrollIntoView({ behavior: "smooth", block: "center" });
+        const chatContainer = document.querySelector('.chat-container');
+        if (chatContainer) {
+            chatContainer.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+        // Force scroll to bottom of chat history
+        const chatBox = document.getElementById('chatBox');
+        if (chatBox) {
+            setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 300);
         }
     }
-    
-    // Close the sidebar if it was open
     const sidebar = document.querySelector('.layout-left');
     if (sidebar) sidebar.classList.remove('mobile-open');
 };
 
-// 4. AUTO-CLOSE: Close drawer when clicking a menu link
+// 4. AUTO-CLOSE DRAWER
 document.addEventListener('DOMContentLoaded', () => {
     const navLinks = document.querySelectorAll('.nav-btn');
     const sidebar = document.querySelector('.layout-left');
-    
     if (navLinks && sidebar) {
         navLinks.forEach(btn => {
-            btn.addEventListener('click', () => {
-                sidebar.classList.remove('mobile-open');
-            });
+            btn.addEventListener('click', () => sidebar.classList.remove('mobile-open'));
         });
     }
 });
 
 
-
 // =========================================
-// FINAL MOBILE SOLUTION: THE JS ENFORCER
+// PART 2: FINAL APP MODE ENGINE (THE FIX)
 // =========================================
 
 (function() {
-    // 1. Check if we are on mobile (Max width 768px)
+    // Only run on Mobile
     if (window.innerWidth > 768) return;
 
-    // 2. The Builder Function
-    function createEnforcedFooter() {
-        // Check if it already exists
-        if (document.getElementById('enforced-footer')) return;
-
-        console.log("Creating Mobile Footer...");
-
-        // Create the Bar
-        const footer = document.createElement('div');
-        footer.id = 'enforced-footer';
+    // 1. LOCK BODY SCROLL (Fixes Wix Infinite Scroll)
+    function lockWindowToScreen() {
+        const height = window.innerHeight;
         
-        // APPLY STYLES DIRECTLY (No CSS file needed)
+        document.documentElement.style.height = '100%';
+        document.documentElement.style.overflow = 'hidden';
+        
+        document.body.style.height = height + 'px';
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed'; 
+        document.body.style.width = '100%';
+        document.body.style.inset = '0';
+        
+        // Force App Container Size
+        const app = document.querySelector('.app-container');
+        if (app) {
+            app.style.height = '100%';
+            app.style.overflow = 'hidden';
+        }
+
+        // Enable Internal Scrolling
+        const stage = document.querySelector('.content-stage');
+        if (stage) {
+            stage.style.height = '100%';
+            stage.style.overflowY = 'auto';
+            stage.style.paddingBottom = '100px'; 
+            stage.style.webkitOverflowScrolling = 'touch';
+        }
+    }
+
+    // 2. BUILD THE FOOTER
+    function buildAppFooter() {
+        if (document.getElementById('app-mode-footer')) return;
+
+        console.log("Initializing App Mode Footer...");
+        
+        const footer = document.createElement('div');
+        footer.id = 'app-mode-footer';
+        
+        // Fixed Position (Works because Body is Locked)
         Object.assign(footer.style, {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            position: 'fixed', // Start fixed
+            position: 'fixed',
+            bottom: '0',
             left: '0',
             width: '100%',
             height: '80px',
-            background: 'linear-gradient(to top, #000 40%, rgba(0,0,0,0.9))',
+            background: 'linear-gradient(to top, #000 40%, rgba(0,0,0,0.95))',
             padding: '0 30px',
             paddingBottom: 'env(safe-area-inset-bottom)',
-            zIndex: '2147483647', // Max Z-Index
-            borderTop: '1px solid rgba(197, 160, 89, 0.3)', // Gold border
+            zIndex: '2147483647',
+            borderTop: '1px solid rgba(197, 160, 89, 0.3)',
             backdropFilter: 'blur(10px)',
-            boxSizing: 'border-box'
+            pointerEvents: 'auto'
         });
 
-        // HTML CONTENT (Profile, Kneel, Logs)
+        // HTML Content
         footer.innerHTML = `
-            <button class="nav-icon-btn" onclick="window.toggleMobileMenu()" style="background:none; border:none; color:#666; display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Cinzel',serif; font-size:0.65rem;">
+            <button onclick="window.toggleMobileMenu()" style="background:none; border:none; color:#666; display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Cinzel',serif; font-size:0.65rem;">
                 <span style="font-size:1.4rem; color:#888;">◈</span>
                 <span>PROFILE</span>
             </button>
@@ -513,7 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </button>
             </div>
 
-            <button class="nav-icon-btn" onclick="window.toggleMobileView('chat')" style="background:none; border:none; color:#666; display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Cinzel',serif; font-size:0.65rem;">
+            <button onclick="window.toggleMobileView('chat')" style="background:none; border:none; color:#666; display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Cinzel',serif; font-size:0.65rem;">
                 <span style="font-size:1.4rem; color:#888;">❖</span>
                 <span>LOGS</span>
             </button>
@@ -522,50 +542,19 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(footer);
     }
 
-    // 3. The Magnet Function (Beats the Wix Trap)
-    function keepFooterVisible() {
-        const footer = document.getElementById('enforced-footer');
-        if (!footer) {
-            createEnforcedFooter(); // Create it if missing
-            return;
-        }
-
-        // ASK THE BROWSER: "Where is the glass?"
-        if (window.visualViewport) {
-            const viewport = window.visualViewport;
-            
-            // Calculate exact bottom of the visual screen
-            // Page Scroll + Screen Height - Footer Height
-            const targetTop = viewport.pageTop + viewport.height - 80;
-            
-            // Force the footer to that pixel
-            footer.style.top = `${targetTop}px`;
-            footer.style.bottom = 'auto'; // Disable CSS bottom
-        } else {
-            // Fallback for weird browsers
-            footer.style.bottom = '0px';
-        }
-    }
-
-    // 4. RUN THE ENGINE
-    createEnforcedFooter();
+    // 3. RUN ENGINE
+    window.addEventListener('load', () => {
+        lockWindowToScreen();
+        buildAppFooter();
+    });
+    window.addEventListener('resize', lockWindowToScreen);
     
-    // Update position every 100ms (This forces it to stay visible)
-    setInterval(keepFooterVisible, 100);
-    
-    // Also update on scroll/resize
-    if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', keepFooterVisible);
-        window.visualViewport.addEventListener('scroll', keepFooterVisible);
-    }
+    // Immediate Trigger
+    lockWindowToScreen();
+    buildAppFooter();
+
 })();
 
-
-// RUN IT EVERYWHERE
-window.addEventListener('resize', forceMobileLayout);
-window.addEventListener('orientationchange', forceMobileLayout);
-setInterval(forceMobileLayout, 500); // Check every 0.5s in case Wix fights back
-forceMobileLayout(); // Run immediately
 
 // Tribute logic
 let currentHuntIndex = 0, filteredItems = [], selectedReason = "", selectedNote = "", selectedItem = null;
