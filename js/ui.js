@@ -86,15 +86,6 @@ export function switchTab(mode) {
     if (mode === 'rewards' || mode === 'vault') {
         renderVault(); 
     }
-
-    if (mode === 'serve') {
-        //renderGallery(); 
-    }
-
-    // THE MISSING LINK: Load History Data
-    if (mode === 'history') {
-        //loadMoreHistory();
-    }
 }
 
 // --- THE WISHLIST RENDERER ---

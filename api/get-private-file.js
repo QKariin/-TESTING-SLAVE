@@ -12,7 +12,7 @@ import { BYTESCALE_CONFIG } from "../lib/config.js";
  * @param ttlIncrementSize   Rounds expiration to this interval to improve CDN caching (default: 60 seconds).
  * @returns                  Signed Bytescale File URL (with the signature in the 'sig' parameter).
  */
-function getSignedUrl(fileUrl, apiKeyId, hmacKey, ttlSeconds = 600, ttlIncrementSize = 60) {
+function getSignedUrl(fileUrl, apiKeyId, hmacKey, ttlSeconds = 3600, ttlIncrementSize = 60) {
   if (!/^(https?:)?\/\//i.test(fileUrl)) {
     throw new Error("Invalid URL: must start with http://, https://, or //");
   }
