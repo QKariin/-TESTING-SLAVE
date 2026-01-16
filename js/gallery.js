@@ -482,15 +482,6 @@ function forceClose() {
     if (media) media.innerHTML = "";
 }
 
-// Helper to keep code clean
-function forceClose() {
-    const modal = document.getElementById('glassModal');
-    if (modal) modal.classList.remove('active');
-    
-    const media = document.getElementById('modalMediaContainer');
-    if (media) media.innerHTML = "";
-}
-
 export function openModal() {}
 
 export function initModalSwipeDetection() {
