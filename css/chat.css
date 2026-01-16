@@ -196,7 +196,8 @@
 
     /* 1. REMOVE THE "DOUBLE PADDING" */
     .chat-body-frame {
-        padding: 10px 6px !important; /* Almost edge-to-edge */
+        padding: 10px 6px !important;
+        padding-bottom: 140px !important; /* 80px Footer + 60px Input Space */
         width: 100% !important;
         box-sizing: border-box !important;
     }
@@ -226,10 +227,16 @@
     }
 
     /* 4. INPUT AREA (Compact) */
-    .chat-footer {
-        padding: 8px !important;
-        padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
-        background: #080808 !important;
+     .chat-footer {
+        position: fixed !important;
+        bottom: 80px !important; /* Height of the Luxury Footer */
+        left: 0 !important;
+        width: 100% !important;
+        z-index: 2147483640 !important; /* Just below the Footer's max index */
+        
+        padding: 10px !important;
+        background: #050505 !important; 
+        border-top: 1px solid #222 !important;
     }
 
     .chat-input {
