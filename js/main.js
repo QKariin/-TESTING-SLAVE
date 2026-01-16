@@ -461,102 +461,105 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+
+
 // =========================================
-// STEP 4: THE WIX IFRAME FIX (VISUAL VIEWPORT MAGNET)
+// FINAL MOBILE SOLUTION: THE JS ENFORCER
 // =========================================
 
-function anchorMobileFooter() {
-    const footer = document.getElementById('mobileGlassFooter');
-    if (!footer) return;
+(function() {
+    // 1. Check if we are on mobile (Max width 768px)
+    if (window.innerWidth > 768) return;
 
-    // This is the API that ignores Wix and talks to the Phone Hardware
-    const viewport = window.visualViewport;
+    // 2. The Builder Function
+    function createEnforcedFooter() {
+        // Check if it already exists
+        if (document.getElementById('enforced-footer')) return;
 
-    function updatePosition() {
-        if (!viewport) return;
+        console.log("Creating Mobile Footer...");
 
-        // 1. Ask: "Where is the scroll currently?"
-        // (If the iframe is scrolled down, we need to know)
-        const scrollY = viewport.pageTop; // Better than window.scrollY in iframes
-
-        // 2. Ask: "How tall is the actual glass right now?"
-        const visibleHeight = viewport.height;
-
-        // 3. Math: Scroll + Height - Footer Size (80px)
-        // This calculates the exact pixel coordinate of the bottom of the glass
-        const targetTop = scrollY + visibleHeight - 80;
-
-        // 4. Force the footer to that pixel
-        footer.style.top = `${targetTop}px`;
+        // Create the Bar
+        const footer = document.createElement('div');
+        footer.id = 'enforced-footer';
         
-        // 5. Reveal it (Visual polish)
-        if (!footer.classList.contains('anchored')) {
-            footer.classList.add('anchored');
+        // APPLY STYLES DIRECTLY (No CSS file needed)
+        Object.assign(footer.style, {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            position: 'fixed', // Start fixed
+            left: '0',
+            width: '100%',
+            height: '80px',
+            background: 'linear-gradient(to top, #000 40%, rgba(0,0,0,0.9))',
+            padding: '0 30px',
+            paddingBottom: 'env(safe-area-inset-bottom)',
+            zIndex: '2147483647', // Max Z-Index
+            borderTop: '1px solid rgba(197, 160, 89, 0.3)', // Gold border
+            backdropFilter: 'blur(10px)',
+            boxSizing: 'border-box'
+        });
+
+        // HTML CONTENT (Profile, Kneel, Logs)
+        footer.innerHTML = `
+            <button class="nav-icon-btn" onclick="window.toggleMobileMenu()" style="background:none; border:none; color:#666; display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Cinzel',serif; font-size:0.65rem;">
+                <span style="font-size:1.4rem; color:#888;">◈</span>
+                <span>PROFILE</span>
+            </button>
+
+            <div style="position:relative; top:-20px;">
+                <button onclick="window.triggerKneel()" style="width:70px; height:70px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #c5a059, #5a4a22); border:2px solid #fff; box-shadow:0 0 20px rgba(197,160,89,0.6); color:#000; font-family:'Cinzel',serif; font-weight:700; font-size:0.7rem; cursor:pointer;">
+                    KNEEL
+                </button>
+            </div>
+
+            <button class="nav-icon-btn" onclick="window.toggleMobileView('chat')" style="background:none; border:none; color:#666; display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Cinzel',serif; font-size:0.65rem;">
+                <span style="font-size:1.4rem; color:#888;">❖</span>
+                <span>LOGS</span>
+            </button>
+        `;
+
+        document.body.appendChild(footer);
+    }
+
+    // 3. The Magnet Function (Beats the Wix Trap)
+    function keepFooterVisible() {
+        const footer = document.getElementById('enforced-footer');
+        if (!footer) {
+            createEnforcedFooter(); // Create it if missing
+            return;
+        }
+
+        // ASK THE BROWSER: "Where is the glass?"
+        if (window.visualViewport) {
+            const viewport = window.visualViewport;
+            
+            // Calculate exact bottom of the visual screen
+            // Page Scroll + Screen Height - Footer Height
+            const targetTop = viewport.pageTop + viewport.height - 80;
+            
+            // Force the footer to that pixel
+            footer.style.top = `${targetTop}px`;
+            footer.style.bottom = 'auto'; // Disable CSS bottom
+        } else {
+            // Fallback for weird browsers
+            footer.style.bottom = '0px';
         }
     }
 
-    // LISTENERS: Recalculate instantly if anything changes
-    if (viewport) {
-        viewport.addEventListener('resize', updatePosition); // Keyboard opens/closes
-        viewport.addEventListener('scroll', updatePosition); // User scrolls
-        window.addEventListener('scroll', updatePosition);   // Iframe scrolls
-        window.addEventListener('resize', updatePosition);   // Orientation change
+    // 4. RUN THE ENGINE
+    createEnforcedFooter();
+    
+    // Update position every 100ms (This forces it to stay visible)
+    setInterval(keepFooterVisible, 100);
+    
+    // Also update on scroll/resize
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', keepFooterVisible);
+        window.visualViewport.addEventListener('scroll', keepFooterVisible);
     }
+})();
 
-    // Run it immediately to set initial spot
-    updatePosition();
-    
-    // Run it again after 100ms and 500ms to catch any Wix loading lag
-    setTimeout(updatePosition, 100);
-    setTimeout(updatePosition, 500);
-}
-
-// Start the Magnet
-if (window.visualViewport) {
-    anchorMobileFooter();
-} else {
-    // Fallback for very old phones (Rare)
-    const footer = document.getElementById('mobileGlassFooter');
-    if(footer) { 
-        footer.style.position = 'fixed'; 
-        footer.style.bottom = '0';
-        footer.classList.add('anchored');
-    }
-}
-
-// =========================================
-// STEP 4: THE WIX FORCE FIELD (Resizer)
-// =========================================
-
-function forceMobileLayout() {
-    // 1. Get the App Container
-    const app = document.querySelector('.app-container');
-    const rightLayout = document.querySelector('.layout-right');
-    const contentStage = document.querySelector('.content-stage');
-    
-    if (!app || !rightLayout) return;
-
-    // 2. Calculate the REAL screen height (ignoring Wix)
-    // We use innerHeight which is the size of the glass
-    const height = window.innerHeight;
-
-    // 3. FORCE the container to be that size
-    app.style.height = height + 'px';
-    app.style.overflow = 'hidden'; // Stop the page from scrolling
-    
-    // 4. FORCE the content to scroll internally
-    rightLayout.style.height = '100%';
-    rightLayout.style.position = 'relative';
-    
-    if(contentStage) {
-        contentStage.style.height = '100%';
-        contentStage.style.overflowY = 'auto'; // Scroll here instead
-        contentStage.style.paddingBottom = '100px'; // Room for footer
-    }
-
-    // 5. Scroll the window to the top (Hide Wix Header if any)
-    window.scrollTo(0, 0);
-}
 
 // RUN IT EVERYWHERE
 window.addEventListener('resize', forceMobileLayout);
