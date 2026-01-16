@@ -1103,6 +1103,20 @@ body {
     .modal-center-col { width: 95%; max-height: 85vh; overflow-y: auto; }
 }
 
+/* FIX: KILL DEAD SPACE AROUND CHAT */
+    .chat-container, #chatCard {
+        margin: 0 !important;       /* No margins */
+        width: 100% !important;     /* Full Width */
+        border-left: none !important;
+        border-right: none !important;
+        border-radius: 0 !important; /* No rounded corners on edges */
+    }
+
+    /* FIX: REMOVE PARENT PADDING */
+    #viewServingTop, .view-wrapper {
+        padding: 0 !important; /* The container holding the chat loses padding */
+    }
+
 @keyframes breathe {
     0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(197, 160, 89, 0.6); }
     50% { transform: scale(1.05); box-shadow: 0 0 35px rgba(197, 160, 89, 0.9); }
