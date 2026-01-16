@@ -189,3 +189,55 @@
     border-radius: 4px !important;
 }
 
+/* =========================================
+   MOBILE CHAT OVERRIDE (CLEAN & COMPACT)
+   ========================================= */
+@media screen and (max-width: 768px) {
+
+    /* 1. TIGHTEN THE FRAME */
+    .chat-body-frame {
+        padding: 10px !important; /* Less padding on edges */
+        gap: 8px !important;
+    }
+
+    /* 2. REMOVE THE BOXES (Make it Text-Only) */
+    .msg {
+        background: transparent !important; /* No heavy background */
+        border: none !important; /* No full border */
+        box-shadow: none !important;
+        padding: 4px 12px !important; /* Tight padding */
+        max-width: 90% !important; /* Use full width */
+        font-size: 0.85rem !important; /* Readable size */
+    }
+
+    /* 3. SLAVE MESSAGES (Right Side) */
+    .m-slave {
+        border-right: 2px solid var(--pink) !important; /* Just a pink line */
+        border-radius: 0 !important;
+        text-align: right;
+        color: #ddd !important; /* Brighter text for readability */
+    }
+
+    /* 4. QUEEN MESSAGES (Left Side) */
+    .m-queen {
+        border-left: 2px solid var(--gold) !important; /* Just a gold line */
+        border-radius: 0 !important;
+        text-align: left;
+    }
+
+    /* 5. INPUT AREA (Thumb Friendly) */
+    .chat-footer {
+        padding: 10px !important;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important; /* Avoid iPhone swipe bar */
+        background: black !important; /* Solid background so text doesn't overlap */
+    }
+
+    .chat-input {
+        font-size: 16px !important; /* Prevents iPhone form-zoom */
+        padding: 8px !important;
+    }
+
+    /* 6. HIDE TIME ON MOBILE (Too cluttered) */
+    .msg-time { display: none !important; }
+}
+
