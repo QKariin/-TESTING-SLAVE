@@ -455,85 +455,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // =========================================
-// PART 2: FINAL APP MODE (WITH SCROLL TRAP)
+// PART 2: FINAL APP MODE (UNLOCKED SCROLL)
 // =========================================
 
 (function() {
     // Only run on Mobile
     if (window.innerWidth > 768) return;
 
-    // 1. THE SCROLL TRAP (Kills the "Hop")
-    function initScrollTrap() {
-        let startY = 0;
-
-        // Listen for the start of a touch
-        document.addEventListener('touchstart', function(e) {
-            startY = e.touches[0].pageY;
-        }, { passive: false });
-
-        // Watch the movement
-        document.addEventListener('touchmove', function(e) {
-            // A. Find out what you are touching
-            // We only allow scrolling inside specific areas
-            const scrollTarget = e.target.closest('.content-stage, .chat-body-frame, .layout-left');
-
-            // B. If touching the Background, Header, or Footer -> BLOCK IT
-            if (!scrollTarget) {
-                e.preventDefault();
-                return;
-            }
-
-            // C. If inside the Content, CHECK FOR EDGES
-            const y = e.touches[0].pageY;
-            const scrollTop = scrollTarget.scrollTop;
-            const scrollHeight = scrollTarget.scrollHeight;
-            const height = scrollTarget.clientHeight;
-
-            // Logic:
-            // 1. If at the TOP and pulling DOWN -> BLOCK (Prevents top hop)
-            if (scrollTop === 0 && y > startY) {
-                e.preventDefault();
-            }
-            // 2. If at the BOTTOM and pulling UP -> BLOCK (Prevents bottom hop)
-            else if (scrollTop + height >= scrollHeight && y < startY) {
-                e.preventDefault();
-            }
-            
-            // Otherwise, let it scroll naturally.
-        }, { passive: false });
-    }
-
-    // 2. LOCK THE BODY
+    // 1. LOCK THE FRAME, UNLOCK THE CONTENT
     function lockVisuals() {
         const height = window.innerHeight;
         
-        document.documentElement.style.height = '100%';
-        document.documentElement.style.overflow = 'hidden';
+        // A. FREEZE THE BODY (The Frame)
+        Object.assign(document.body.style, {
+            height: height + 'px',
+            width: '100%',
+            position: 'fixed',
+            overflow: 'hidden',
+            inset: '0',
+            overscrollBehavior: 'none', // STOPS THE BODY HOP
+            touchAction: 'none'         // BLOCKS BODY SWIPES
+        });
         
-        // This freezes the main window so only the inside parts move
-        document.body.style.height = height + 'px';
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed'; 
-        document.body.style.width = '100%';
-        document.body.style.touchAction = 'none'; // Disables browser gestures
-        
+        document.documentElement.style.overscrollBehavior = 'none';
+
+        // B. FIX THE APP CONTAINER
         const app = document.querySelector('.app-container');
         if (app) {
-            app.style.height = '100%';
-            app.style.overflow = 'hidden';
+            Object.assign(app.style, {
+                height: '100%',
+                overflow: 'hidden'
+            });
         }
 
-        // Enable scrolling on the content stage
+        // C. UNLOCK THE SCROLL STAGE (The Content)
         const stage = document.querySelector('.content-stage');
         if (stage) {
-            stage.style.height = '100%';
-            stage.style.overflowY = 'auto';
-            stage.style.paddingBottom = '100px'; 
-            stage.style.webkitOverflowScrolling = 'touch';
+            Object.assign(stage.style, {
+                height: '100%',
+                overflowY: 'auto',              // ENABLE SCROLL
+                webkitOverflowScrolling: 'touch', // SMOOTH MOMENTUM
+                overscrollBehavior: 'contain',    // KEEP BOUNCE INSIDE (Don't move body)
+                paddingBottom: '100px',
+                touchAction: 'pan-y'              // EXPLICITLY ALLOW VERTICAL SCROLL
+            });
         }
     }
 
-    // 3. BUILD THE FOOTER
+    // 2. BUILD THE FOOTER
     function buildAppFooter() {
         if (document.getElementById('app-mode-footer')) return;
         
@@ -555,10 +524,11 @@ document.addEventListener('DOMContentLoaded', () => {
             zIndex: '2147483647',
             borderTop: '1px solid rgba(197, 160, 89, 0.3)',
             backdropFilter: 'blur(10px)',
-            pointerEvents: 'auto'
+            pointerEvents: 'auto',
+            touchAction: 'none' // Don't let them drag the footer
         });
 
-        // Block touches on the footer itself
+        // Block footer drags
         footer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
         footer.innerHTML = `
@@ -582,18 +552,16 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(footer);
     }
 
-    // 4. LAUNCH
+    // 3. RUN IT
     window.addEventListener('load', () => {
         lockVisuals();
         buildAppFooter();
-        initScrollTrap();
     });
     window.addEventListener('resize', lockVisuals);
     
     // Immediate
     lockVisuals();
     buildAppFooter();
-    initScrollTrap();
 
 })();
 // Tribute logic
