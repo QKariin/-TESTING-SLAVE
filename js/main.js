@@ -455,53 +455,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // =========================================
-// PART 2: FINAL APP MODE ENGINE (THE FIX)
+// PART 2: FINAL APP MODE ENGINE (ANTI-BOUNCE)
 // =========================================
 
 (function() {
     // Only run on Mobile
     if (window.innerWidth > 768) return;
 
-    // 1. LOCK BODY SCROLL (Fixes Wix Infinite Scroll)
+    // 1. LOCK BODY SCROLL (The "Stone" Logic)
     function lockWindowToScreen() {
         const height = window.innerHeight;
         
+        // KILL THE BOUNCE (Rubber Banding)
+        document.documentElement.style.overscrollBehavior = 'none';
+        document.body.style.overscrollBehavior = 'none';
+        
+        // Lock Dimensions
         document.documentElement.style.height = '100%';
         document.documentElement.style.overflow = 'hidden';
         
         document.body.style.height = height + 'px';
         document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed'; 
+        document.body.style.position = 'fixed'; // Freezes the body in place
         document.body.style.width = '100%';
         document.body.style.inset = '0';
         
-        // Force App Container Size
+        // Force App Container
         const app = document.querySelector('.app-container');
         if (app) {
             app.style.height = '100%';
             app.style.overflow = 'hidden';
         }
 
-        // Enable Internal Scrolling
+        // Enable Internal Scrolling ONLY for the stage
         const stage = document.querySelector('.content-stage');
         if (stage) {
             stage.style.height = '100%';
             stage.style.overflowY = 'auto';
             stage.style.paddingBottom = '100px'; 
-            stage.style.webkitOverflowScrolling = 'touch';
+            stage.style.webkitOverflowScrolling = 'touch'; // Smooth internal scroll
+            stage.style.overscrollBehavior = 'contain'; // Keep bounce inside, don't pass to body
         }
     }
 
     // 2. BUILD THE FOOTER
     function buildAppFooter() {
         if (document.getElementById('app-mode-footer')) return;
-
-        console.log("Initializing App Mode Footer...");
         
         const footer = document.createElement('div');
         footer.id = 'app-mode-footer';
         
-        // Fixed Position (Works because Body is Locked)
+        // CSS
         Object.assign(footer.style, {
             display: 'flex',
             justifyContent: 'space-between',
@@ -517,8 +521,12 @@ document.addEventListener('DOMContentLoaded', () => {
             zIndex: '2147483647',
             borderTop: '1px solid rgba(197, 160, 89, 0.3)',
             backdropFilter: 'blur(10px)',
-            pointerEvents: 'auto'
+            pointerEvents: 'auto',
+            touchAction: 'none' // PREVENTS DRAGGING THE FOOTER
         });
+
+        // Prevent Footer from being dragged (Double Lock)
+        footer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
         // HTML Content
         footer.innerHTML = `
@@ -542,7 +550,19 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(footer);
     }
 
-    // 3. RUN ENGINE
+    // 3. THE SCROLL POLICE (Nuclear Option)
+    // If you try to drag the screen anywhere EXCEPT the middle, stop it.
+    window.addEventListener('touchmove', function(e) {
+        // If the target is NOT inside the scrollable area...
+        const isScrollable = e.target.closest('.content-stage') || e.target.closest('.chat-body-frame');
+        
+        if (!isScrollable) {
+            // STOP THE DRAG
+            e.preventDefault(); 
+        }
+    }, { passive: false });
+
+    // 4. RUN ENGINE
     window.addEventListener('load', () => {
         lockWindowToScreen();
         buildAppFooter();
