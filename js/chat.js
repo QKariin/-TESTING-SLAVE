@@ -62,6 +62,7 @@ export async function renderChat(messages) {
     const signingPromises = visibleMessages.map(async (m) => {
         if (m.message?.startsWith("https://upcdn.io/")) {
             m.mediaUrl = await getSignedUrl(m.message);
+            console.log("Signed URL for chat message:", m.mediaUrl);
         }
     });
     await Promise.all(signingPromises);
