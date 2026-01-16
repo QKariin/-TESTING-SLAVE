@@ -118,6 +118,7 @@ export async function renderChat(messages) {
         if (m.message && (m.message.startsWith('http') || m.mediaUrl)) {
             const originalUrl = m.message.toLowerCase();
             const srcUrl = m.mediaUrl || m.message;
+            console.log("Rendering media URL in chat:", srcUrl);
             const isVideo = mediaType(srcUrl) === "video";
             const isImage = mediaType(srcUrl) === "image";
 
