@@ -450,9 +450,7 @@ export function closeModal(e) {
     }, 300);
 }
 
-// Ensure HTML can call it
 
-}
 
 export function openModal() {}
 
