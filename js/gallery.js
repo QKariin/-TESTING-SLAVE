@@ -205,6 +205,7 @@ export async function renderGallery() {
         for (const item of middleItems) {
 
             let thumb = getOptimizedUrl(item.proofUrl || item.media, 300);
+            thumb = await getSignedUrl(thumb);
             let realIndex = allItems.indexOf(item);
             let isPending = (item.status || "").toLowerCase().includes('pending');
             let overlay = isPending ? `<div class="pending-overlay"><div class="pending-icon">⏳</div></div>` : ``;
