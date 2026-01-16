@@ -118,11 +118,11 @@ export async function renderChat(messages) {
         if (m.message && (m.message.startsWith('http') || m.mediaUrl)) {
             const originalUrl = m.message.toLowerCase();
             const srcUrl = m.mediaUrl || m.message;
-            console.log("Rendering media URL in chat:", srcUrl);
             const isVideo = mediaType(srcUrl) === "video";
             const isImage = mediaType(srcUrl) === "image";
 
             if (isVideo) {
+                console.log("is video:", isVideo, srcUrl);
                 contentHtml = `
                     <div class="msg ${msgClass}" style="padding:0; background:black; overflow:hidden;">
                         <video src="${srcUrl}" controls style="max-width:100%; display:block; cursor:pointer;"
@@ -130,6 +130,7 @@ export async function renderChat(messages) {
                         </video>
                     </div>`;
             } else if (isImage) {
+                console.log("is image:", isImage, srcUrl);
                 contentHtml = `
                     <div class="msg ${msgClass}" style="padding:0; overflow:hidden;">
                         <img src="${srcUrl}" style="max-width:100%; display:block; cursor:pointer;"
