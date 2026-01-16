@@ -360,9 +360,9 @@ export function openHistoryModal(index) {
 
                 <div class="modal-btn-stack">
                     <!-- FIX: Index based toggle to prevent text crashing -->
-                    <button onclick="window.toggleDirective(${index})" class="btn-glass-silver">THE DIRECTIVE</button>
+                    <button onclick="event.stopPropagation(); window.toggleDirective(${index})" class="btn-glass-silver">THE DIRECTIVE</button>
                     
-                    <button onclick="window.toggleInspectMode()" class="btn-glass-silver">INSPECT OFFERING</button>
+                    <button onclick="event.stopPropagation(); window.toggleInspectMode()" class="btn-glass-silver">INSPECT OFFERING</button>
                     
                     <!-- REDEMPTION BUTTON (Will only appear if isRejected is true) -->
                     ${redemptionBtn}
