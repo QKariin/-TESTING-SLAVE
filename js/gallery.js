@@ -34,14 +34,24 @@ function getPoints(item) {
 }
 
 // --- HELPER: NORMALIZE DATA (FIXED) ---
+let normalizedCache = new Set();
+
 function normalizeGalleryItem(item) {
+    // Use item ID/timestamp as cache key to avoid re-normalizing
+    const cacheKey = item._id || item._createdDate;
+    if (normalizedCache.has(cacheKey)) return;
+    
     // Search for photos in any possible field
-    if (item.proofUrl && typeof item.proofUrl === 'string' && item.proofUrl.length > 5) return;
+    if (item.proofUrl && typeof item.proofUrl === 'string' && item.proofUrl.length > 5) {
+        normalizedCache.add(cacheKey);
+        return;
+    }
     
     const candidates = ['media', 'file', 'evidence', 'url', 'image', 'src', 'attachment', 'photo'];
     for (let key of candidates) {
         if (item[key] && typeof item[key] === 'string' && item[key].length > 5) {
             item.proofUrl = item[key];
+            normalizedCache.add(cacheKey);
             return;
         }
     }
@@ -114,7 +124,7 @@ export async function renderGallery() {
 
     const gridFailed = document.getElementById('gridFailed'); 
     const gridOkay = document.getElementById('gridOkay');     
-    const historySection = document.getElementById('historySection'); // Parent Container
+    const historySection = document.getElementById('historySection');
     
     // Altar Elements
     const slot1 = { card: document.getElementById('altarSlot1'), img: document.getElementById('imgSlot1'), ref: document.getElementById('reflectSlot1') };
@@ -129,15 +139,13 @@ export async function renderGallery() {
     const allItems = getGalleryList(); 
 
     // --- SOLO MODE CHECK ---
-    // If 0 items, Add Class. If >0 items, Remove Class.
     if (allItems.length === 0) {
         historySection.classList.add('solo-mode');
     } else {
         historySection.classList.remove('solo-mode');
     }
 
-    // --- 1. TOP 3 (THE ALTAR) ---
-    // (This runs nicely even if empty, because we have the placeholder fallback)
+    // --- 1. TOP 3 (THE ALTAR) - PARALLEL LOADING ---
     let bestOf = [...allItems]
         .filter(item => {
             const s = (item.status || "").toLowerCase();
@@ -146,14 +154,18 @@ export async function renderGallery() {
         .sort((a, b) => getPoints(b) - getPoints(a))
         .slice(0, 3);
 
+    // Load altar images in parallel
+    const altarPromises = bestOf.map((item, idx) => 
+        getSignedUrl(getThumbnail(getOptimizedUrl(item.proofUrl || item.media, idx === 0 ? 400 : 300)))
+    );
+    const altarThumbs = await Promise.all(altarPromises);
+
     // Center
     slot1.card.style.display = 'flex';
     if (bestOf[0]) {
-        let thumb = getThumbnail(getOptimizedUrl(bestOf[0].proofUrl || bestOf[0].media, 400));
-        thumb = await getSignedUrl(thumb);
+        slot1.img.src = altarThumbs[0];
+        if(slot1.ref) slot1.ref.src = altarThumbs[0];
         let realIndex = allItems.indexOf(bestOf[0]);
-        slot1.img.src = thumb;
-        if(slot1.ref) slot1.ref.src = thumb;
         slot1.card.onclick = async () => {await window.openHistoryModal(realIndex);};
         slot1.img.style.filter = "none";
     } else {
@@ -162,88 +174,102 @@ export async function renderGallery() {
         slot1.card.onclick = null;
         slot1.img.style.filter = "grayscale(30%)"; 
     }
+
     // Left
     slot2.card.style.display = 'flex';
     if (bestOf[1]) {
-        let thumb = getThumbnail(getOptimizedUrl(bestOf[1].proofUrl || bestOf[1].media, 300));
-        thumb = await getSignedUrl(thumb);
+        slot2.img.src = altarThumbs[1];
         let realIndex = allItems.indexOf(bestOf[1]);
-        slot2.img.src = thumb;
         slot2.card.onclick = async () => {await window.openHistoryModal(realIndex);};
     } else {
         slot2.img.src = IMG_STATUE_SIDE;
         slot2.card.onclick = null;
     }
+
     // Right
     slot3.card.style.display = 'flex';
     if (bestOf[2]) {
-        let thumb = getThumbnail(getOptimizedUrl(bestOf[2].proofUrl || bestOf[2].media, 300));
-        thumb = await getSignedUrl(thumb);
+        slot3.img.src = altarThumbs[2];
         let realIndex = allItems.indexOf(bestOf[2]);
-        slot3.img.src = thumb;
         slot3.card.onclick = async () => {await window.openHistoryModal(realIndex);};
     } else {
         slot3.img.src = IMG_STATUE_SIDE;
         slot3.card.onclick = null;
     }
 
-
-    // --- 2. MIDDLE (ARCHIVE) ---
+    // --- 2. MIDDLE (ARCHIVE) - BATCH DOM UPDATES ---
     const middleItems = allItems.filter(item => {
         if (bestOf.includes(item)) return false; 
         const s = (item.status || "").toLowerCase();
         return !s.includes('rej') && !s.includes('fail');
     });
 
-    // CHANGE: Only show placeholders if NOT in Solo Mode (allItems > 0)
+    let middleHtml = '';
     if (middleItems.length === 0 && allItems.length > 0) {
         for(let i=0; i<6; i++) {
-            gridOkay.innerHTML += `<div class="item-placeholder-slot"><img src="${IMG_MIDDLE_EMPTY}"></div>`;
+            middleHtml += `<div class="item-placeholder-slot"><img src="${IMG_MIDDLE_EMPTY}"></div>`;
         }
+        gridOkay.innerHTML = middleHtml;
     } else if (middleItems.length > 0) {
-        //middleItems.forEach(item => {
-        for (const item of middleItems) {
+        // Load all middle images in parallel
+        const middlePromises = middleItems.map(item => 
+            getSignedUrl(getOptimizedUrl(item.proofUrl || item.media, 300))
+        );
+        const middleThumbs = await Promise.all(middlePromises);
+        
+        // Build HTML string all at once
+        for (let i = 0; i < middleItems.length; i++) {
+            const item = middleItems[i];
+            const thumb = middleThumbs[i];
+            const realIndex = allItems.indexOf(item);
+            const isPending = (item.status || "").toLowerCase().includes('pending');
+            const overlay = isPending ? `<div class="pending-overlay"><div class="pending-icon">⏳</div></div>` : ``;
 
-            let thumb = getOptimizedUrl(item.proofUrl || item.media, 300);
-            thumb = await getSignedUrl(thumb);
-            let realIndex = allItems.indexOf(item);
-            let isPending = (item.status || "").toLowerCase().includes('pending');
-            let overlay = isPending ? `<div class="pending-overlay"><div class="pending-icon">⏳</div></div>` : ``;
-
-            gridOkay.innerHTML += `
+            middleHtml += `
                 <div class="item-blueprint" onclick="window.openHistoryModal(${realIndex})">
-                    <img class="blueprint-img" src="${thumb}">
+                    <img class="blueprint-img" src="${thumb}" loading="lazy">
                     <div class="bp-corner bl-tl"></div>
                     <div class="bp-corner bl-tr"></div>
                     <div class="bp-corner bl-bl"></div>
                     <div class="bp-corner bl-br"></div>
                     ${overlay}
                 </div>`;
-        };
+        }
+        gridOkay.innerHTML = middleHtml;
     }
 
-    // --- 3. BOTTOM (HEAP) ---
+    // --- 3. BOTTOM (HEAP) - BATCH DOM UPDATES ---
     const failedItems = allItems.filter(item => {
         const s = (item.status || "").toLowerCase();
         return s.includes('rej') || s.includes('fail');
     });
 
-    // CHANGE: Only show placeholders if NOT in Solo Mode
+    let failedHtml = '';
     if (failedItems.length === 0 && allItems.length > 0) {
         for(let i=0; i<6; i++) {
-            gridFailed.innerHTML += `<div class="item-placeholder-slot"><img src="${IMG_BOTTOM_EMPTY}"></div>`;
+            failedHtml += `<div class="item-placeholder-slot"><img src="${IMG_BOTTOM_EMPTY}"></div>`;
         }
+        gridFailed.innerHTML = failedHtml;
     } else if (failedItems.length > 0) {
-        for (const item of failedItems) {
-            let thumb = getOptimizedUrl(item.proofUrl || item.media, 300);
-            thumb = await getSignedUrl(thumb);
-            let realIndex = allItems.indexOf(item);
-            gridFailed.innerHTML += `
+        // Load all failed images in parallel
+        const failedPromises = failedItems.map(item => 
+            getSignedUrl(getOptimizedUrl(item.proofUrl || item.media, 300))
+        );
+        const failedThumbs = await Promise.all(failedPromises);
+        
+        // Build HTML string all at once
+        for (let i = 0; i < failedItems.length; i++) {
+            const item = failedItems[i];
+            const thumb = failedThumbs[i];
+            const realIndex = allItems.indexOf(item);
+            
+            failedHtml += `
                 <div class="item-trash" onclick="window.openHistoryModal(${realIndex})">
-                    <img class="trash-img" src="${thumb}">
+                    <img class="trash-img" src="${thumb}" loading="lazy">
                     <div class="trash-stamp">DENIED</div>
                 </div>`;
-        };
+        }
+        gridFailed.innerHTML = failedHtml;
     }
 }
 
@@ -546,12 +572,12 @@ window.toggleMobileMenu = function() {
     }
 };
 
-// Auto-close menu when clicking a link inside it
-document.querySelectorAll('.nav-btn, .kneel-bar-graphic').forEach(btn => {
-    btn.addEventListener('click', () => {
+// Use event delegation instead of adding listeners to each button
+document.addEventListener('click', (e) => {
+    if (e.target.closest('.nav-btn, .kneel-bar-graphic')) {
         const sidebar = document.querySelector('.layout-left');
         if (sidebar) sidebar.classList.remove('mobile-open');
-    });
+    }
 });
 
 // FORCE WINDOW EXPORTS
