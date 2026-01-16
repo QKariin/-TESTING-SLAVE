@@ -435,13 +435,16 @@ export function toggleHistoryView(view) {
     }
 }
 
+// REPLACE YOUR EXISTING closeModal FUNCTION WITH THIS
 export function closeModal(e) {
-    if (e && (e.target.id === 'modalCloseX' || e.target.classList.contains('btn-close-red'))) {
+    // 1. If called directly via script (!e) OR called via specific buttons
+    if (!e || (e.target && (e.target.id === 'modalCloseX' || e.target.classList.contains('btn-close-red') || e.target.classList.contains('btn-glass-red')))) {
         document.getElementById('glassModal').classList.remove('active');
         document.getElementById('modalMediaContainer').innerHTML = "";
         return;
     }
 
+    // 2. Logic for tapping the "Clean" overlay to bring text back
     const overlay = document.getElementById('modalGlassOverlay');
     if (overlay && overlay.classList.contains('clean')) {
         toggleHistoryView('info'); 
@@ -474,6 +477,14 @@ export function initModalSwipeDetection() {
         }
     }, { passive: true });
 }
+
+// ADD THIS FUNCTION
+window.toggleInspectMode = function() {
+    const modal = document.getElementById('glassModal');
+    if (modal) {
+        modal.classList.toggle('inspect-mode');
+    }
+};
 
 // FORCE WINDOW EXPORTS
 window.renderGallery = renderGallery;
