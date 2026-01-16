@@ -142,7 +142,6 @@ export async function renderChat(messages) {
             
             return `
                 <div class="msg-row ${isMe ? 'mr-out' : 'mr-in'}">
-                    ${avatar}
                     <div class="msg-col" style="justify-content:${isMe ? 'flex-end' : 'flex-start'};">
                         ${contentHtml}
                         <div class="msg-time">${timeStr}</div>
