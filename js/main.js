@@ -383,34 +383,34 @@ window.toggleMobileStats = function() {
     }
 };
 
-// 2. VIEW SWITCHER (Home vs Chat)
+// 3. MAIN NAVIGATION CONTROLLER (Updated for 5 Views)
 window.toggleMobileView = function(viewName) {
     const home = document.getElementById('viewMobileHome');
-    const chat = document.getElementById('viewServingTop');
     const chatContainer = document.querySelector('.chat-container');
+    const chatDesktop = document.getElementById('viewServingTop');
     const history = document.getElementById('historySection');
     const news = document.getElementById('viewNews');
+    const protocol = document.getElementById('viewProtocol'); // GLOBAL VIEW
     
-    // RESET: Hide all mobile views
-    if(home) home.style.display = 'none';
-    if(chat) chat.style.display = 'none'; 
-    if(chatContainer) chatContainer.style.display = 'none';
-    if(history) history.style.display = 'none';
-    if(news) news.style.display = 'none';
+    // Hide All
+    const allViews = [home, chatContainer, chatDesktop, history, news, protocol];
+    allViews.forEach(el => { if(el) el.style.display = 'none'; });
 
-    // SHOW: Target View
-    if (viewName === 'chat') {
+    // Show Target
+    if (viewName === 'home') {
+        if(home) {
+            home.style.display = 'flex';
+            if(window.syncMobileDashboard) window.syncMobileDashboard();
+        }
+    }
+    else if (viewName === 'chat') {
         if(chatContainer) {
             chatContainer.style.display = 'flex';
             const chatBox = document.getElementById('chatBox');
             if (chatBox) setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
-        } else if (chat) {
-            chat.style.display = 'flex';
+        } else if (chatDesktop) {
+            chatDesktop.style.display = 'flex';
         }
-    } 
-    else if (viewName === 'home') {
-        if(home) home.style.display = 'flex';
-        if(window.syncMobileDashboard) window.syncMobileDashboard();
     }
     else if (viewName === 'record') {
         if(history) {
@@ -421,12 +421,13 @@ window.toggleMobileView = function(viewName) {
     else if (viewName === 'queen') {
         if(news) news.style.display = 'block';
     }
+    else if (viewName === 'global') {
+        if(protocol) protocol.style.display = 'block'; // Shows the Protocol/Rules
+    }
     
-    // Close sidebar if open
+    // Close sidebar & update icons
     const sidebar = document.querySelector('.layout-left');
     if (sidebar) sidebar.classList.remove('mobile-open');
-    
-    // Update Footer Icons
     document.querySelectorAll('.mf-btn').forEach(btn => btn.classList.remove('active'));
 };
 
@@ -557,6 +558,7 @@ window.syncMobileDashboard = function() {
     }
 
 // 2. BUILD FOOTER (FLOATING CAPSULE + RED CHAT)
+   // 2. BUILD FOOTER (5-SLOT COMMAND CENTER)
     function buildAppFooter() {
         if (document.getElementById('app-mode-footer')) return;
         
@@ -565,52 +567,57 @@ window.syncMobileDashboard = function() {
         
         Object.assign(footer.style, {
             display: 'flex', 
-            justifyContent: 'space-evenly', 
+            justifyContent: 'space-between', // Changed to space-between for 5 items
             alignItems: 'center',
-            
-            // FLOATING CAPSULE STYLE
             position: 'fixed', 
-            bottom: '20px',             // Float up
-            left: '5%',                 // Center horizontally (5% gap on left)
-            width: '90%',               // Smaller width
+            bottom: '20px', 
+            left: '2%', 
+            width: '96%', // Wider to fit 5 icons comfortably
             height: '70px',
-            borderRadius: '50px',       // Rounded ends
-            
-            background: 'rgba(10, 10, 10, 0.95)', // Dark Glass
+            borderRadius: '50px',
+            background: 'rgba(10, 10, 10, 0.95)', 
             border: '1px solid rgba(255, 255, 255, 0.15)',
             boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-            
             zIndex: '2147483647', 
             backdropFilter: 'blur(15px)', 
             pointerEvents: 'auto', 
-            touchAction: 'none'
+            touchAction: 'none',
+            padding: '0 10px' // Slight padding on ends
         });
 
         footer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
-        // STANDARD ICON STYLE
-        const btnStyle = "background:none; border:none; color:#666; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-family:'Cinzel',serif; font-size:0.55rem; width:20%; cursor:pointer; transition:0.2s;";
-        const iconStyle = "font-size:1.3rem; color:#888;";
+        // STANDARD ICON STYLE (Scaled down slightly for 5 items)
+        const btnStyle = "background:none; border:none; color:#666; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; font-family:'Cinzel',serif; font-size:0.5rem; width:18%; height:100%; cursor:pointer; transition:0.2s;";
+        const iconStyle = "font-size:1.1rem; color:#888;";
 
-        // RED CIRCLE STYLE (FOR CHAT)
-        // This makes it look like a physical button pressed into the bar
-        const chatBtnStyle = "background:linear-gradient(135deg, #ff003c, #8b0000); border:2px solid rgba(255,255,255,0.2); color:white; display:flex; flex-direction:column; align-items:center; justify-content:center; width:55px; height:55px; border-radius:50%; cursor:pointer; box-shadow:0 0 15px rgba(255,0,60,0.3); margin-top:-5px;";
+        // RED ORB STYLE (CENTER)
+        const chatBtnStyle = "background:linear-gradient(135deg, #ff003c, #8b0000); border:2px solid rgba(255,255,255,0.2); color:white; display:flex; flex-direction:column; align-items:center; justify-content:center; width:50px; height:50px; border-radius:50%; cursor:pointer; box-shadow:0 0 15px rgba(255,0,60,0.3); margin-top:-5px; flex-shrink:0;";
 
         footer.innerHTML = `
+            <!-- 1. PROFILE -->
             <button class="mf-btn" onclick="window.toggleMobileView('home')" style="${btnStyle}">
                 <span style="${iconStyle}">◈</span><span>PROFILE</span>
             </button>
+            
+            <!-- 2. RECORD -->
             <button class="mf-btn" onclick="window.toggleMobileView('record')" style="${btnStyle}">
                 <span style="${iconStyle}">▦</span><span>RECORD</span>
             </button>
             
-            <!-- THE RED CHAT ORB -->
+            <!-- 3. CHAT (CENTER RED ORB) -->
             <button class="mf-btn" onclick="window.toggleMobileView('chat')" style="${chatBtnStyle}">
                 <span style="font-size:1.4rem; color:white;">❖</span>
             </button>
 
+            <!-- 4. QUEEN -->
             <button class="mf-btn" onclick="window.toggleMobileView('queen')" style="${btnStyle}">
                 <span style="${iconStyle}">♛</span><span>QUEEN</span>
+            </button>
+
+            <!-- 5. GLOBAL -->
+            <button class="mf-btn" onclick="window.toggleMobileView('global')" style="${btnStyle}">
+                <span style="${iconStyle}">🌐</span><span>GLOBAL</span>
             </button>
         `;
         document.body.appendChild(footer);
