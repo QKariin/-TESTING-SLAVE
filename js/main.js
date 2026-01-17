@@ -1,3 +1,4 @@
+
 // main.js - FINAL COMPLETE VERSION (DESKTOP + MOBILE)
 
 import { CONFIG, URLS, LEVELS, FUNNY_SAYINGS, STREAM_PASSWORDS } from './config.js';
@@ -371,75 +372,7 @@ function resetTributeFlow() { selectedReason = ""; selectedNote = ""; selectedIt
 // PART 1: MOBILE LOGIC (BRAIN & NAVIGATION)
 // =========================================
 
-// 1. MOBILE MENU TOGGLE
-window.toggleMobileMenu = function() {
-    const sidebar = document.querySelector('.layout-left');
-    if (sidebar) sidebar.classList.toggle('mobile-open');
-};
-
-// 2. KNEEL TRIGGER
-window.triggerKneel = function() {
-    const sidebar = document.querySelector('.layout-left');
-    const realBtn = document.querySelector('.kneel-bar-graphic');
-
-    if (sidebar) sidebar.classList.add('mobile-open'); 
-
-    if (realBtn) {
-        realBtn.style.boxShadow = "0 0 20px var(--neon-red)";
-        setTimeout(() => realBtn.style.boxShadow = "", 1000);
-    }
-};
-
-// 3. MAIN NAVIGATION CONTROLLER
-window.toggleMobileView = function(viewName) {
-    const views = {
-        'home': document.getElementById('viewMobileHome'),
-        'chat': document.querySelector('.chat-container'),
-        'record': document.getElementById('historySection'),
-        'queen': document.getElementById('viewNews')
-    };
-
-    // Hide everything first using !important logic
-    Object.values(views).forEach(v => {
-        if(v) v.setAttribute('style', 'display: none !important');
-    });
-
-    // Show the target
-    const target = views[viewName];
-    if (target) {
-        target.setAttribute('style', 'display: flex !important; height: calc(100vh - 80px); overflow-y: auto;');
-        if (viewName === 'home') window.syncMobileDashboard();
-    }
-    
-    // Close sidebar
-    const sidebar = document.querySelector('.layout-left');
-    if (sidebar) sidebar.classList.remove('mobile-open');
-};
-
-// 4. DATA SYNC (CORRECTED IDs)
-window.syncMobileDashboard = function() {
-    // REMOVE the strict "return" check that was killing the load.
-    // Instead, use fallbacks (||) for every value.
-    
-    const elName = document.getElementById('mob_slaveName');
-    const elRank = document.getElementById('mob_rankStamp');
-    const elPic = document.getElementById('mob_profilePic');
-    
-    if (elName) elName.innerText = (typeof userProfile !== 'undefined' && userProfile.name) ? userProfile.name : "SYNCHRONIZING...";
-    if (elRank) elRank.innerText = (typeof userProfile !== 'undefined' && userProfile.hierarchy) ? userProfile.hierarchy : "INITIATE";
-    
-    if (elPic && typeof userProfile !== 'undefined' && userProfile.profilePicture) {
-        elPic.src = getOptimizedUrl(userProfile.profilePicture, 150); 
-    }
-
-    // Ensure the home view is actually set to flex
-    const home = document.getElementById('viewMobileHome');
-    if (home) {
-        home.style.display = 'flex';
-        home.style.opacity = '1';
-    }
-};
-// 5. STATS EXPANDER
+// 1. STATS TOGGLE (The Expand Button)
 window.toggleMobileStats = function() {
     const drawer = document.getElementById('mobStatsContent');
     const btn = document.querySelector('.mob-expand-btn');
@@ -450,51 +383,140 @@ window.toggleMobileStats = function() {
     }
 };
 
-// 6. AUTO-CLOSE DRAWER
-document.addEventListener('DOMContentLoaded', () => {
-    const navLinks = document.querySelectorAll('.nav-btn');
-    const sidebar = document.querySelector('.layout-left');
-    if (navLinks && sidebar) {
-        navLinks.forEach(btn => {
-            btn.addEventListener('click', () => sidebar.classList.remove('mobile-open'));
-        });
-    }
-});
+// 2. VIEW SWITCHER (Home vs Chat)
+window.toggleMobileView = function(viewName) {
+    const home = document.getElementById('viewMobileHome');
+    const chat = document.getElementById('viewServingTop');
+    const chatContainer = document.querySelector('.chat-container');
+    const history = document.getElementById('historySection');
+    const news = document.getElementById('viewNews');
+    
+    // RESET: Hide all mobile views
+    if(home) home.style.display = 'none';
+    if(chat) chat.style.display = 'none'; 
+    if(chatContainer) chatContainer.style.display = 'none';
+    if(history) history.style.display = 'none';
+    if(news) news.style.display = 'none';
 
+    // SHOW: Target View
+    if (viewName === 'chat') {
+        if(chatContainer) {
+            chatContainer.style.display = 'flex';
+            const chatBox = document.getElementById('chatBox');
+            if (chatBox) setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
+        } else if (chat) {
+            chat.style.display = 'flex';
+        }
+    } 
+    else if (viewName === 'home') {
+        if(home) home.style.display = 'flex';
+        if(window.syncMobileDashboard) window.syncMobileDashboard();
+    }
+    else if (viewName === 'record') {
+        if(history) {
+            history.style.display = 'flex';
+            if(window.renderGallery) window.renderGallery();
+        }
+    }
+    else if (viewName === 'queen') {
+        if(news) news.style.display = 'block';
+    }
+    
+    // Close sidebar if open
+    const sidebar = document.querySelector('.layout-left');
+    if (sidebar) sidebar.classList.remove('mobile-open');
+    
+    // Update Footer Icons
+    document.querySelectorAll('.mf-btn').forEach(btn => btn.classList.remove('active'));
+};
+
+// 3. KNEEL BUTTON
+window.triggerKneel = function() {
+    const sidebar = document.querySelector('.layout-left');
+    const realBtn = document.querySelector('.kneel-bar-graphic');
+    
+    if (sidebar) sidebar.classList.add('mobile-open'); 
+
+    if (realBtn) {
+        realBtn.style.boxShadow = "0 0 20px var(--neon-red)";
+        setTimeout(() => realBtn.style.boxShadow = "", 1000);
+    }
+};
+
+// 4. DATA SYNC (Connects Backend to Mobile Dashboard)
+window.syncMobileDashboard = function() {
+    if (!window.gameStats || !window.userProfile) return;
+
+    const elName = document.getElementById('mobName');
+    const elHier = document.getElementById('mobHierarchy');
+    const elPoints = document.getElementById('mobPoints');
+    const elCoins = document.getElementById('mobCoins');
+    const elPic = document.getElementById('mobProfilePic');
+
+    if (elName) elName.innerText = window.userProfile.name || "SLAVE";
+    if (elHier) elHier.innerText = window.userProfile.hierarchy || "INITIATE";
+    if (elPoints) elPoints.innerText = window.gameStats.points || 0;
+    if (elCoins) elCoins.innerText = window.gameStats.coins || 0;
+    
+    if (elPic && window.userProfile.profilePicture) {
+        elPic.src = getOptimizedUrl(window.userProfile.profilePicture, 150); 
+    }
+
+    if (document.getElementById('mobStreak')) document.getElementById('mobStreak').innerText = window.gameStats.taskdom_streak || 0;
+    if (document.getElementById('mobTotal')) document.getElementById('mobTotal').innerText = window.gameStats.taskdom_total_tasks || 0;
+    if (document.getElementById('mobCompleted')) document.getElementById('mobCompleted').innerText = window.gameStats.taskdom_completed_tasks || 0;
+    if (document.getElementById('mobKneels')) document.getElementById('mobKneels').innerText = window.gameStats.kneelCount || 0;
+    
+    const grid = document.getElementById('mob_streakGrid');
+    if(grid) {
+        grid.innerHTML = '';
+        const count = window.gameStats.kneelCount || 0;
+        const progress = count % 24;
+        for(let i=0; i<24; i++) {
+            const sq = document.createElement('div');
+            sq.className = 'streak-sq' + (i < progress ? ' active' : '');
+            grid.appendChild(sq);
+        }
+    }
+};
 
 // =========================================
-// PART 2: FINAL APP MODE ENGINE (NATIVE FLOW)
+// PART 2: FINAL APP MODE (NATIVE FLOW)
 // =========================================
 
 (function() {
     // Only run on Mobile
     if (window.innerWidth > 768) return;
 
-    // 1. LOCK THE FRAME
+    // 1. LOCK THE FRAME, BUT LET THE CONTENT BREATHE
     function lockVisuals() {
-    const height = window.innerHeight;
-    
-    // Force the main containers to fill the screen
-    Object.assign(document.body.style, {
-        height: '100vh', width: '100vw', position: 'fixed', overflow: 'hidden'
-    });
-
-    const mobileApp = document.getElementById('MOBILE_APP');
-    if (mobileApp) {
-        mobileApp.style.display = 'flex'; // Force display
-        mobileApp.style.height = '100vh'; 
-    }
-
-    const scrollables = document.querySelectorAll('.mob-frame, .chat-body-frame, #viewMobileHome');
-    scrollables.forEach(el => {
-        Object.assign(el.style, {
-            height: 'calc(100vh - 80px)', // Subtract footer height
-            overflowY: 'auto',
-            display: 'flex',
-            flexDirection: 'column'
+        const height = window.innerHeight;
+        
+        Object.assign(document.body.style, {
+            height: height + 'px',
+            width: '100%',
+            position: 'fixed',
+            overflow: 'hidden',
+            inset: '0',
+            overscrollBehavior: 'none',
+            touchAction: 'none'
         });
-    });
-}
+
+        const app = document.querySelector('.app-container');
+        if (app) Object.assign(app.style, { height: '100%', overflow: 'hidden' });
+
+        const scrollables = document.querySelectorAll('.content-stage, .chat-body-frame, #viewMobileHome, #historySection, #viewNews');
+        scrollables.forEach(el => {
+            Object.assign(el.style, {
+                height: '100%',
+                overflowY: 'auto',              
+                webkitOverflowScrolling: 'touch', 
+                paddingBottom: '100px',
+                overscrollBehaviorY: 'contain',
+                touchAction: 'pan-y'
+            });
+        });
+    }
 
     // 2. BUILD FOOTER
     function buildAppFooter() {
@@ -509,7 +531,8 @@ document.addEventListener('DOMContentLoaded', () => {
             background: 'linear-gradient(to top, #000 40%, rgba(0,0,0,0.95))',
             padding: '0 30px', paddingBottom: 'env(safe-area-inset-bottom)',
             zIndex: '2147483647', borderTop: '1px solid rgba(197, 160, 89, 0.3)',
-            backdropFilter: 'blur(10px)', pointerEvents: 'auto', touchAction: 'none'
+            backdropFilter: 'blur(10px)', pointerEvents: 'auto', 
+            touchAction: 'none'
         });
 
         footer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
@@ -534,25 +557,18 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(footer);
     }
 
-    // 3. RUN (CORRECTED STARTUP)
+    // 3. RUN
     window.addEventListener('load', () => { 
         lockVisuals(); 
         buildAppFooter();
         // FORCE HOME ON LOAD
         if(window.toggleMobileView) window.toggleMobileView('home'); 
     });
-    
-    // Immediate run for reliability
     window.addEventListener('resize', lockVisuals);
-    lockVisuals(); 
-    buildAppFooter();
-    // Try immediate switch (in case load already fired)
-    setTimeout(() => {
-        if(window.toggleMobileView) window.toggleMobileView('home');
-    }, 100);
+    lockVisuals(); buildAppFooter();
 })();
 
-// TIMER SYNC (Twin System)
+// TIMER SYNC (The Twin System)
 setInterval(() => {
     const desktopH = document.getElementById('timerH');
     const desktopM = document.getElementById('timerM');
@@ -588,24 +604,5 @@ setInterval(() => {
         }
     }
 }, 500);
-
-// RE-INJECT TRIBUTE FUNCTIONS (CRITICAL FOR DESKTOP STORE)
-// These were deleted in previous steps but are needed for desktop store to work
-window.toggleTributeHunt = function() { 
-    const overlay = document.getElementById('tributeHuntOverlay'); 
-    if (overlay.classList.contains('hidden')) { 
-        // Reset Logic
-        if(document.getElementById('huntNote')) document.getElementById('huntNote').value = ""; 
-        overlay.classList.remove('hidden'); 
-        // We assume showTributeStep is defined elsewhere or inline
-        const step1 = document.getElementById('tributeStep1');
-        if(step1) {
-            document.querySelectorAll('.tribute-step').forEach(el => el.classList.add('hidden'));
-            step1.classList.remove('hidden');
-        }
-    } else { 
-        overlay.classList.add('hidden'); 
-    } 
-};
 
 window.parent.postMessage({ type: "UI_READY" }, "*");
