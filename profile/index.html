@@ -461,25 +461,42 @@
 <!-- SWITCHER SCRIPT -->
 <!-- ADD THIS SWITCHER SCRIPT AT THE VERY BOTTOM (Before </body>) -->
 <script>
-    function checkDevice() {
-    const isMobile = window.innerWidth <= 768;
-    const desktop = document.getElementById('DESKTOP_APP');
-    const mobile = document.getElementById('MOBILE_APP');
-    
-    if (isMobile) {
-        if(desktop) desktop.setAttribute('style', 'display: none !important');
-        if(mobile) mobile.setAttribute('style', 'display: flex !important');
-        // Trigger the sync function from main.js if it exists
-        if(window.syncMobileDashboard) window.syncMobileDashboard();
+    function forceMobileBoot() {
+    const isMobileSize = window.innerWidth <= 768;
+    const desktopApp = document.getElementById('DESKTOP_APP');
+    const mobileApp = document.getElementById('MOBILE_APP');
+
+    if (isMobileSize) {
+        // 1. Force the DOM display
+        if (desktopApp) desktopApp.setAttribute('style', 'display: none !important;');
+        if (mobileApp) mobileApp.setAttribute('style', 'display: flex !important; visibility: visible !important; opacity: 1 !important;');
+        
+        // 2. Clear any 'hidden' classes that might be stuck
+        mobileApp.classList.remove('hidden');
+        
+        // 3. Manually trigger the mobile-specific UI setup
+        if (typeof window.syncMobileDashboard === 'function') {
+            console.log("Slave UI Ready. Synchronizing...");
+            window.syncMobileDashboard();
+        }
+        
+        // 4. Force the Home View
+        if (typeof window.toggleMobileView === 'function') {
+            window.toggleMobileView('home');
+        }
     } else {
-        if(mobile) mobile.setAttribute('style', 'display: none !important');
-        if(desktop) desktop.setAttribute('style', 'display: flex !important');
+        if (mobileApp) mobileApp.setAttribute('style', 'display: none !important;');
+        if (desktopApp) desktopApp.setAttribute('style', 'display: flex !important;');
     }
 }
 
-// Run on load and resize
-window.addEventListener('load', checkDevice);
-window.addEventListener('resize', checkDevice);
+// Execute immediately and on every possible trigger
+window.addEventListener('resize', forceMobileBoot);
+window.addEventListener('orientationchange', forceMobileBoot);
+// This 'setInterval' acts as a safety net if the CMS tries to overwrite your changes
+setInterval(forceMobileBoot, 1000); 
+forceMobileBoot();
+  
 </script>
 </body>
 </html>
