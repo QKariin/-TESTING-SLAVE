@@ -462,6 +462,21 @@
 <!-- SWITCHER SCRIPT -->
 <script>
 (function() {
+    // Watch for element removal
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.removedNodes.forEach((node) => {
+                if (node.id === 'MOBILE_APP' || node.id === 'viewMobileHome') {
+                    console.error('⚠️ MOBILE ELEMENT REMOVED:', node.id);
+                    console.trace('Stack trace:');
+                }
+            });
+        });
+    });
+    
+    // Start observing body for child removals
+    observer.observe(document.body, { childList: true, subtree: true });
+    
     function checkDevice() {
         const isMobile = window.innerWidth <= 768;
         const desktop = document.getElementById('DESKTOP_APP');
