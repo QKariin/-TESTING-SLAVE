@@ -556,7 +556,7 @@ window.syncMobileDashboard = function() {
         });
     }
 
- // 2. BUILD FOOTER (EDGE-TO-EDGE)
+// 2. BUILD FOOTER (FLOATING CAPSULE + RED CHAT)
     function buildAppFooter() {
         if (document.getElementById('app-mode-footer')) return;
         
@@ -565,29 +565,36 @@ window.syncMobileDashboard = function() {
         
         Object.assign(footer.style, {
             display: 'flex', 
-            justifyContent: 'space-evenly', // Spreads them evenly edge-to-edge
+            justifyContent: 'space-evenly', 
             alignItems: 'center',
+            
+            // FLOATING CAPSULE STYLE
             position: 'fixed', 
-            bottom: '0', 
-            left: '0', 
-            width: '100%', 
-            height: '80px',
-            background: 'linear-gradient(to top, #000 40%, rgba(0,0,0,0.95))',
-            padding: '0', // REMOVED PADDING
-            paddingBottom: 'env(safe-area-inset-bottom)',
+            bottom: '20px',             // Float up
+            left: '5%',                 // Center horizontally (5% gap on left)
+            width: '90%',               // Smaller width
+            height: '70px',
+            borderRadius: '50px',       // Rounded ends
+            
+            background: 'rgba(10, 10, 10, 0.95)', // Dark Glass
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+            
             zIndex: '2147483647', 
-            borderTop: '1px solid rgba(197, 160, 89, 0.3)',
-            backdropFilter: 'blur(10px)', 
+            backdropFilter: 'blur(15px)', 
             pointerEvents: 'auto', 
-            touchAction: 'none',
-            boxSizing: 'border-box' // PREVENTS OVERFLOW
+            touchAction: 'none'
         });
 
         footer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
-        // Helper style for icons (Increased width to 25% to fill space)
-        const btnStyle = "background:none; border:none; color:#666; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font-family:'Cinzel',serif; font-size:0.65rem; width:25%; height:100%; cursor:pointer;";
-        const iconStyle = "font-size:1.4rem; color:#888;";
+        // STANDARD ICON STYLE
+        const btnStyle = "background:none; border:none; color:#666; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; font-family:'Cinzel',serif; font-size:0.55rem; width:20%; cursor:pointer; transition:0.2s;";
+        const iconStyle = "font-size:1.3rem; color:#888;";
+
+        // RED CIRCLE STYLE (FOR CHAT)
+        // This makes it look like a physical button pressed into the bar
+        const chatBtnStyle = "background:linear-gradient(135deg, #ff003c, #8b0000); border:2px solid rgba(255,255,255,0.2); color:white; display:flex; flex-direction:column; align-items:center; justify-content:center; width:55px; height:55px; border-radius:50%; cursor:pointer; box-shadow:0 0 15px rgba(255,0,60,0.3); margin-top:-5px;";
 
         footer.innerHTML = `
             <button class="mf-btn" onclick="window.toggleMobileView('home')" style="${btnStyle}">
@@ -596,11 +603,14 @@ window.syncMobileDashboard = function() {
             <button class="mf-btn" onclick="window.toggleMobileView('record')" style="${btnStyle}">
                 <span style="${iconStyle}">▦</span><span>RECORD</span>
             </button>
+            
+            <!-- THE RED CHAT ORB -->
+            <button class="mf-btn" onclick="window.toggleMobileView('chat')" style="${chatBtnStyle}">
+                <span style="font-size:1.4rem; color:white;">❖</span>
+            </button>
+
             <button class="mf-btn" onclick="window.toggleMobileView('queen')" style="${btnStyle}">
                 <span style="${iconStyle}">♛</span><span>QUEEN</span>
-            </button>
-            <button class="mf-btn" onclick="window.toggleMobileView('chat')" style="${btnStyle}">
-                <span style="${iconStyle}">❖</span><span>LOGS</span>
             </button>
         `;
         document.body.appendChild(footer);
