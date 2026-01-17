@@ -17,7 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@200;300;400;600&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="../css/chat.css">
-  <link rel="stylesheet" href="../css/profile.css?v=2">
+  <link rel="stylesheet" href="../css/profile.css">
   <link rel="stylesheet" href="../css/reward.css">
   
 </head>
@@ -400,7 +400,7 @@
 
   
 <!-- 🟢 MOBILE UNIVERSE (FRESH PASTE) -->
-<div id="MOBILE_APP" style="display: none; flex-direction: column; position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100vh; background: #000; z-index: 10000; overflow-y: auto;">
+<div id="MOBILE_APP">
     
     <!-- 1. DASHBOARD (Forced Visible) -->
     <div id="viewMobileHome" class="mob-frame" style="display:flex !important; flex-direction:column;">
@@ -460,67 +460,22 @@
 </div>
 
 <!-- SWITCHER SCRIPT -->
+<!-- ADD THIS SWITCHER SCRIPT AT THE VERY BOTTOM (Before </body>) -->
 <script>
-(function() {
-    // Watch for element removal
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            mutation.removedNodes.forEach((node) => {
-                if (node.id === 'MOBILE_APP' || node.id === 'viewMobileHome') {
-                    console.error('⚠️ MOBILE ELEMENT REMOVED:', node.id);
-                    console.trace('Stack trace:');
-                }
-            });
-        });
-    });
-    
-    // Start observing body for child removals
-    observer.observe(document.body, { childList: true, subtree: true });
-    
     function checkDevice() {
         const isMobile = window.innerWidth <= 768;
         const desktop = document.getElementById('DESKTOP_APP');
         const mobile = document.getElementById('MOBILE_APP');
-        const dashboard = document.getElementById('viewMobileHome');
-        
-        console.log('checkDevice running:', { 
-            isMobile, 
-            width: window.innerWidth,
-            desktop: !!desktop, 
-            mobile: !!mobile, 
-            dashboard: !!dashboard 
-        });
+        const dashboard = document.getElementById('viewMobileHome'); // The inner view
         
         if (isMobile) {
-            // Kill Desktop
+            // 1. Kill Desktop
             if(desktop) desktop.style.display = 'none';
             
-            // Activate Mobile - FORCE IT
-            if(mobile) {
-                mobile.style.display = 'flex';
-                mobile.style.visibility = 'visible';
-                mobile.style.opacity = '1';
-                mobile.style.position = 'fixed';
-                mobile.style.zIndex = '999999';
-                mobile.style.top = '0';
-                mobile.style.left = '0';
-                mobile.style.right = '0';
-                mobile.style.bottom = '0';
-                mobile.style.width = '100%';
-                mobile.style.height = '100vh';
-                
-                // Log computed styles
-                const computed = window.getComputedStyle(mobile);
-                console.log('MOBILE_APP computed:', {
-                    display: computed.display,
-                    visibility: computed.visibility,
-                    opacity: computed.opacity,
-                    zIndex: computed.zIndex,
-                    position: computed.position
-                });
-            }
+            // 2. Activate Mobile Universe
+            if(mobile) mobile.style.display = 'flex';
             
-            // Force Dashboard
+            // 3. FORCE THE DASHBOARD OPEN (The Fix)
             if(dashboard) {
                 dashboard.style.display = 'flex';
                 dashboard.style.opacity = '1';
@@ -533,25 +488,12 @@
         }
     }
     
-    // Make it global so we can call it from console
-    window.checkDevice = checkDevice;
-    
     // Run immediately
     checkDevice();
     
-    // Run after all scripts load
-    window.addEventListener('DOMContentLoaded', checkDevice);
-    window.addEventListener('load', checkDevice);
+    // Run continuously to fight any JS that tries to hide it
     window.addEventListener('resize', checkDevice);
-    
-    // Nuclear option: run every 100ms for the first 3 seconds
-    let attempts = 0;
-    const enforcer = setInterval(() => {
-        checkDevice();
-        attempts++;
-        if (attempts > 30) clearInterval(enforcer);
-    }, 100);
-})();
+    window.addEventListener('load', checkDevice);
 </script>
 </body>
 </html>
