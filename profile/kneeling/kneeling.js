@@ -1,13 +1,15 @@
-// kneeling.js - FIXED IMPORTS AND MOBILE SELECTORS
+// kneeling.js - FIXED IMPORT PATHS & MOBILE LOGIC
 
-// 1. USE ABSOLUTE PATHS (The Fix for the Disconnect)
+// 1. FIX THE PATHS (Go up 2 folders to find js/state.js)
 import { 
     isLocked, lastWorshipTime, COOLDOWN_MINUTES, gameStats, ignoreBackendUpdates, userProfile
-} from '/js/state.js'; 
+} from '../../js/state.js'; 
+
 import { 
     setIsLocked, setLastWorshipTime, setIgnoreBackendUpdates 
-} from '/js/state.js';
-import { triggerSound } from '/js/utils.js';
+} from '../../js/state.js';
+
+import { triggerSound } from '../../js/utils.js';
 
 let holdTimer = null;
 const REQUIRED_HOLD_TIME = 2000;
@@ -16,19 +18,20 @@ const REQUIRED_HOLD_TIME = 2000;
 export function handleHoldStart(e) {
     if (isLocked) return;
     
-    // Stop scrolling/selection
-    if (e && e.type === 'touchstart' && e.cancelable) {
+    // CRITICAL: Stop the browser from scrolling/selecting text
+    if (e && e.cancelable) {
         e.preventDefault();
+        e.stopPropagation();
     }
 
     // DESKTOP TARGETS
     const fill = document.getElementById('fill');
     const txtMain = document.getElementById('txt-main');
     
-    // MOBILE TARGETS
+    // MOBILE TARGETS (Correct IDs)
     const mobFill = document.getElementById('mob_kneelFill');
-    const mobText = document.querySelector('.kneel-label'); // FIXED CLASS
-    const mobBar = document.querySelector('.mob-kneel-zone'); // FIXED CLASS
+    const mobText = document.querySelector('.kneel-label'); 
+    const mobBar = document.querySelector('.mob-kneel-zone');
 
     // ANIMATE DESKTOP
     if (fill) {
@@ -52,7 +55,9 @@ export function handleHoldStart(e) {
 }
 
 // --- 2. HOLD END ---
-export function handleHoldEnd() {
+export function handleHoldEnd(e) {
+    if(e) e.preventDefault();
+
     if (isLocked) {
         if (holdTimer) clearTimeout(holdTimer);
         holdTimer = null;
@@ -181,13 +186,13 @@ export function updateKneelingStatus() {
             mobFill.style.transition = "width 0.3s ease";
             mobFill.style.width = "0%";
             if(mobBar) {
-                mobBar.style.borderColor = "#c5a059"; // Gold
+                mobBar.style.borderColor = "#c5a059"; 
                 mobBar.style.opacity = "1";
             }
         }
     }
     
-    // Update daily stats text if it exists
+    // Update daily stats
     if (txtSub && gameStats) {
         txtSub.innerText = `TODAY KNEELING: ${gameStats.todayKneeling || 0}`;
     }
@@ -206,8 +211,9 @@ export function claimKneelReward(choice) {
         rewardType: choice,
         rewardValue: choice === 'coins' ? 10 : 50
     }, "*");
-
-    import('/js/bridge.js').then(({ Bridge }) => {
+    
+    // Bridge Support
+    import('../../js/bridge.js').then(({ Bridge }) => {
         if(userProfile) {
             Bridge.send("SLAVE_REWARD_CLAIMED", {
                 memberId: userProfile.memberId,
