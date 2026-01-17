@@ -444,38 +444,61 @@ window.triggerKneel = function() {
 };
 
 // 4. DATA SYNC (Connects Backend to Mobile Dashboard)
+// 4. DATA SYNC (CORRECTED IDs TO MATCH HTML)
 window.syncMobileDashboard = function() {
-    if (!window.gameStats || !window.userProfile) return;
+    // 1. Safety Check
+    if (!gameStats || !userProfile) return;
 
-    const elName = document.getElementById('mobName');
-    const elHier = document.getElementById('mobHierarchy');
-    const elPoints = document.getElementById('mobPoints');
-    const elCoins = document.getElementById('mobCoins');
-    const elPic = document.getElementById('mobProfilePic');
+    // 2. Target the EXACT IDs from your HTML (I fixed these names)
+    const elName = document.getElementById('mob_slaveName');   // WAS mobName (WRONG)
+    const elRank = document.getElementById('mob_rankStamp');   // WAS mobHierarchy (WRONG)
+    const elPic = document.getElementById('mob_profilePic');   // Correct
 
-    if (elName) elName.innerText = window.userProfile.name || "SLAVE";
-    if (elHier) elHier.innerText = window.userProfile.hierarchy || "INITIATE";
-    if (elPoints) elPoints.innerText = window.gameStats.points || 0;
-    if (elCoins) elCoins.innerText = window.gameStats.coins || 0;
+    // 3. Fill Data
+    if (elName) elName.innerText = userProfile.name || "SLAVE";
+    if (elRank) elRank.innerText = userProfile.hierarchy || "INITIATE";
     
-    if (elPic && window.userProfile.profilePicture) {
-        elPic.src = getOptimizedUrl(window.userProfile.profilePicture, 150); 
+    // 4. Profile Picture
+    if (elPic && userProfile.profilePicture) {
+        // Use the optimizer helper
+        elPic.src = getOptimizedUrl(userProfile.profilePicture, 150); 
     }
 
-    if (document.getElementById('mobStreak')) document.getElementById('mobStreak').innerText = window.gameStats.taskdom_streak || 0;
-    if (document.getElementById('mobTotal')) document.getElementById('mobTotal').innerText = window.gameStats.taskdom_total_tasks || 0;
-    if (document.getElementById('mobCompleted')) document.getElementById('mobCompleted').innerText = window.gameStats.taskdom_completed_tasks || 0;
-    if (document.getElementById('mobKneels')) document.getElementById('mobKneels').innerText = window.gameStats.kneelCount || 0;
-    
+    // 5. Fill the Grid (Devotion)
     const grid = document.getElementById('mob_streakGrid');
     if(grid) {
-        grid.innerHTML = '';
-        const count = window.gameStats.kneelCount || 0;
-        const progress = count % 24;
+        grid.innerHTML = ''; // Clear it
+        const count = gameStats.kneelCount || 0;
+        const progress = count % 24; 
+        
         for(let i=0; i<24; i++) {
             const sq = document.createElement('div');
+            // If i is less than progress, it gets the 'active' class (Gold)
             sq.className = 'streak-sq' + (i < progress ? ' active' : '');
             grid.appendChild(sq);
+        }
+    }
+    
+    // 6. Update Operations Card (Working/Idle)
+    const activeRow = document.getElementById('activeTimerRow');
+    if (activeRow) {
+        const isWorking = !activeRow.classList.contains('hidden');
+        
+        const light = document.getElementById('mob_statusLight');
+        const text = document.getElementById('mob_statusText');
+        const timer = document.getElementById('mob_activeTimer');
+        const btn = document.getElementById('mob_btnRequest');
+
+        if (isWorking) {
+            if(light) light.className = 'status-light green';
+            if(text) text.innerText = "WORKING";
+            if(timer) timer.classList.remove('hidden');
+            if(btn) btn.classList.add('hidden');
+        } else {
+            if(light) light.className = 'status-light red';
+            if(text) text.innerText = "UNPRODUCTIVE";
+            if(timer) timer.classList.add('hidden');
+            if(btn) btn.classList.remove('hidden');
         }
     }
 };
