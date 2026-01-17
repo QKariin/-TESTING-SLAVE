@@ -556,7 +556,7 @@ window.syncMobileDashboard = function() {
         });
     }
 
-    // 2. BUILD FOOTER
+ // 2. BUILD FOOTER (EDGE-TO-EDGE)
     function buildAppFooter() {
         if (document.getElementById('app-mode-footer')) return;
         
@@ -564,18 +564,29 @@ window.syncMobileDashboard = function() {
         footer.id = 'app-mode-footer';
         
         Object.assign(footer.style, {
-            display: 'flex', justifyContent: 'space-around', alignItems: 'center',
-            position: 'fixed', bottom: '0', left: '0', width: '100%', height: '80px',
+            display: 'flex', 
+            justifyContent: 'space-evenly', // Spreads them evenly edge-to-edge
+            alignItems: 'center',
+            position: 'fixed', 
+            bottom: '0', 
+            left: '0', 
+            width: '100%', 
+            height: '80px',
             background: 'linear-gradient(to top, #000 40%, rgba(0,0,0,0.95))',
-            padding: '0 30px', paddingBottom: 'env(safe-area-inset-bottom)',
-            zIndex: '2147483647', borderTop: '1px solid rgba(197, 160, 89, 0.3)',
-            backdropFilter: 'blur(10px)', pointerEvents: 'auto', 
-            touchAction: 'none'
+            padding: '0', // REMOVED PADDING
+            paddingBottom: 'env(safe-area-inset-bottom)',
+            zIndex: '2147483647', 
+            borderTop: '1px solid rgba(197, 160, 89, 0.3)',
+            backdropFilter: 'blur(10px)', 
+            pointerEvents: 'auto', 
+            touchAction: 'none',
+            boxSizing: 'border-box' // PREVENTS OVERFLOW
         });
 
         footer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
-        const btnStyle = "background:none; border:none; color:#666; display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Cinzel',serif; font-size:0.65rem; width:25%; cursor:pointer;";
+        // Helper style for icons (Increased width to 25% to fill space)
+        const btnStyle = "background:none; border:none; color:#666; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font-family:'Cinzel',serif; font-size:0.65rem; width:25%; height:100%; cursor:pointer;";
         const iconStyle = "font-size:1.4rem; color:#888;";
 
         footer.innerHTML = `
