@@ -460,8 +460,8 @@ window.syncMobileDashboard = function() {
     
     // 4. Profile Picture
     if (elPic && userProfile.profilePicture) {
-        // Use the optimizer helper
-        elPic.src = getOptimizedUrl(userProfile.profilePicture, 150); 
+        // Just use the URL directly, don't try to change it again
+        elPic.src = userProfile.profilePicture; 
     }
 
     // 5. Fill the Grid (Devotion)
