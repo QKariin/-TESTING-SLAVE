@@ -576,7 +576,7 @@ window.syncMobileDashboard = function() {
         bottom: '0px', 
         left: '0px',
         width: '100%', 
-        height: '95px', // Make it taller so there is room to move up
+        height: '70px', // Make it taller so there is room to move up
         
         // 2. Add padding to push icons down slightly from the very top edge
         paddingTop: '12px', 
