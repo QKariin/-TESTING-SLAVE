@@ -458,10 +458,16 @@ window.syncMobileDashboard = function() {
     if (elName) elName.innerText = userProfile.name || "SLAVE";
     if (elRank) elRank.innerText = userProfile.hierarchy || "INITIATE";
     
-    // 4. Profile Picture
-    if (elPic && userProfile.profilePicture) {
-        // Just use the URL directly, don't try to change it again
-        elPic.src = userProfile.profilePicture; 
+    // 4. Profile Picture (With Fallback)
+    const defaultPic = "https://static.wixstatic.com/media/ce3e5b_e06c7a2254d848a480eb98107c35e246~mv2.png";
+    
+    if (elPic) {
+        // If we have a user picture, use it. If not, use the silhouette.
+        if (userProfile.profilePicture && userProfile.profilePicture.length > 5) {
+             elPic.src = userProfile.profilePicture;
+        } else {
+             elPic.src = defaultPic;
+        }
     }
 
     // 5. Fill the Grid (Devotion)
