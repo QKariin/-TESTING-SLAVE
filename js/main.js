@@ -566,33 +566,33 @@ window.syncMobileDashboard = function() {
         footer.id = 'app-mode-footer';
         
         Object.assign(footer.style, {
-            display: 'flex', 
-            justifyContent: 'space-around', 
-            
-            // 1. Force everything to the top
-            alignItems: 'flex-start', 
-            
-            position: 'fixed', 
-            bottom: '0px', 
-            left: '0px',
-            width: '100%', 
-            
-            // 2. Set the exact height you wanted
-            height: '70px', 
-            
-            // 3. Move items higher up by using a small padding
-            paddingTop: '8px', 
-            
-            background: 'rgba(10, 10, 10, 0.95)', 
-            borderTop: '1px solid rgba(255, 255, 255, 0.15)',
-            zIndex: '2147483647', 
-            backdropFilter: 'blur(15px)', 
-            pointerEvents: 'auto', 
-            touchAction: 'none',
-            
-            // 4. Critical: This ensures height is exactly 70px including the padding
-            boxSizing: 'border-box' 
-        });
+        display: 'flex', 
+        justifyContent: 'space-around', 
+        
+        // Push everything to the top of the 70px bar
+        alignItems: 'flex-start', 
+        
+        position: 'fixed', 
+        bottom: '0px', 
+        left: '0px',
+        width: '100%', 
+        
+        // Exact height you want
+        height: '70px', 
+        
+        // This is the specific number to move items up or down from the top edge
+        paddingTop: '5px', 
+        
+        background: 'rgba(10, 10, 10, 0.95)', 
+        borderTop: '1px solid rgba(255, 255, 255, 0.15)',
+        zIndex: '2147483647', 
+        backdropFilter: 'blur(15px)', 
+        pointerEvents: 'auto', 
+        touchAction: 'none',
+        
+        // Required so the 70px height stays exact
+        boxSizing: 'border-box'
+    });
 
         footer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
