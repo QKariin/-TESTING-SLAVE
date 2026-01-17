@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,18 +8,133 @@
   <script type="module" src="../js/main.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 
+  <!-- FONTS -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=La+Belle+Aurore&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@200;300;400;600&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet" />
 
+  <!-- DESKTOP STYLES -->
   <link rel="stylesheet" href="../css/chat.css">
   <link rel="stylesheet" href="../css/profile.css">
   <link rel="stylesheet" href="../css/reward.css">
-  
+
+  <!-- MOBILE STYLES (INJECTED DIRECTLY TO PREVENT LOADING ERRORS) -->
+  <style>
+    /* Default: Mobile App is hidden */
+    #MOBILE_APP { display: none; }
+
+    /* MOBILE VIEW ONLY */
+    @media screen and (max-width: 768px) {
+        /* Hide Desktop */
+        #DESKTOP_APP { display: none !important; }
+
+        /* Show Mobile */
+        #MOBILE_APP {
+            display: flex !important;
+            flex-direction: column;
+            width: 100vw;
+            height: 100dvh;
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 999999;
+            background: #000000;
+            color: white;
+            font-family: 'Cinzel', serif;
+            overflow: hidden;
+        }
+
+        /* Content Frame */
+        .mob-frame {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+
+        /* Header */
+        .mob-header {
+            margin-top: 30px; margin-bottom: 20px;
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+        .mob-hex-wrap {
+            width: 100px; height: 110px; position: relative;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            background: linear-gradient(135deg, #c5a059, #444);
+            padding: 2px;
+        }
+        .mob-hex-img {
+            width: 100%; height: 100%; object-fit: cover; background: #111;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        .mob-rank-stamp {
+            position: absolute; bottom: 5px; right: -10px;
+            background: #000; border: 1px solid #c5a059; color: #c5a059;
+            font-family: 'Orbitron', sans-serif; font-size: 0.5rem; padding: 2px 6px;
+            transform: rotate(-5deg); box-shadow: 0 0 10px rgba(0,0,0,0.8);
+        }
+        .mob-name { font-size: 1.2rem; letter-spacing: 4px; color: #eee; text-transform: uppercase; }
+
+        /* Cards */
+        .mob-card {
+            width: 100%; background: rgba(18, 18, 18, 0.95); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px; padding: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        /* Devotion Card */
+        .devotion-card { display: flex; flex-direction: row; height: 140px; gap: 15px; }
+        .mob-kneel-zone {
+            flex: 0 0 35%; background: #080808; border: 1px solid #333;
+            border-radius: 8px; position: relative; overflow: hidden; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .mob-kneel-inner { z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .kneel-icon { font-size: 1.5rem; color: #555; }
+        .kneel-label { font-size: 0.6rem; letter-spacing: 2px; color: #555; font-family:'Orbitron'; }
+        .mob-kneel-fill {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 0%;
+            background: linear-gradient(to top, #8b0000, #ff003c); z-index: 1; transition: height 0.1s linear;
+        }
+
+        /* Grid */
+        .mob-grid-zone { flex: 1; display: flex; flex-direction: column; }
+        .mob-grid-label { font-size: 0.6rem; color: #666; margin-bottom: 8px; letter-spacing: 1px; }
+        .mob-streak-grid {
+            display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(3, 1fr);
+            gap: 4px; height: 100%;
+        }
+        .streak-sq { background: #1a1a1a; border-radius: 2px; }
+        .streak-sq.active { background: #c5a059; box-shadow: 0 0 5px #c5a059; }
+
+        /* Operations */
+        .operations-card { display: flex; flex-direction: column; gap: 15px; border-top: 2px solid #333; }
+        .op-status-row { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .status-light { width: 8px; height: 8px; border-radius: 50%; background: #333; }
+        .status-light.red { background: #ff003c; box-shadow: 0 0 8px #ff003c; }
+        .status-light.green { background: #00ff00; box-shadow: 0 0 8px #00ff00; }
+        .status-text { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; color: #888; letter-spacing: 2px; }
+
+        .mob-action-btn {
+            width: 100%; padding: 15px; background: transparent;
+            border: 1px solid #c5a059; color: #c5a059;
+            font-family: 'Cinzel', serif; font-weight: 700; font-size: 0.9rem;
+            letter-spacing: 2px; cursor: pointer;
+        }
+        .mob-timer {
+            text-align: center; font-family: 'Rajdhani', sans-serif; font-size: 2.5rem;
+            font-weight: 700; color: white;
+        }
+        .hidden { display: none !important; }
+    }
+  </style>
 </head>
 <body>
 
+<!-- SOUNDS & INPUTS -->
 <audio id="msgSound" src="https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"></audio>
 <audio id="coinSound" src="/audio/2019-preview1.mp3"></audio>
 <audio id="skipSound" src="https://static.wixstatic.com/mp3/ce3e5b_3b5b34d4083847e2b123b6fd9a8551fd.mp3"></audio>
@@ -32,17 +144,16 @@
 <input type="file" id="profileUploadInput" accept="image/*" class="hidden" onchange="handleProfileUpload(this)">
 <input type="file" id="adminMediaInput" accept="image/*,video/*" class="hidden" onchange="handleAdminUpload(this)">
 
+<!-- CELEBRATION OVERLAY -->
 <div id="celebrationOverlay" style="position:fixed;inset:0;pointer-events:none;z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;">
     <div class="glass-card" style="border: 2px solid var(--neon-green); text-align:center;">
         <div style="font-size:1.8rem;font-weight:900;color:var(--neon-green);text-shadow:0 0 20px var(--neon-green); font-family: 'Orbitron';">TASK<br>SUBMITTED</div>
     </div>
 </div>
 
-<svg style="display:none;">
-    <symbol id="icon-coin" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.69 1.64 1.83 1.64 1.22 0 1.6-.64 1.6-1.26 0-.81-.42-1.22-2.34-1.67-2.37-.59-3.54-1.7-3.54-3.41 0-1.68 1.29-2.94 3.28-3.29V4h2.66v1.93c1.61.27 2.87 1.28 3.01 3.05h-1.95c-.14-.99-.68-1.55-1.7-1.55-1.04 0-1.55.56-1.55 1.15 0 .75.46 1.2 2.37 1.65 2.51.6 3.58 1.74 3.58 3.52 0 1.82-1.46 3.09-3.28 3.34z"/></symbol>
-    <symbol id="icon-sparkles" viewBox="0 0 24 24"><path d="M9.5 1L8 4.5L4.5 6L8 7.5L9.5 11L11 7.5L14.5 6L11 4.5L9.5 1zm0 0"/><path d="M19 8.5L17.5 11L15 12.5L17.5 14L19 16.5L20.5 14L23 12.5L20.5 11L19 8.5zm0 0"/><path d="M16.5 18L15.5 20L13.5 21L15.5 22L16.5 24L17.5 22L19.5 21L17.5 20L16.5 18zm0 0"/></symbol>
-</svg>
-
+<!-- =======================================================
+     UNIVERSE A: DESKTOP APP (WRAPPED)
+     ======================================================= -->
 <div id="DESKTOP_APP">
   <div class="app-container">
     
@@ -57,15 +168,9 @@
 
         <!-- STATS ROW -->
         <div class="stats-stack-row">
-            <div class="stat-item">
-                <span class="stat-lbl">MERIT</span>
-                <span id="points" class="stat-val">0</span>
-            </div>
+            <div class="stat-item"><span class="stat-lbl">MERIT</span><span id="points" class="stat-val">0</span></div>
             <div class="stat-divider"></div>
-            <div class="stat-item">
-                <span class="stat-lbl">CAPITAL</span>
-                <span id="coins" class="stat-val">0</span>
-            </div>
+            <div class="stat-item"><span class="stat-lbl">CAPITAL</span><span id="coins" class="stat-val">0</span></div>
         </div>
 
         <!-- KNEEL BUTTON -->
@@ -83,41 +188,29 @@
 
         <!-- EXPANDABLE STATS -->
         <button class="stats-toggle-btn" onclick="toggleStats()">EXPAND STATS ▾</button>
-        
         <div id="statsContent" class="stats-panel">
-            
-            <!-- PROGRESS SECTION -->
             <div class="progress-section">
-                <!-- Row: NEXT (Left) | RANK (Right) -->
                 <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-family: 'Cinzel', serif; font-size: 0.7rem;">
                     <span style="color:#666;">NEXT:</span>
                     <span id="nextLevelName" style="color:var(--gold); font-weight:700;">-</span>
                 </div>
-                
-                <!-- Bar -->
                 <div class="prog-bg"><div id="progressBar" class="prog-fill"></div></div>
-                
-                <!-- Center: Points to go -->
                 <div style="text-align: center; margin-top: 5px;">
                     <span id="pointsNeeded" style="color:#888; font-size:0.65rem; font-family:'Cinzel', serif;">0 to go</span>
                 </div>
             </div>
-
-            <!-- DETAILED STATS LIST -->
             <div class="stat-line"><span>Streak</span> <strong id="statStreak">0</strong></div>
             <div class="stat-line"><span>Total Tasks</span> <strong id="statTotal">0</strong></div>
             <div class="stat-line"><span>Completed</span> <strong id="statCompleted">0</strong></div>
             <div class="stat-line"><span>Skipped</span> <strong id="statSkipped">0</strong></div>
             <div class="stat-line"><span>Total Kneeling</span> <strong id="statTotalKneels">0</strong></div>
-            
             <div class="stat-footer">
                 <div style="color:#666; font-size:0.7rem; letter-spacing:2px; margin-bottom:5px;">SLAVE SINCE</div>
                 <strong id="slaveSinceDate" style="color:#ccc; font-size:0.9rem;">--/--/--</strong>
             </div>
+        </div>
 
-        </div> <!-- END OF STATS PANEL -->
-
-        <!-- NAV MENU (NOW OUTSIDE AND SEPARATE) -->
+        <!-- NAV MENU -->
         <div class="nav-menu">
             <button class="nav-btn active" onclick="switchTab('serve')">CONSOLE</button>
             <button class="nav-btn" onclick="switchTab('history')">SLAVE RECORD</button>
@@ -126,284 +219,192 @@
             <button class="nav-btn" onclick="switchTab('protocol')">PROTOCOL</button>
             <button class="nav-btn" onclick="switchTab('buy')">EXCHEQUER</button>
         </div>
-        
     </div>
 
     <!-- RIGHT SIDE -->
     <div class="layout-right">
+        <!-- Header empty -->
+        <div class="right-header hidden"></div>
 
-      <button id="mobileMenuBtn" onclick="toggleMobileMenu()" style="
-        display: none; /* Hidden on desktop */
-        position: absolute; 
-        top: 15px; left: 15px; 
-        z-index: 999; 
-        background: black; 
-        border: 1px solid var(--gold); 
-        color: var(--gold); 
-        font-size: 1.5rem; 
-        padding: 5px 12px;
-        font-family: sans-serif;
-        cursor: pointer;
-        box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    ">☰</button>
-    
-    <!-- Header is empty/hidden to give room -->
-    <div class="right-header hidden"></div>
-
-    <div class="content-stage">
-        
-        <!-- 1. CONSOLE (Task & Chat) -->
-        <div id="viewServingTop" class="view-wrapper" style="display: flex; flex-direction: column; height: 100%;">
-            
-          <!-- TASK CARD (FIXED SINGLE STATUS SOURCE) -->
-            <div id="taskCard" class="glass-card task-ribbon" style="margin: 20px 20px 0 20px; position: relative; z-index: 100; justify-content: space-between;">
+        <div class="content-stage">
+            <!-- 1. CONSOLE -->
+            <div id="viewServingTop" class="view-wrapper" style="display: flex; flex-direction: column; height: 100%;">
                 
-                <!-- LEFT: STATUS (Single Element) -->
-                <div class="ribbon-left" style="width: 30%; border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                    <div class="ribbon-label">CURRENT STATUS</div>
-                    <!-- SINGLE ID for Status - JS changes text and color -->
-                    <div id="mainStatusText" class="status-text-lg status-unproductive">UNPRODUCTIVE</div>
-                </div>
-                
-                <!-- CENTER: DATA (Timer OR Trash Talk) -->
-                <div class="ribbon-center" style="width: 40%; border: none; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                    
-                    <!-- IDLE MESSAGE -->
-                    <div id="idleMessage" class="ribbon-status" style="opacity: 0.5; font-style: italic;">
-                        "Awaiting Royal Decree..."
+                <!-- TASK CARD -->
+                <div id="taskCard" class="glass-card task-ribbon" style="margin: 20px 20px 0 20px; position: relative; z-index: 100; justify-content: space-between;">
+                    <div class="ribbon-left" style="width: 30%; border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                        <div class="ribbon-label">CURRENT STATUS</div>
+                        <div id="mainStatusText" class="status-text-lg status-unproductive">UNPRODUCTIVE</div>
                     </div>
-            
-                    <!-- ACTIVE TIMER -->
-                    <div id="activeTimerRow" class="hidden" style="display: flex; flex-direction: column; align-items: center;">
-    
-                    <div class="timer-box-wrapper">
-                        <div id="timerH" class="t-box">00</div>
-                        <div class="t-sep">:</div>
-                        <div id="timerM" class="t-box">00</div>
-                        <div class="t-sep">:</div>
-                        <div id="timerS" class="t-box">00</div>
-                    </div>
-                   </div>
-                </div>
-            
-                <!-- RIGHT: ACTION DECK -->
-                <div class="ribbon-right" style="width: 30%; display: flex; justify-content: center; align-items: center;">
-                    
-                    <!-- REQUEST (Idle) -->
-                    <div id="mainButtonsArea" style="width: 100%; padding: 0 10px;">
-                        <button id="newTaskBtn" onclick="window.getRandomTask()" class="action-btn" style="width: 100%;">REQUEST TASK</button>
-                    </div>
-                    
-                    <!-- ACTIONS (Active) -->
-                    <div id="uploadBtnContainer" class="hidden" style="width: 100%; display: flex; gap: 10px; justify-content: center; align-items: center; padding: 0 10px;">
-                        <!-- Ghost Button -->
-                        <button onclick="window.toggleTaskDetails(null)" class="btn-ghost">SEE TASK</button>
-                        <!-- Solid Button -->
-                        <input type="file" id="evidenceInput" accept="image/*,video/*" class="hidden" onchange="window.handleUploadStart(this)">
-                        <button id="btnUpload" onclick="document.getElementById('evidenceInput').click()" class="action-btn btn-upload">UPLOAD</button>
-                    </div>
-                </div>
-            </div>
-            <!-- DRAWER (Slides Down) -->
-            <div id="taskDetailPanel" class="task-detail-panel">
-                <div class="detail-content">
-                    <div style="color: #666; font-size: 0.7rem; margin-bottom: 10px; font-family: 'Cinzel';">CURRENT ORDERS</div>
-                    <h2 id="readyText" class="drawer-task-text">LOADING...</h2>
-                    <div style="border-top: 1px solid #333; padding-top: 20px; width: 100%; display: flex; justify-content: center; gap: 20px;">
-                        <button onclick="window.toggleTaskDetails(false)" class="text-btn">▲ HIDE</button>
-                        <button id="btnSkip" onclick="window.cancelPendingTask()" class="btn-skip-small">SKIP TASK</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CHAT -->
-            <div id="chatCard" class="chat-container" style="flex-grow: 1; overflow: hidden; margin-top: 20px;">
-                <div id="chatBox" class="chat-body-frame">
-                    
-                    <!-- IN-CHAT OVERLAYS -->
-                    <div id="kneelRewardOverlay" class="hidden overlay-center">
-                        <div style="text-align: center;">
-                            <h2 style="color:white; margin-bottom: 20px; font-family:'Orbitron';">DEVOTION RECOGNIZED</h2>
-                            <div style="display:flex; gap:10px;">
-                                <button onclick="claimKneelReward('coins')" class="action-btn">COINS</button>
-                                <button onclick="claimKneelReward('points')" class="action-btn">POINTS</button>
+                    <div class="ribbon-center" style="width: 40%; border: none; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                        <div id="idleMessage" class="ribbon-status" style="opacity: 0.5; font-style: italic;">"Awaiting Royal Decree..."</div>
+                        <div id="activeTimerRow" class="hidden" style="display: flex; flex-direction: column; align-items: center;">
+                            <div class="timer-box-wrapper">
+                                <div id="timerH" class="t-box">00</div><div class="t-sep">:</div>
+                                <div id="timerM" class="t-box">00</div><div class="t-sep">:</div>
+                                <div id="timerS" class="t-box">00</div>
                             </div>
                         </div>
                     </div>
-                    <div id="chatMediaOverlay" class="hidden overlay-center">
-                        <div id="mediaOverlayClose" onclick="closeChatPreview()" style="position: absolute; top: 20px; right: 20px; color: white; font-size: 2rem; cursor: pointer;">X</div>
-                        <div id="chatMediaOverlayContent"></div>
+                    <div class="ribbon-right" style="width: 30%; display: flex; justify-content: center; align-items: center;">
+                        <div id="mainButtonsArea" style="width: 100%; padding: 0 10px;">
+                            <button id="newTaskBtn" onclick="window.getRandomTask()" class="action-btn" style="width: 100%;">REQUEST TASK</button>
+                        </div>
+                        <div id="uploadBtnContainer" class="hidden" style="width: 100%; display: flex; gap: 10px; justify-content: center; align-items: center; padding: 0 10px;">
+                            <button onclick="window.toggleTaskDetails(null)" class="btn-ghost">SEE TASK</button>
+                            <input type="file" id="evidenceInput" accept="image/*,video/*" class="hidden" onchange="window.handleUploadStart(this)">
+                            <button id="btnUpload" onclick="document.getElementById('evidenceInput').click()" class="action-btn btn-upload">UPLOAD</button>
+                        </div>
                     </div>
-                    <div id="tributeHuntOverlay" class="hidden overlay-center" style="background:#000; padding:20px; flex-direction:column;">
-                        <button onclick="toggleTributeHunt()" style="color: white; align-self:flex-end; font-family:'Orbitron'; background:none; border:none; cursor:pointer;">CLOSE</button>
-                        <div id="huntStoreGrid" class="store-grid" style="margin-top: 20px;"></div>
-                        <textarea id="huntNote" class="hidden"></textarea>
-                        <div id="huntProgress" class="hidden"></div>
-                    </div>
-
-                    <div id="chatContent" class="chat-area"></div>
                 </div>
-                <div class="chat-footer">
-                    <button id="tributeHuntBtn" onclick="toggleTributeHunt()" class="icon-btn">🎁</button>
-                    <input type="text" id="chatMsgInput" class="chat-input" placeholder="AWAITING INPUT..." onkeypress="handleChatKey(event)">
-                    <button class="chat-send" onclick="sendChatMessage()" class="icon-btn">Send</button>
+
+                <!-- DRAWER -->
+                <div id="taskDetailPanel" class="task-detail-panel">
+                    <div class="detail-content">
+                        <div style="color: #666; font-size: 0.7rem; margin-bottom: 10px; font-family: 'Cinzel';">CURRENT ORDERS</div>
+                        <h2 id="readyText" class="drawer-task-text">LOADING...</h2>
+                        <div style="border-top: 1px solid #333; padding-top: 20px; width: 100%; display: flex; justify-content: center; gap: 20px;">
+                            <button onclick="window.toggleTaskDetails(false)" class="text-btn">▲ HIDE</button>
+                            <button id="btnSkip" onclick="window.cancelPendingTask()" class="btn-skip-small">SKIP TASK</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CHAT -->
+                <div id="chatCard" class="chat-container" style="flex-grow: 1; overflow: hidden; margin-top: 20px;">
+                    <div id="chatBox" class="chat-body-frame">
+                        <div id="kneelRewardOverlay" class="hidden overlay-center">
+                            <div style="text-align: center;">
+                                <h2 style="color:white; margin-bottom: 20px; font-family:'Orbitron';">DEVOTION RECOGNIZED</h2>
+                                <div style="display:flex; gap:10px;">
+                                    <button onclick="claimKneelReward('coins')" class="action-btn">COINS</button>
+                                    <button onclick="claimKneelReward('points')" class="action-btn">POINTS</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="chatMediaOverlay" class="hidden overlay-center">
+                            <div id="mediaOverlayClose" onclick="closeChatPreview()" style="position: absolute; top: 20px; right: 20px; color: white; font-size: 2rem; cursor: pointer;">X</div>
+                            <div id="chatMediaOverlayContent"></div>
+                        </div>
+                        <div id="tributeHuntOverlay" class="hidden overlay-center" style="background:#000; padding:20px; flex-direction:column;">
+                            <button onclick="toggleTributeHunt()" style="color: white; align-self:flex-end; font-family:'Orbitron'; background:none; border:none; cursor:pointer;">CLOSE</button>
+                            <div id="huntStoreGrid" class="store-grid" style="margin-top: 20px;"></div>
+                            <textarea id="huntNote" class="hidden"></textarea>
+                            <div id="huntProgress" class="hidden"></div>
+                        </div>
+                        <div id="chatContent" class="chat-area"></div>
+                    </div>
+                    <div class="chat-footer">
+                        <button id="tributeHuntBtn" onclick="toggleTributeHunt()" class="icon-btn">🎁</button>
+                        <input type="text" id="chatMsgInput" class="chat-input" placeholder="AWAITING INPUT..." onkeypress="handleChatKey(event)">
+                        <button class="chat-send" onclick="sendChatMessage()" class="icon-btn">Send</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OTHER VIEWS (EXCHEQUER, NEWS, VAULT, ETC) -->
+            <div id="viewBuy" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
+                <div class="glass-card" style="margin-bottom: 20px;"><h2 style="text-align: center; color: var(--neon-yellow); font-family:'Cinzel';">EXCHEQUER</h2></div>
+                <div class="store-grid">
+                    <div class="store-item"><div>1K</div><button class="si-btn" onclick="buyRealCoins(1000)">€10.00</button></div>
+                    <div class="store-item"><div>5.5K</div><button class="si-btn" onclick="buyRealCoins(5500)">€50.00</button></div>
+                    <div class="store-item"><div>12K</div><button class="si-btn" onclick="buyRealCoins(12000)">€100.00</button></div>
+                    <div class="store-item"><div>30K</div><button class="si-btn" onclick="buyRealCoins(30000)">€250.00</button></div>
+                    <div class="store-item"><div>70K</div><button class="si-btn" onclick="buyRealCoins(70000)">€500.00</button></div>
+                    <div class="store-item"><div>150K</div><button class="si-btn" onclick="buyRealCoins(150000)">€1000.00</button></div>
+                </div>
+            </div>
+
+            <!-- HISTORY SECTION -->
+            <div id="historySection" class="view-wrapper hidden" style="height: 100%; display: flex; flex-direction: column; overflow: hidden; background: #020202;">
+                <!-- ALTAR -->
+                <div class="trilogy-section section-altar triptych-stage">
+                    <div class="altar-halo"></div>
+                    <div class="altar-card side-card left-offering" id="altarSlot2" style="display:none;">
+                        <div class="gold-bar bar-top"></div><div class="inner-hairline"></div><img src="" class="altar-img" id="imgSlot2"><div class="gold-bar bar-bottom"></div><div class="altar-plaque" id="scoreSlot2"></div>
+                    </div>
+                    <div class="altar-card side-card right-offering" id="altarSlot3" style="display:none;">
+                        <div class="gold-bar bar-top"></div><div class="inner-hairline"></div><img src="" class="altar-img" id="imgSlot3"><div class="gold-bar bar-bottom"></div><div class="altar-plaque" id="scoreSlot3"></div>
+                    </div>
+                    <div class="altar-card center-idol" id="altarSlot1" style="display:none;">
+                        <div class="gold-bar bar-top"></div><div class="inner-hairline"></div><img src="" class="altar-img" id="imgSlot1"><div class="gold-bar bar-bottom"></div>
+                        <div class="reflection-mask"><img src="" class="reflect-img" id="reflectSlot1"></div><div class="altar-plaque main-plaque" id="scoreSlot1"></div>
+                    </div>
+                </div>
+                <!-- ARCHIVE -->
+                <div class="trilogy-section section-archive">
+                    <div class="trilogy-label label-archive">PROCESSING</div>
+                    <div id="gridOkay" class="horizontal-scroll-track archive-track" style="display:flex; overflow-x:auto; height:100%; align-items:center; padding:0 20px;"></div>
+                </div>
+                <!-- HEAP -->
+                <div class="trilogy-section section-heap">
+                    <div class="trilogy-label label-heap">CONTAINMENT</div>
+                    <div id="gridFailed" class="horizontal-scroll-track heap-track" style="display:flex; overflow-x:auto; height:100%; align-items:center; padding:0 20px;"></div>
+                </div>
+            </div>
+
+            <!-- NEWS, VAULT, PROTOCOL -->
+            <div id="viewNews" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
+                <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2 style="font-family:'Cinzel';">QUEEN KARIN</h2></div>
+                <div id="newsGrid" class="gallery-grid"></div>
+            </div>
+            <div id="viewVault" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
+                <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2 style="font-family:'Cinzel';">VAULT</h2></div>
+                <div id="vaultGrid" class="gallery-grid"></div>
+            </div>
+            <div id="viewProtocol" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
+                <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2 style="font-family:'Cinzel';">PROTOCOL</h2></div>
+                <div style="color: #ccc; text-align: center; font-family:'Cinzel';">Obedience is the only currency.</div>
+            </div>
+
+            <div id="viewRewards" class="hidden"></div>
+            <div id="viewHierarchy" class="hidden"></div>
+            <div id="viewSession" class="hidden"></div>
+
+            <!-- MODAL -->
+            <div id="glassModal" class="glass-modal">
+                <div id="modalMediaContainer" class="modal-bg-photo"></div>
+                <div id="modalGlassOverlay" class="modal-glass-overlay">
+                    <div id="modalCloseX" onclick="closeModal(null)" style="position:absolute; top:20px; right:20px; font-size:2rem; cursor:pointer; color:white; z-index:110;">×</div>
+                    <div class="theater-content dossier-layout">
+                        <div class="dossier-sidebar">
+                            <div class="dossier-block">
+                                <div class="dossier-label">SYSTEM VERDICT</div>
+                                <div class="stamp-container"><img id="modalStatusSticker" src="" class="m-status-sticker-lg"></div>
+                            </div>
+                            <div class="dossier-block">
+                                <div class="dossier-label">MERIT ACQUIRED</div>
+                                <div class="reward-container"><div id="modalPoints" class="m-points-lg">+0</div><div id="modalSticker"></div></div>
+                            </div>
+                            <div id="modalFeedbackView" class="sub-view">
+                                <div class="dossier-label">QUEEN'S FEEDBACK</div>
+                                <div id="modalFeedbackText" class="theater-text-box"></div>
+                            </div>
+                            <div id="modalTaskView" class="sub-view hidden">
+                                <div class="dossier-label">ORIGINAL ASSIGNMENT</div>
+                                <div id="modalOrderText" class="theater-text-box"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer-menu dossier-footer">
+                        <button onclick="event.stopPropagation(); toggleHistoryView('feedback')" class="history-action-btn">FEEDBACK</button>
+                        <button onclick="event.stopPropagation(); toggleHistoryView('task')" class="history-action-btn">THE TASK</button>
+                        <button onclick="event.stopPropagation(); toggleHistoryView('proof')" class="history-action-btn gold-border">SEE PROOF</button>
+                        <button onclick="event.stopPropagation(); toggleHistoryView('info')" class="history-action-btn">STATUS</button>
+                        <button onclick="event.stopPropagation(); closeModal(null)" class="history-action-btn btn-close-red" style="grid-column: span 2;">CLOSE ARCHIVE</button>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- 2. EXCHEQUER (RESTORED) -->
-        <div id="viewBuy" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
-            <div class="glass-card" style="margin-bottom: 20px;"><h2 style="text-align: center; color: var(--neon-yellow); font-family:'Cinzel';">EXCHEQUER</h2></div>
-            <div class="store-grid">
-                <div class="store-item"><div>1K</div><button class="si-btn" onclick="buyRealCoins(1000)">€10.00</button></div>
-                <div class="store-item"><div>5.5K</div><button class="si-btn" onclick="buyRealCoins(5500)">€50.00</button></div>
-                <div class="store-item"><div>12K</div><button class="si-btn" onclick="buyRealCoins(12000)">€100.00</button></div>
-                <div class="store-item"><div>30K</div><button class="si-btn" onclick="buyRealCoins(30000)">€250.00</button></div>
-                <div class="store-item"><div>70K</div><button class="si-btn" onclick="buyRealCoins(70000)">€500.00</button></div>
-                <div class="store-item"><div>150K</div><button class="si-btn" onclick="buyRealCoins(150000)">€1000.00</button></div>
-            </div>
-        </div>
-
-    <!-- 3. EVIDENCE LOG (THE TRILOGY) -->
-         <div id="historySection" class="view-wrapper hidden" style="height: 100%; display: flex; flex-direction: column; overflow: hidden; background: #020202;">
-
-          <!-- 1. TOP: THE ALTAR (Static Triptych) -->
-          <div class="trilogy-section section-altar triptych-stage">
-              <!-- Background Light -->
-              <div class="altar-halo"></div>
-      
-              <!-- LEFT OFFERING (Rank #2) -->
-              <div class="altar-card side-card left-offering" id="altarSlot2" style="display:none;">
-                  <div class="gold-bar bar-top"></div>
-                  <div class="inner-hairline"></div>
-                  <img src="" class="altar-img" id="imgSlot2">
-                  <div class="gold-bar bar-bottom"></div>
-                  <div class="altar-plaque" id="scoreSlot2"></div>
-              </div>
-      
-              <!-- RIGHT OFFERING (Rank #3) -->
-              <div class="altar-card side-card right-offering" id="altarSlot3" style="display:none;">
-                  <div class="gold-bar bar-top"></div>
-                  <div class="inner-hairline"></div>
-                  <img src="" class="altar-img" id="imgSlot3">
-                  <div class="gold-bar bar-bottom"></div>
-                  <div class="altar-plaque" id="scoreSlot3"></div>
-              </div>
-      
-              <!-- CENTER IDOL (Rank #1) -->
-              <div class="altar-card center-idol" id="altarSlot1" style="display:none;">
-                  <div class="gold-bar bar-top"></div>
-                  <div class="inner-hairline"></div>
-                  <img src="" class="altar-img" id="imgSlot1">
-                  <div class="gold-bar bar-bottom"></div>
-                  <!-- Reflection -->
-                  <div class="reflection-mask">
-                      <img src="" class="reflect-img" id="reflectSlot1">
-                  </div>
-                  <!-- Score -->
-                  <div class="altar-plaque main-plaque" id="scoreSlot1"></div>
-              </div>
-          </div>
-
-    <!-- 2. MIDDLE: THE ARCHIVE -->
-    <div class="trilogy-section section-archive">
-        <div class="trilogy-label label-archive">PROCESSING</div>
-        <div id="gridOkay" class="horizontal-scroll-track archive-track" style="display:flex; overflow-x:auto; height:100%; align-items:center; padding:0 20px;"></div>
     </div>
+  </div>
+</div> <!-- END DESKTOP_APP -->
 
-    <!-- 3. BOTTOM: THE HEAP -->
-    <div class="trilogy-section section-heap">
-        <div class="trilogy-label label-heap">CONTAINMENT</div>
-        <div id="gridFailed" class="horizontal-scroll-track heap-track" style="display:flex; overflow-x:auto; height:100%; align-items:center; padding:0 20px;"></div>
-    </div>
-
-</div>
-
-        <!-- 4. QUEEN KARIN NEWS (RESTORED) -->
-        <div id="viewNews" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
-            <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2 style="font-family:'Cinzel';">QUEEN KARIN</h2></div>
-            <div id="newsGrid" class="gallery-grid"></div>
-        </div>
-
-        <!-- 5. VAULT (RESTORED) -->
-        <div id="viewVault" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
-            <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2 style="font-family:'Cinzel';">VAULT</h2></div>
-            <div id="vaultGrid" class="gallery-grid"></div>
-        </div>
-
-        <!-- 6. PROTOCOL (RESTORED) -->
-        <div id="viewProtocol" class="view-wrapper hidden" style="padding: 20px; overflow-y: auto;">
-            <div class="glass-card" style="margin-bottom: 20px; text-align: center;"><h2 style="font-family:'Cinzel';">PROTOCOL</h2></div>
-            <div style="color: #ccc; text-align: center; font-family:'Cinzel';">Obedience is the only currency.</div>
-        </div>
-
-        <div id="viewRewards" class="hidden"></div>
-        <div id="viewHierarchy" class="hidden"></div>
-        <div id="viewSession" class="hidden"></div>
-
-        <!-- MODAL (RESTORED) -->
-        <div id="glassModal" class="glass-modal">
-          <div id="modalMediaContainer" class="modal-bg-photo"></div>
-      
-          <div id="modalGlassOverlay" class="modal-glass-overlay">
-              
-              <div id="modalCloseX" onclick="closeModal(null)" style="position:absolute; top:20px; right:20px; font-size:2rem; cursor:pointer; color:white; z-index:110;">×</div>
-              
-              <div class="theater-content dossier-layout">
-                  
-                  <div class="dossier-sidebar">
-                      
-                      <div class="dossier-block">
-                          <div class="dossier-label">SYSTEM VERDICT</div>
-                          <div class="stamp-container">
-                              <img id="modalStatusSticker" src="" class="m-status-sticker-lg">
-                          </div>
-                      </div>
-      
-                      <div class="dossier-block">
-                          <div class="dossier-label">MERIT ACQUIRED</div>
-                          <div class="reward-container">
-                              <div id="modalPoints" class="m-points-lg">+0</div>
-                              <div id="modalSticker"></div>
-                          </div>
-                      </div>
-      
-                      <div id="modalFeedbackView" class="sub-view">
-                          <div class="dossier-label">QUEEN'S FEEDBACK</div>
-                          <div id="modalFeedbackText" class="theater-text-box"></div>
-                      </div>
-      
-                      <div id="modalTaskView" class="sub-view hidden">
-                          <div class="dossier-label">ORIGINAL ASSIGNMENT</div>
-                          <div id="modalOrderText" class="theater-text-box"></div>
-                      </div>
-      
-                  </div>
-              </div>
-
-      
-      
-              <div class="modal-footer-menu dossier-footer">
-                  <button onclick="event.stopPropagation(); toggleHistoryView('feedback')" class="history-action-btn">FEEDBACK</button>
-                  <button onclick="event.stopPropagation(); toggleHistoryView('task')" class="history-action-btn">THE TASK</button>
-                  <button onclick="event.stopPropagation(); toggleHistoryView('proof')" class="history-action-btn gold-border">SEE PROOF</button>
-                  <button onclick="event.stopPropagation(); toggleHistoryView('info')" class="history-action-btn">STATUS</button>
-                  <button onclick="event.stopPropagation(); closeModal(null)" class="history-action-btn btn-close-red" style="grid-column: span 2;">CLOSE ARCHIVE</button>
-              </div>
-          </div>
-      </div>
-     </div>
-         
-    </div> 
-    
-</div>
-
-  
-<!-- 🟢 MOBILE UNIVERSE (FRESH PASTE) -->
+<!-- =======================================================
+     UNIVERSE B: MOBILE APP (KAIZEN LAYOUT)
+     ======================================================= -->
 <div id="MOBILE_APP">
-    
-    <!-- 1. DASHBOARD (Forced Visible) -->
-    <div id="viewMobileHome" class="mob-frame" style="display:flex !important; flex-direction:column;">
+    <div id="viewMobileHome" class="mob-frame">
         
         <!-- HEADER -->
         <div class="mob-header">
@@ -430,11 +431,7 @@
 
             <div class="mob-grid-zone">
                 <div class="mob-grid-label">DAILY TRIBUTE</div>
-                <div id="mob_streakGrid" class="mob-streak-grid">
-                    <!-- Default Grid -->
-                    <div class="streak-sq"></div><div class="streak-sq"></div><div class="streak-sq"></div><div class="streak-sq"></div>
-                    <div class="streak-sq"></div><div class="streak-sq"></div><div class="streak-sq"></div><div class="streak-sq"></div>
-                </div>
+                <div id="mob_streakGrid" class="mob-streak-grid"></div>
             </div>
         </div>
 
@@ -453,47 +450,11 @@
             </div>
         </div>
 
-        <!-- SPACER -->
+        <!-- SPACER (For Footer) -->
         <div style="height: 120px;"></div>
 
-    </div> 
+    </div>
 </div>
 
-<!-- SWITCHER SCRIPT -->
-<!-- ADD THIS SWITCHER SCRIPT AT THE VERY BOTTOM (Before </body>) -->
-<script>
-    function checkDevice() {
-        const isMobile = window.innerWidth <= 768;
-        const desktop = document.getElementById('DESKTOP_APP');
-        const mobile = document.getElementById('MOBILE_APP');
-        const dashboard = document.getElementById('viewMobileHome'); // The inner view
-        
-        if (isMobile) {
-            // 1. Kill Desktop
-            if(desktop) desktop.style.display = 'none';
-            
-            // 2. Activate Mobile Universe
-            if(mobile) mobile.style.display = 'flex';
-            
-            // 3. FORCE THE DASHBOARD OPEN (The Fix)
-            if(dashboard) {
-                dashboard.style.display = 'flex';
-                dashboard.style.opacity = '1';
-                dashboard.style.visibility = 'visible';
-            }
-            
-        } else {
-            if(mobile) mobile.style.display = 'none';
-            if(desktop) desktop.style.display = 'flex'; 
-        }
-    }
-    
-    // Run immediately
-    checkDevice();
-    
-    // Run continuously to fight any JS that tries to hide it
-    window.addEventListener('resize', checkDevice);
-    window.addEventListener('load', checkDevice);
-</script>
 </body>
 </html>
