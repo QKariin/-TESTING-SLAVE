@@ -40,7 +40,7 @@
 /* Row Alignment */
 .msg-row {
     display: flex !important;
-    gap: 12px !important;
+    gap: 10px !important;
     max-width: 100% !important;
     align-items: flex-end !important;
     margin-bottom: 10px !important;
@@ -154,7 +154,7 @@
     padding: 10px 0 !important;
     text-align: center !important;
     font-family: 'Orbitron', sans-serif !important;
-    font-size: 0.65rem !important;
+    font-size: 0.45rem !important;
     letter-spacing: 3px !important;
     text-transform: uppercase !important;
     color: var(--yellow) !important;
