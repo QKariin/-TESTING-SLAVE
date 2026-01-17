@@ -1,4 +1,4 @@
-// gallery.js - TRILOGY LAYOUT + MOBILE DASHBOARD SYNC (CLEAN)
+// gallery.js - TRILOGY LAYOUT + MOBILE SYNC (FINAL FIX)
 import { mediaType } from './media.js';
 import { 
     galleryData, 
@@ -17,7 +17,9 @@ import { triggerSound } from './utils.js';
 import { getOptimizedUrl, getThumbnail, getSignedUrl } from './media.js';
 
 // STICKERS
+const STICKER_APPROVE = "https://static.wixstatic.com/media/ce3e5b_a19d81b7f45c4a31a4aeaf03a41b999f~mv2.png";
 const STICKER_DENIED = "https://static.wixstatic.com/media/ce3e5b_63a0c8320e29416896d071d5b46541d7~mv2.png";
+const PLACEHOLDER_IMG = "https://static.wixstatic.com/media/ce3e5b_1bd27ba758ce465fa89a36d70a68f355~mv2.png";
 const IMG_QUEEN_MAIN = "https://static.wixstatic.com/media/ce3e5b_5fc6a144908b493b9473757471ec7ebb~mv2.png";
 const IMG_STATUE_SIDE = "https://static.wixstatic.com/media/ce3e5b_5424edc9928d49e5a3c3a102cb4e3525~mv2.png";
 const IMG_MIDDLE_EMPTY = "https://static.wixstatic.com/media/ce3e5b_1628753a2b5743f1bef739cc392c67b5~mv2.webp";
@@ -25,14 +27,15 @@ const IMG_BOTTOM_EMPTY = "https://static.wixstatic.com/media/ce3e5b_33f53711eece
 
 let activeStickerFilter = "ALL";
 
-// --- HELPERS ---
+// --- HELPER: POINTS ---
 function getPoints(item) {
     let val = item.points || item.score || item.value || item.amount || item.reward || 0;
     return Number(val);
 }
 
-// NORMALIZE DATA
+// --- HELPER: NORMALIZE DATA ---
 let normalizedCache = new Set();
+
 function normalizeGalleryItem(item) {
     const cacheKey = item._id || item._createdDate;
     if (normalizedCache.has(cacheKey)) return;
@@ -52,8 +55,16 @@ function normalizeGalleryItem(item) {
     }
 }
 
+// --- HELPER: SORTED LIST ---
+function getSortedGallery() {
+    if (!galleryData) return [];
+    return [...galleryData].sort((a, b) => new Date(b._createdDate) - new Date(a._createdDate));
+}
+
+// --- HELPER: GET FILTERED LIST ---
 function getGalleryList() {
     if (!galleryData || !Array.isArray(galleryData)) return [];
+    
     galleryData.forEach(normalizeGalleryItem);
     
     let items = galleryData.filter(i => {
@@ -72,10 +83,10 @@ function getGalleryList() {
     return items.sort((a, b) => new Date(b._createdDate) - new Date(a._createdDate));
 }
 
-// --- MAIN RENDERER ---
+// --- RENDERERS ---
 export async function renderGallery() {
     if (!galleryData) return;
-
+    
     const gridFailed = document.getElementById('gridFailed'); 
     const gridOkay = document.getElementById('gridOkay');     
     const historySection = document.getElementById('historySection');
@@ -84,8 +95,8 @@ export async function renderGallery() {
     const slot1 = { card: document.getElementById('altarSlot1'), img: document.getElementById('imgSlot1'), ref: document.getElementById('reflectSlot1') };
     const slot2 = { card: document.getElementById('altarSlot2'), img: document.getElementById('imgSlot2') };
     const slot3 = { card: document.getElementById('altarSlot3'), img: document.getElementById('imgSlot3') };
-    
-    // Mobile Altar Elements
+
+    // Mobile Altar Elements (SYNC FIX)
     const mob1 = document.getElementById('mobImgSlot1');
     const mob2 = document.getElementById('mobImgSlot2');
     const mob3 = document.getElementById('mobImgSlot3');
@@ -111,15 +122,17 @@ export async function renderGallery() {
         .sort((a, b) => getPoints(b) - getPoints(a))
         .slice(0, 3);
 
+    // Helper for thumbnails
     const getThumb = async (item, size) => {
         return await getSignedUrl(getThumbnail(getOptimizedUrl(item.proofUrl || item.media, size)));
     };
 
-    // RANK 1
+    // --- RANK 1 (CENTER) ---
     if (bestOf[0]) {
         let thumb = await getThumb(bestOf[0], 400);
         let realIndex = allItems.indexOf(bestOf[0]);
 
+        // Desktop
         if(slot1.card) {
             slot1.card.style.display = 'flex';
             slot1.img.src = thumb;
@@ -127,21 +140,23 @@ export async function renderGallery() {
             slot1.card.onclick = () => window.openHistoryModal(realIndex);
             slot1.img.style.filter = "none";
         }
+        // Mobile Sync
         if(mob1) {
             mob1.src = thumb;
             mob1.onclick = () => window.openHistoryModal(realIndex);
         }
     } else {
+        // Empty State
         if(slot1.card) {
             slot1.img.src = IMG_QUEEN_MAIN;
             if(slot1.ref) slot1.ref.src = IMG_QUEEN_MAIN;
             slot1.card.onclick = null;
-            slot1.img.style.filter = "grayscale(30%)";
+            slot1.img.style.filter = "grayscale(30%)"; 
         }
         if(mob1) mob1.src = IMG_QUEEN_MAIN;
     }
 
-    // RANK 2
+    // --- RANK 2 (LEFT) ---
     if (bestOf[1]) {
         let thumb = await getThumb(bestOf[1], 300);
         let realIndex = allItems.indexOf(bestOf[1]);
@@ -160,7 +175,7 @@ export async function renderGallery() {
         if(mob2) mob2.src = IMG_STATUE_SIDE;
     }
 
-    // RANK 3
+    // --- RANK 3 (RIGHT) ---
     if (bestOf[2]) {
         let thumb = await getThumb(bestOf[2], 300);
         let realIndex = allItems.indexOf(bestOf[2]);
@@ -179,7 +194,6 @@ export async function renderGallery() {
         if(mob3) mob3.src = IMG_STATUE_SIDE;
     }
 
-
     // --- 2. MIDDLE (ARCHIVE) ---
     const middleItems = allItems.filter(item => {
         if (bestOf.includes(item)) return false; 
@@ -189,10 +203,14 @@ export async function renderGallery() {
 
     let middleHtml = '';
     if (middleItems.length === 0 && allItems.length > 0) {
-        for(let i=0; i<6; i++) middleHtml += `<div class="item-placeholder-slot"><img src="${IMG_MIDDLE_EMPTY}"></div>`;
+        for(let i=0; i<6; i++) {
+            middleHtml += `<div class="item-placeholder-slot"><img src="${IMG_MIDDLE_EMPTY}"></div>`;
+        }
         gridOkay.innerHTML = middleHtml;
     } else if (middleItems.length > 0) {
-        const middlePromises = middleItems.map(item => getSignedUrl(getOptimizedUrl(item.proofUrl || item.media, 300)));
+        const middlePromises = middleItems.map(item => 
+            getSignedUrl(getOptimizedUrl(item.proofUrl || item.media, 300))
+        );
         const middleThumbs = await Promise.all(middlePromises);
         
         for (let i = 0; i < middleItems.length; i++) {
@@ -205,8 +223,10 @@ export async function renderGallery() {
             middleHtml += `
                 <div class="item-blueprint" onclick="window.openHistoryModal(${realIndex})">
                     <img class="blueprint-img" src="${thumb}" loading="lazy">
-                    <div class="bp-corner bl-tl"></div><div class="bp-corner bl-tr"></div>
-                    <div class="bp-corner bl-bl"></div><div class="bp-corner bl-br"></div>
+                    <div class="bp-corner bl-tl"></div>
+                    <div class="bp-corner bl-tr"></div>
+                    <div class="bp-corner bl-bl"></div>
+                    <div class="bp-corner bl-br"></div>
                     ${overlay}
                 </div>`;
         }
@@ -221,10 +241,14 @@ export async function renderGallery() {
 
     let failedHtml = '';
     if (failedItems.length === 0 && allItems.length > 0) {
-        for(let i=0; i<6; i++) failedHtml += `<div class="item-placeholder-slot"><img src="${IMG_BOTTOM_EMPTY}"></div>`;
+        for(let i=0; i<6; i++) {
+            failedHtml += `<div class="item-placeholder-slot"><img src="${IMG_BOTTOM_EMPTY}"></div>`;
+        }
         gridFailed.innerHTML = failedHtml;
     } else if (failedItems.length > 0) {
-        const failedPromises = failedItems.map(item => getSignedUrl(getOptimizedUrl(item.proofUrl || item.media, 300)));
+        const failedPromises = failedItems.map(item => 
+            getSignedUrl(getOptimizedUrl(item.proofUrl || item.media, 300))
+        );
         const failedThumbs = await Promise.all(failedPromises);
         
         for (let i = 0; i < failedItems.length; i++) {
@@ -276,8 +300,18 @@ window.atoneForTask = function(index) {
     if(window.updateTaskUIState) window.updateTaskUIState(true);
     if(window.toggleTaskDetails) window.toggleTaskDetails(true);
 
-    window.parent.postMessage({ type: "PURCHASE_ITEM", itemName: "Redemption", cost: 100, messageToDom: "Slave paid 100 coins to retry failed task." }, "*");
-    window.parent.postMessage({ type: "savePendingState", pendingState: newPendingState, consumeQueue: false }, "*");
+    window.parent.postMessage({ 
+        type: "PURCHASE_ITEM", 
+        itemName: "Redemption",
+        cost: 100,
+        messageToDom: "Slave paid 100 coins to retry failed task." 
+    }, "*");
+
+    window.parent.postMessage({ 
+        type: "savePendingState", 
+        pendingState: newPendingState, 
+        consumeQueue: false 
+    }, "*");
 };
 
 // --- MODAL LOGIC ---
@@ -308,16 +342,22 @@ export async function openHistoryModal(index) {
         let verdictText = item.adminComment || "Logged without commentary.";
         if(isRejected && !item.adminComment) verdictText = "Submission rejected. Standards not met.";
 
-        let redemptionBtn = isRejected ? `
-            <button onclick="event.stopPropagation(); window.atoneForTask(${index})" 
-                    class="btn-glass-silver" style="border-color:var(--neon-red); color:var(--neon-red);">
-                SEEK REDEMPTION (-100 🪙)
-            </button>` : '';
+        let redemptionBtn = '';
+        if (isRejected) {
+            redemptionBtn = `
+                <button onclick="event.stopPropagation(); window.atoneForTask(${index})" 
+                        class="btn-glass-silver" 
+                        style="border-color:var(--neon-red); color:var(--neon-red); box-shadow: 0 0 10px rgba(255,0,60,0.1);">
+                    SEEK REDEMPTION (-100 🪙)
+                </button>`;
+        }
 
         overlay.innerHTML = `
             <div class="modal-center-col" id="modalUI">
                 <div class="modal-merit-title">${isRejected ? "CAPITAL DEDUCTED" : "MERIT ACQUIRED"}</div>
-                <div class="modal-merit-value" style="color:${isRejected ? '#ff003c' : 'var(--gold)'}">${isRejected ? "0" : "+" + pts}</div>
+                <div class="modal-merit-value" style="color:${isRejected ? '#ff003c' : 'var(--gold)'}">
+                    ${isRejected ? "0" : "+" + pts}
+                </div>
                 <div class="modal-verdict-box" id="verdictBox">"${verdictText}"</div>
                 <div class="modal-btn-stack">
                     <button onclick="event.stopPropagation(); window.toggleDirective(${index})" class="btn-glass-silver">THE DIRECTIVE</button>
@@ -337,7 +377,7 @@ export async function openHistoryModal(index) {
     }
 }
 
-// TOGGLE DIRECTIVE (HTML FIX)
+// REPLACE YOUR toggleDirective FUNCTION WITH THIS (HTML FIX)
 window.toggleDirective = function(index) {
     const items = getGalleryList(); 
     const item = items[index];
@@ -348,14 +388,16 @@ window.toggleDirective = function(index) {
     if (box.dataset.view === 'task') {
         let verdictText = item.adminComment || "Logged without commentary.";
         const status = (item.status || "").toLowerCase();
-        if((status.includes('rej') || status.includes('fail')) && !item.adminComment) verdictText = "Submission rejected. Standards not met.";
+        if((status.includes('rej') || status.includes('fail')) && !item.adminComment) {
+             verdictText = "Submission rejected. Standards not met.";
+        }
         
         box.innerText = `"${verdictText}"`;
         box.style.color = "#eee";
         box.style.fontStyle = "italic";
         box.dataset.view = 'verdict';
     } else {
-        // USE INNERHTML FOR FORMATTING
+        // USE INNERHTML HERE
         box.innerHTML = item.text || "No directive data available.";
         box.style.color = "#ccc";
         box.style.fontStyle = "normal";
@@ -368,60 +410,100 @@ export function toggleHistoryView(view) {
     const overlay = document.getElementById('modalGlassOverlay');
     if (!modal || !overlay) return;
 
+    const views = ['modalInfoView', 'modalFeedbackView', 'modalTaskView'];
+    views.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.classList.add('hidden');
+    });
+
     if (view === 'proof') {
         modal.classList.add('proof-mode-active');
         overlay.classList.add('clean');
     } else {
         modal.classList.remove('proof-mode-active');
         overlay.classList.remove('clean');
+
+        let targetId = 'modalInfoView';
+        if (view === 'feedback') targetId = 'modalFeedbackView';
+        if (view === 'task') targetId = 'modalTaskView';
+
+        const target = document.getElementById(targetId);
+        if(target) target.classList.remove('hidden');
     }
 }
 
 export function closeModal(e) {
-    if(e && e.stopPropagation) e.stopPropagation();
-    const modal = document.getElementById('glassModal');
-    if (modal) {
-        modal.classList.remove('active');
-        modal.classList.remove('inspect-mode');
+    if (e && (e.target.id === 'modalCloseX' || e.target.classList.contains('btn-close-red'))) {
+        document.getElementById('glassModal').classList.remove('active');
+        document.getElementById('modalMediaContainer').innerHTML = "";
+        return;
     }
-    const media = document.getElementById('modalMediaContainer');
-    if (media) media.innerHTML = "";
+    
+    const overlay = document.getElementById('modalGlassOverlay');
+    if (overlay && overlay.classList.contains('clean')) {
+        toggleHistoryView('info'); 
+        return;
+    }
+    
+    // Aggressive close if needed
+    if (!e || e.target === document.getElementById('glassModal')) {
+        document.getElementById('glassModal').classList.remove('active');
+        document.getElementById('modalMediaContainer').innerHTML = "";
+    }
 }
 
 export function initModalSwipeDetection() {
     const modalEl = document.getElementById('glassModal');
     if (!modalEl) return;
+
     modalEl.addEventListener('touchstart', e => setTouchStartX(e.changedTouches[0].screenX), { passive: true });
+    
     modalEl.addEventListener('touchend', e => {
-        const diff = touchStartX - e.changedTouches[0].screenX;
+        const touchEndX = e.changedTouches[0].screenX;
+        const diff = touchStartX - touchEndX;
+
         if (Math.abs(diff) > 80) {
-            let nextIndex = diff > 0 ? currentHistoryIndex + 1 : currentHistoryIndex - 1;
-            let items = getGalleryList();
-            if (nextIndex >= 0 && nextIndex < items.length) openHistoryModal(nextIndex);
+            let historyItems = getGalleryList();
+            let nextIndex = currentHistoryIndex;
+            
+            if (diff > 0) nextIndex++; 
+            else nextIndex--; 
+            
+            if (nextIndex >= 0 && nextIndex < historyItems.length) {
+                openHistoryModal(nextIndex);
+            }
         }
     }, { passive: true });
 }
 
 window.toggleInspectMode = function() {
     const modal = document.getElementById('glassModal');
-    if (modal) modal.classList.toggle('inspect-mode');
+    if (modal) {
+        modal.classList.toggle('inspect-mode');
+    }
 };
 
-// Global Listeners for Modal Interaction
+// Global Click Watcher (Keeps modal behavior sane)
 window.addEventListener('click', function(e) {
     const modal = document.getElementById('glassModal');
     const card = document.getElementById('modalUI');
-    if (!modal || !modal.classList.contains('active')) return;
-    if (card && card.contains(e.target)) return; 
 
+    if (!modal || !modal.classList.contains('active')) return;
+
+    // 1. If clicking inside card, STOP.
+    if (card && card.contains(e.target)) return;
+
+    // 2. If Inspect Mode, remove it
     if (modal.classList.contains('inspect-mode') && modal.contains(e.target)) {
         modal.classList.remove('inspect-mode');
         return;
     }
+
+    // 3. Otherwise Close
     window.closeModal();
 }, true);
 
-// FORCE EXPORTS
+// FORCE WINDOW EXPORTS
 window.renderGallery = renderGallery;
 window.openHistoryModal = openHistoryModal;
 window.toggleHistoryView = toggleHistoryView;
