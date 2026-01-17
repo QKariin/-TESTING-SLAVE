@@ -156,14 +156,14 @@
             <div class="stat-item"><span class="stat-lbl">CAPITAL</span><span id="coins" class="stat-val">0</span></div>
         </div>
 
-        <!-- KNEEL BUTTON -->
+       <!-- KNEEL BUTTON (UPDATED) -->
         <div class="kneel-sidebar-wrapper">
             <div id="btn" class="kneel-bar-graphic" 
-                 onmousedown="handleHoldStart(event)" 
-                 onmouseup="handleHoldEnd(event)" 
-                 onmouseleave="handleHoldEnd(event)" 
-                 ontouchstart="handleHoldStart(event)" 
-                 ontouchend="handleHoldEnd(event)">
+                 onmousedown="if(window.handleHoldStart) window.handleHoldStart(event)" 
+                 onmouseup="if(window.handleHoldEnd) window.handleHoldEnd(event)" 
+                 onmouseleave="if(window.handleHoldEnd) window.handleHoldEnd(event)" 
+                 ontouchstart="if(window.handleHoldStart) window.handleHoldStart(event)" 
+                 ontouchend="if(window.handleHoldEnd) window.handleHoldEnd(event)">
                 <div id="fill" class="graphic-fill"></div>
                 <span id="txt-main" class="graphic-text">HOLD TO KNEEL</span>
             </div>
