@@ -570,18 +570,20 @@ window.syncMobileDashboard = function() {
             justifyContent: 'space-between', // Changed to space-between for 5 items
             alignItems: 'center',
             position: 'fixed', 
-            bottom: '10px', 
-         
-            width: '110%', // Wider to fit 5 icons comfortably
-            height: '70px',
+            bottom: '0px', // Stick to bottom
+            left: '50%', // Center horizontally
+            transform: 'translateX(-50%)', // Correct center offset
+            
+            width: '100%', // Use full width instead of 110%
+            height: '80px', // Slightly taller for the center button
             background: 'rgba(10, 10, 10, 0.95)', 
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.15)',
+            boxShadow: '0 -5px 20px rgba(0,0,0,0.5)',
             zIndex: '2147483647', 
             backdropFilter: 'blur(15px)', 
             pointerEvents: 'auto', 
             touchAction: 'none',
-            padding: '0 10px' // Slight padding on ends
+            padding: '0 5px'
         });
 
         footer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
