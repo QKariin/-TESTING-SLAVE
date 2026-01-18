@@ -392,14 +392,14 @@ window.toggleMobileView = function(viewName) {
     const news = document.getElementById('viewNews');
     const protocol = document.getElementById('viewProtocol');
     
-    // Hide All Mobile Views
+    // 1. HIDE ALL MOBILE VIEWS
     const views = [home, history, news, protocol];
     views.forEach(el => { if(el) el.style.display = 'none'; });
 
-    // Special Handling for Chat Visibility
+    // 2. FORCE HIDE CHAT (Reset)
     if (chatCard) chatCard.style.display = 'none';
 
-    // Show Target
+    // 3. SHOW TARGET
     if (viewName === 'home') {
         if(home) {
             home.style.display = 'flex';
@@ -408,13 +408,14 @@ window.toggleMobileView = function(viewName) {
     }
     else if (viewName === 'chat') {
         if(chatCard && mobileApp) {
-            // TELEPORT: Move Chat to Mobile App so it's visible
+            // *** THE FIX: TELEPORT CHAT TO MOBILE APP ***
+            // If the chat is currently inside the hidden Desktop App, move it here.
             if (chatCard.parentElement !== mobileApp) {
                 mobileApp.appendChild(chatCard);
             }
             chatCard.style.display = 'flex';
             
-            // Scroll Fix
+            // Scroll to bottom
             const chatBox = document.getElementById('chatBox');
             if (chatBox) setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
         }
@@ -432,24 +433,21 @@ window.toggleMobileView = function(viewName) {
         if(protocol) protocol.style.display = 'block';
     }
     
-    // Close sidebar & update icons
+    // 4. CLEANUP
     const sidebar = document.querySelector('.layout-left');
     if (sidebar) sidebar.classList.remove('mobile-open');
     document.querySelectorAll('.mf-btn').forEach(btn => btn.classList.remove('active'));
-    
-    // Highlight active button (optional visual polish)
-    // You can add logic here to add .active class to the clicked button if you want
 };
 
 // HELPER: Restore Chat to Desktop on Resize
-// (Prevents chat from getting stuck in mobile view if user goes back to desktop)
+// (Keeps desktop working if you resize the window back up)
 window.addEventListener('resize', () => {
     if (window.innerWidth > 768) {
         const chatCard = document.getElementById('chatCard');
         const desktopParent = document.getElementById('viewServingTop');
         if (chatCard && desktopParent && chatCard.parentElement !== desktopParent) {
             desktopParent.appendChild(chatCard);
-            chatCard.style.display = 'flex'; // Reset display
+            chatCard.style.display = 'flex';
         }
     }
 });
