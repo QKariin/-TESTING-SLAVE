@@ -384,46 +384,46 @@ window.toggleMobileStats = function() {
     }
 };
 
-// 3. MAIN NAVIGATION CONTROLLER (UPDATED FOR MOBILE RECORD)
+// 3. MAIN NAVIGATION CONTROLLER (WITH CHAT TELEPORT)
 window.toggleMobileView = function(viewName) {
     const home = document.getElementById('viewMobileHome');
-    const record = document.getElementById('viewMobileRecord'); // NEW VIEW
     const chatCard = document.getElementById('chatCard');
     const mobileApp = document.getElementById('MOBILE_APP');
-    const history = document.getElementById('historySection'); // Old Desktop View
+    const history = document.getElementById('historySection');
     const news = document.getElementById('viewNews');
     const protocol = document.getElementById('viewProtocol');
     
-    // 1. HIDE ALL MOBILE VIEWS
-    const views = [home, record, history, news, protocol];
+    // Hide All Mobile Views
+    const views = [home, history, news, protocol];
     views.forEach(el => { if(el) el.style.display = 'none'; });
 
-    // 2. FORCE HIDE CHAT
+    // Special Handling for Chat Visibility
     if (chatCard) chatCard.style.display = 'none';
 
-    // 3. SHOW TARGET
+    // Show Target
     if (viewName === 'home') {
         if(home) {
             home.style.display = 'flex';
             if(window.syncMobileDashboard) window.syncMobileDashboard();
         }
     }
-    else if (viewName === 'record') {
-        // *** NEW LOGIC: OPEN THE MOBILE VAULT ***
-        if(record) {
-            record.style.display = 'flex';
-            // Trigger the gallery to load images into the new slots
-            if(window.renderGallery) window.renderGallery();
-        }
-    }
     else if (viewName === 'chat') {
         if(chatCard && mobileApp) {
+            // TELEPORT: Move Chat to Mobile App so it's visible
             if (chatCard.parentElement !== mobileApp) {
                 mobileApp.appendChild(chatCard);
             }
             chatCard.style.display = 'flex';
+            
+            // Scroll Fix
             const chatBox = document.getElementById('chatBox');
             if (chatBox) setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
+        }
+    }
+    else if (viewName === 'record') {
+        if(history) {
+            history.style.display = 'flex';
+            if(window.renderGallery) window.renderGallery();
         }
     }
     else if (viewName === 'queen') {
@@ -433,11 +433,16 @@ window.toggleMobileView = function(viewName) {
         if(protocol) protocol.style.display = 'block';
     }
     
-    // 4. CLEANUP
+    // Close sidebar & update icons
     const sidebar = document.querySelector('.layout-left');
     if (sidebar) sidebar.classList.remove('mobile-open');
     document.querySelectorAll('.mf-btn').forEach(btn => btn.classList.remove('active'));
+    
+    // Highlight active button (optional visual polish)
+    // You can add logic here to add .active class to the clicked button if you want
 };
+
+// HELPER: Restore Chat to Desktop on Resize
 // (Prevents chat from getting stuck in mobile view if user goes back to desktop)
 window.addEventListener('resize', () => {
     if (window.innerWidth > 768) {
