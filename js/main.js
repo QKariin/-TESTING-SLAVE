@@ -639,54 +639,15 @@ window.syncMobileDashboard = function() {
         document.body.appendChild(footer);
     }
 
-// 3. RUN (WITH SLIDING FOCUS MODE)
+    // 3. RUN
     window.addEventListener('load', () => { 
         lockVisuals(); 
         buildAppFooter();
-        
-        // --- FOCUS MODE (The Slide Down Fix) ---
-        const input = document.getElementById('chatMsgInput');
-        
-        if (input) {
-            // WHEN TYPING: Slide Footer Down, Drop Input
-            input.addEventListener('focus', () => {
-                const footer = document.getElementById('app-mode-footer');
-                const chatBar = document.querySelector('.chat-footer');
-                
-                if (footer) {
-                    footer.style.transition = "bottom 0.3s ease";
-                    footer.style.bottom = "-200px"; // SEND IT AWAY
-                }
-                if (chatBar) {
-                    chatBar.style.transition = "bottom 0.3s ease";
-                    chatBar.style.bottom = "0px"; // Sit on keyboard
-                }
-            });
-
-            // WHEN DONE: Slide Back Up
-            input.addEventListener('blur', () => {
-                const footer = document.getElementById('app-mode-footer');
-                const chatBar = document.querySelector('.chat-footer');
-                
-                // Small delay to let the keyboard close
-                setTimeout(() => {
-                    if (footer) footer.style.bottom = "0";
-                    if (chatBar) chatBar.style.bottom = "80px";
-                }, 100);
-            });
-        }
-
         // FORCE HOME ON LOAD
         if(window.toggleMobileView) window.toggleMobileView('home'); 
     });
-    
-    // Immediate run
     window.addEventListener('resize', lockVisuals);
-    lockVisuals(); 
-    buildAppFooter();
-    setTimeout(() => {
-        if(window.toggleMobileView) window.toggleMobileView('home');
-    }, 100);
+    lockVisuals(); buildAppFooter();
 })();
 
 // TIMER SYNC (The Twin System)
