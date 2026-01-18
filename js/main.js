@@ -1,4 +1,5 @@
 
+
 // main.js - FINAL COMPLETE VERSION (DESKTOP + MOBILE)
 
 import { CONFIG, URLS, LEVELS, FUNNY_SAYINGS, STREAM_PASSWORDS } from './config.js';
@@ -392,14 +393,14 @@ window.toggleMobileView = function(viewName) {
     const news = document.getElementById('viewNews');
     const protocol = document.getElementById('viewProtocol');
     
-    // 1. HIDE ALL MOBILE VIEWS
+    // Hide All Mobile Views
     const views = [home, history, news, protocol];
     views.forEach(el => { if(el) el.style.display = 'none'; });
 
-    // 2. FORCE HIDE CHAT (Reset)
+    // Special Handling for Chat Visibility
     if (chatCard) chatCard.style.display = 'none';
 
-    // 3. SHOW TARGET
+    // Show Target
     if (viewName === 'home') {
         if(home) {
             home.style.display = 'flex';
@@ -408,14 +409,13 @@ window.toggleMobileView = function(viewName) {
     }
     else if (viewName === 'chat') {
         if(chatCard && mobileApp) {
-            // *** THE FIX: TELEPORT CHAT TO MOBILE APP ***
-            // If the chat is currently inside the hidden Desktop App, move it here.
+            // TELEPORT: Move Chat to Mobile App so it's visible
             if (chatCard.parentElement !== mobileApp) {
                 mobileApp.appendChild(chatCard);
             }
             chatCard.style.display = 'flex';
             
-            // Scroll to bottom
+            // Scroll Fix
             const chatBox = document.getElementById('chatBox');
             if (chatBox) setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
         }
@@ -433,21 +433,24 @@ window.toggleMobileView = function(viewName) {
         if(protocol) protocol.style.display = 'block';
     }
     
-    // 4. CLEANUP
+    // Close sidebar & update icons
     const sidebar = document.querySelector('.layout-left');
     if (sidebar) sidebar.classList.remove('mobile-open');
     document.querySelectorAll('.mf-btn').forEach(btn => btn.classList.remove('active'));
+    
+    // Highlight active button (optional visual polish)
+    // You can add logic here to add .active class to the clicked button if you want
 };
 
 // HELPER: Restore Chat to Desktop on Resize
-// (Keeps desktop working if you resize the window back up)
+// (Prevents chat from getting stuck in mobile view if user goes back to desktop)
 window.addEventListener('resize', () => {
     if (window.innerWidth > 768) {
         const chatCard = document.getElementById('chatCard');
         const desktopParent = document.getElementById('viewServingTop');
         if (chatCard && desktopParent && chatCard.parentElement !== desktopParent) {
             desktopParent.appendChild(chatCard);
-            chatCard.style.display = 'flex';
+            chatCard.style.display = 'flex'; // Reset display
         }
     }
 });
