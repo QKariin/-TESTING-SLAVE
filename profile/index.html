@@ -40,62 +40,6 @@
         }
         #DESKTOP_APP { display: none !important; }
 
-      /* NO SCROLL LOCK */
-    .mob-frame.no-scroll {
-        overflow: hidden !important; /* Forces static page */
-        justify-content: flex-start; /* Aligns top down */
-        padding-top: 40px; /* Breathing room from top */
-        gap: 20px; /* Space between cards */
-    }
-
-    /* SIDE-BY-SIDE PROFILE ROW */
-    .mob-profile-row {
-        display: flex;
-        flex-direction: row;
-        align-items: center; /* Vertically center image and text */
-        width: 100%;
-        padding: 0 10px;
-        gap: 20px; /* Space between face and text */
-        margin-bottom: 10px;
-    }
-
-    /* RIGHT SIDE TEXT STACK */
-    .mob-profile-data {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start; /* Align Left */
-        justify-content: center;
-    }
-
-    /* HIERARCHY (Top Line) */
-    .mob-rank-text {
-        font-family: 'Orbitron', sans-serif;
-        font-size: 0.7rem;
-        color: #c5a059; /* Gold */
-        letter-spacing: 2px;
-        margin-bottom: 5px;
-        border: 1px solid #c5a059;
-        padding: 2px 8px;
-        background: rgba(0,0,0,0.6);
-    }
-
-    /* NAME (Bottom Line) */
-    .mob-name-static {
-        font-family: 'Cinzel', serif;
-        font-size: 1.8rem;
-        color: white;
-        letter-spacing: 4px;
-        line-height: 1;
-        text-transform: uppercase;
-        text-shadow: 0 0 15px rgba(255,255,255,0.2);
-    }
-
-    /* COMPACT CARDS (To fit on one screen) */
-    .mob-card.compact {
-        margin-bottom: 0;
-        flex-shrink: 0; /* Prevents squishing */
-    }
-
         .mob-frame {
             flex: 1; overflow-y: auto; padding: 30px 20px; padding-bottom: 120px;
             display: flex; flex-direction: column; align-items: center; gap: 25px; width: 100%;
@@ -612,51 +556,52 @@
 <!-- 🟢 MOBILE UNIVERSE (FINAL INTEGRATED LAYOUT) -->
 <div id="MOBILE_APP" style="display:none;">
     
-    <!-- 1. DASHBOARD (STATIC - NO SCROLL) -->
-    <div id="viewMobileHome" class="mob-frame no-scroll" style="display:flex !important; flex-direction:column;">
+    <!-- VIEW 1: RITUAL DASHBOARD (The New Stack) -->
+    <div id="viewMobileHome" class="mob-frame" style="display:flex; flex-direction:column;">
         
-        <!-- HEADER: SIDE-BY-SIDE PROFILE -->
-        <div class="mob-profile-row">
-            
-            <!-- LEFT: FACE -->
-            <div class="mob-hex-wrap">
+        <!-- HEADER -->
+        <div class="mob-header">
+            <div class="mob-hex-wrap large">
                 <img id="mob_profilePic" src="https://static.wixstatic.com/media/ce3e5b_e06c7a2254d848a480eb98107c35e246~mv2.png" class="mob-hex-img">
+                <div id="mob_rankStamp" class="mob-rank-stamp">INITIATE</div>
             </div>
-
-            <!-- RIGHT: DATA STACK -->
-            <div class="mob-profile-data">
-                <div id="mob_rankStamp" class="mob-rank-text">INITIATE</div>
-                <div id="mob_slaveName" class="mob-name-static">SLAVE</div>
-            </div>
+            <div id="mob_slaveName" class="mob-name-large">SLAVE</div>
         </div>
 
-        <!-- CARD 1: DEVOTION -->
-        <div class="mob-card devotion-card compact">
-            <div class="mob-kneel-zone" 
+        <!-- CARD 1: THE EXECUTION BAR (Wide Kneel Button) -->
+        <div class="mob-section-wrapper">
+            <!-- Added mob-kneel-zone class for JS -->
+            <div class="mob-kneel-bar mob-kneel-zone" 
                  onmousedown="if(window.handleHoldStart) window.handleHoldStart(event)" 
                  onmouseup="if(window.handleHoldEnd) window.handleHoldEnd(event)" 
                  onmouseleave="if(window.handleHoldEnd) window.handleHoldEnd(event)" 
                  ontouchstart="if(window.handleHoldStart) window.handleHoldStart(event)" 
                  ontouchend="if(window.handleHoldEnd) window.handleHoldEnd(event)">
-                <div class="mob-kneel-inner">
-                    <span class="kneel-icon">◈</span>
-                    <span id="mob_kneelText" class="kneel-text kneel-label">HOLD</span>
+                
+                <div id="mob_kneelFill" class="mob-bar-fill"></div>
+                <div class="mob-bar-content">
+                    <span class="kneel-icon-sm">◈</span>
+                    <!-- Added kneel-label class for JS -->
+                    <span id="mob_kneelText" class="kneel-text kneel-label">HOLD TO KNEEL</span>
                 </div>
-                <div id="mob_kneelFill" class="mob-kneel-fill"></div>
-            </div>
-
-            <div class="mob-grid-zone">
-                <div class="mob-grid-label">CYCLE PROGRESS</div>
-                <div id="mob_streakGrid" class="mob-streak-grid"></div>
             </div>
         </div>
 
-        <!-- CARD 2: OPERATIONS -->
-        <div class="mob-card operations-card compact">
+        <!-- CARD 2: THE HEATMAP (24 Squares) -->
+        <div class="mob-section-wrapper">
+            <div class="mob-grid-label-center">CYCLE PROGRESS</div>
+            <div id="mob_streakGrid" class="mob-streak-strip">
+                <!-- JS Fills this -->
+            </div>
+        </div>
+
+        <!-- CARD 3: THE TASK DECK -->
+        <div class="mob-card operations-card">
             <div class="op-status-row">
                 <div id="mob_statusLight" class="status-light red"></div>
                 <div id="mob_statusText" class="status-text">UNPRODUCTIVE</div>
             </div>
+            
             <div class="op-action-row">
                 <button id="mob_btnRequest" class="mob-action-btn" onclick="if(window.getRandomTask) window.getRandomTask()">REQUEST PROTOCOL</button>
                 <div id="mob_activeTimer" class="mob-timer hidden">
@@ -664,8 +609,6 @@
                 </div>
             </div>
         </div>
-
-    </div>
 
         <!-- MOBILE REWARD OVERLAY (Twin) -->
         <div id="mobKneelReward" class="mob-reward-overlay hidden">
