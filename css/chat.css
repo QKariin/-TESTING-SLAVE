@@ -27,6 +27,28 @@
     gap: 15px !important;
 }
 
+/* 1. INPUT AREA (Sits on top of the 80px App Footer) */
+    .chat-footer {
+        position: fixed !important;
+        bottom: 80px !important; /* EXACTLY the height of the App Footer */
+        left: 0 !important;
+        width: 100% !important;
+        z-index: 2147483640 !important;
+        
+        padding: 10px !important;
+        background: #050505 !important; 
+        border-top: 1px solid #222 !important;
+    }
+
+    /* 2. CHAT SCROLL AREA (Leaves room for Footer + Input) */
+    .chat-body-frame {
+        padding: 10px 6px !important;
+        /* 80px (Footer) + ~60px (Input) = 140px safe space */
+        padding-bottom: 140px !important; 
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
 /* Avatar Fix - The "Shit" look stopper */
 .chat-av {
     width: 32px !important;
