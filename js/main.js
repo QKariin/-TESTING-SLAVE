@@ -384,25 +384,25 @@ window.toggleMobileStats = function() {
     }
 };
 
+// 3. MAIN NAVIGATION CONTROLLER (WITH NUCLEAR CHAT FIX)
 window.toggleMobileView = function(viewName) {
     const home = document.getElementById('viewMobileHome');
     const chatCard = document.getElementById('chatCard');
     const mobileApp = document.getElementById('MOBILE_APP');
-    
-    const history = document.getElementById('historySection'); // Desktop Record
-    const mobRecord = document.getElementById('viewMobileRecord'); // Mobile Record (NEW)
-    
+    const history = document.getElementById('historySection');
+    const mobRecord = document.getElementById('viewMobileRecord');
     const news = document.getElementById('viewNews');
     const protocol = document.getElementById('viewProtocol');
     
-    // 1. Hide All Mobile Views (Added mobRecord to this list)
+    // 1. Hide All Standard Mobile Views
     const views = [home, history, mobRecord, news, protocol];
     views.forEach(el => { if(el) el.style.display = 'none'; });
 
-    // Special Handling for Chat Visibility
-    if (chatCard) chatCard.style.display = 'none';
+    // 2. FORCE HIDE CHAT (The Fix)
+    // We use setProperty to override the CSS '!important' that keeps it open
+    if (chatCard) chatCard.style.setProperty('display', 'none', 'important');
 
-    // Show Target
+    // 3. Show Target
     if (viewName === 'home') {
         if(home) {
             home.style.display = 'flex';
@@ -410,24 +410,23 @@ window.toggleMobileView = function(viewName) {
         }
     }
     else if (viewName === 'chat') {
-        // KEEPING YOUR WORKING CHAT LOGIC EXACTLY AS IS
         if(chatCard && mobileApp) {
             if (chatCard.parentElement !== mobileApp) {
                 mobileApp.appendChild(chatCard);
             }
+            // Remove the 'important' none and set to flex
+            chatCard.style.removeProperty('display'); 
             chatCard.style.display = 'flex';
+            
             const chatBox = document.getElementById('chatBox');
             if (chatBox) setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
         }
     }
     else if (viewName === 'record') {
-        // *** THE FIX: OPEN MOBILE VAULT ***
-        if (mobRecord) {
+        if(mobRecord) {
             mobRecord.style.display = 'flex';
             if(window.renderGallery) window.renderGallery();
-        } 
-        // Fallback to desktop view if mobile view missing
-        else if(history) {
+        } else if(history) {
             history.style.display = 'flex';
             if(window.renderGallery) window.renderGallery();
         }
@@ -439,7 +438,7 @@ window.toggleMobileView = function(viewName) {
         if(protocol) protocol.style.display = 'block';
     }
     
-    // Close sidebar & update icons
+    // 4. Cleanup
     const sidebar = document.querySelector('.layout-left');
     if (sidebar) sidebar.classList.remove('mobile-open');
     document.querySelectorAll('.mf-btn').forEach(btn => btn.classList.remove('active'));
