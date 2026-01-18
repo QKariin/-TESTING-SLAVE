@@ -384,30 +384,23 @@ window.toggleMobileStats = function() {
     }
 };
 
-// 3. MAIN NAVIGATION CONTROLLER (FIXED FOR SLAVE RECORD)
+// 3. MAIN NAVIGATION CONTROLLER (WITH CHAT TELEPORT)
 window.toggleMobileView = function(viewName) {
     const home = document.getElementById('viewMobileHome');
-    const chatContainer = document.querySelector('.chat-container');
-    const chatDesktop = document.getElementById('viewServingTop');
-    
-    // THE OLD DESKTOP VIEW (Do not open this on mobile)
-    const history = document.getElementById('historySection'); 
-    
-    // THE NEW MOBILE VAULT (Open this instead)
-    const mobRecord = document.getElementById('viewMobileRecord'); 
-    
+    const chatCard = document.getElementById('chatCard');
+    const mobileApp = document.getElementById('MOBILE_APP');
+    const history = document.getElementById('historySection');
     const news = document.getElementById('viewNews');
     const protocol = document.getElementById('viewProtocol');
     
-    // 1. Hide All
-    const views = [home, history, mobRecord, news, protocol];
+    // Hide All Mobile Views
+    const views = [home, history, news, protocol];
     views.forEach(el => { if(el) el.style.display = 'none'; });
-    
-    // Hide Chat Containers
-    if(chatContainer) chatContainer.style.display = 'none';
-    if(chatDesktop) chatDesktop.style.display = 'none';
 
-    // 2. Show Target
+    // Special Handling for Chat Visibility
+    if (chatCard) chatCard.style.display = 'none';
+
+    // Show Target
     if (viewName === 'home') {
         if(home) {
             home.style.display = 'flex';
@@ -415,17 +408,21 @@ window.toggleMobileView = function(viewName) {
         }
     }
     else if (viewName === 'chat') {
-        if(chatContainer) {
-            chatContainer.style.display = 'flex';
+        if(chatCard && mobileApp) {
+            // TELEPORT: Move Chat to Mobile App so it's visible
+            if (chatCard.parentElement !== mobileApp) {
+                mobileApp.appendChild(chatCard);
+            }
+            chatCard.style.display = 'flex';
+            
+            // Scroll Fix
             const chatBox = document.getElementById('chatBox');
             if (chatBox) setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
         }
     }
     else if (viewName === 'record') {
-        // *** FIX: OPEN MOBILE RECORD, NOT DESKTOP ***
-        if(mobRecord) {
-            mobRecord.style.display = 'flex';
-            // Trigger the gallery renderer to fill the mobile slots
+        if(history) {
+            history.style.display = 'flex';
             if(window.renderGallery) window.renderGallery();
         }
     }
@@ -436,10 +433,13 @@ window.toggleMobileView = function(viewName) {
         if(protocol) protocol.style.display = 'block';
     }
     
-    // 3. Cleanup
+    // Close sidebar & update icons
     const sidebar = document.querySelector('.layout-left');
     if (sidebar) sidebar.classList.remove('mobile-open');
     document.querySelectorAll('.mf-btn').forEach(btn => btn.classList.remove('active'));
+    
+    // Highlight active button (optional visual polish)
+    // You can add logic here to add .active class to the clicked button if you want
 };
 
 // HELPER: Restore Chat to Desktop on Resize
