@@ -374,6 +374,7 @@ function resetTributeFlow() { selectedReason = ""; selectedNote = ""; selectedIt
 // =========================================
 
 // 1. STATS TOGGLE (The Expand Button)
+// 5. STATS EXPANDER (DRAWER LOGIC)
 window.toggleMobileStats = function() {
     const drawer = document.getElementById('mobStatsContent');
     const arrow = document.getElementById('mobStatsArrow');
