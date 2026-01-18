@@ -121,29 +121,40 @@ function renderStickerFilters() {
 // REPLACE your renderGallery function with this:
 export async function renderGallery() {
     if (!galleryData) return;
-    console.log("Rendering gallery with", galleryData.length, "items. Active filter:", activeStickerFilter);
-
+    
+    // Desktop Targets
     const gridFailed = document.getElementById('gridFailed'); 
     const gridOkay = document.getElementById('gridOkay');     
     const historySection = document.getElementById('historySection');
     
-    // Altar Elements
     const slot1 = { card: document.getElementById('altarSlot1'), img: document.getElementById('imgSlot1'), ref: document.getElementById('reflectSlot1') };
     const slot2 = { card: document.getElementById('altarSlot2'), img: document.getElementById('imgSlot2') };
     const slot3 = { card: document.getElementById('altarSlot3'), img: document.getElementById('imgSlot3') };
 
-    if (!gridFailed || !gridOkay || !slot1.card) return;
+    // Mobile Home Targets (The Dashboard)
+    const mob1 = document.getElementById('mobImgSlot1');
+    const mob2 = document.getElementById('mobImgSlot2');
+    const mob3 = document.getElementById('mobImgSlot3');
 
+    // Mobile Record Targets (The Vertical Vault)
+    const rec1 = document.getElementById('mobRec_Slot1');
+    const rec2 = document.getElementById('mobRec_Slot2');
+    const rec3 = document.getElementById('mobRec_Slot3');
+    const recGrid = document.getElementById('mobRec_Grid');
+
+    if (!gridFailed || !gridOkay) return;
+
+    // Reset Grids
     gridFailed.innerHTML = "";
     gridOkay.innerHTML = "";
+    if(recGrid) recGrid.innerHTML = "";
 
     const allItems = getGalleryList(); 
 
     // --- SOLO MODE CHECK ---
-    if (allItems.length === 0) {
-        historySection.classList.add('solo-mode');
-    } else {
-        historySection.classList.remove('solo-mode');
+    if (historySection) {
+        if (allItems.length === 0) historySection.classList.add('solo-mode');
+        else historySection.classList.remove('solo-mode');
     }
 
     // --- 1. TOP 3 (THE ALTAR) - PARALLEL LOADING ---
@@ -155,91 +166,111 @@ export async function renderGallery() {
         .sort((a, b) => getPoints(b) - getPoints(a))
         .slice(0, 3);
 
-    // Load altar images in parallel
-    const altarPromises = bestOf.map((item, idx) => 
-        getSignedUrl(getThumbnail(getOptimizedUrl(item.proofUrl || item.media, idx === 0 ? 400 : 300)))
-    );
-    const altarThumbs = await Promise.all(altarPromises);
+    // Helper to get thumbnails
+    const getThumb = async (item, size) => {
+        return await getSignedUrl(getThumbnail(getOptimizedUrl(item.proofUrl || item.media, size)));
+    };
 
-    // Center
-    slot1.card.style.display = 'flex';
+    // --- RANK 1 (Center) ---
     if (bestOf[0]) {
-        slot1.img.src = altarThumbs[0];
-        if(slot1.ref) slot1.ref.src = altarThumbs[0];
+        let thumb = await getThumb(bestOf[0], 400);
         let realIndex = allItems.indexOf(bestOf[0]);
-        slot1.card.onclick = async () => {await window.openHistoryModal(realIndex);};
-        slot1.img.style.filter = "none";
+
+        // Desktop
+        if(slot1.card) {
+            slot1.card.style.display = 'flex';
+            slot1.img.src = thumb;
+            if(slot1.ref) slot1.ref.src = thumb;
+            slot1.card.onclick = () => window.openHistoryModal(realIndex);
+            slot1.img.style.filter = "none";
+        }
+        // Mobile Home
+        if(mob1) { mob1.src = thumb; mob1.onclick = () => window.openHistoryModal(realIndex); }
+        // Mobile Record
+        if(rec1) { rec1.src = thumb; rec1.onclick = () => window.openHistoryModal(realIndex); }
     } else {
-        slot1.img.src = IMG_QUEEN_MAIN;
-        if(slot1.ref) slot1.ref.src = IMG_QUEEN_MAIN;
-        slot1.card.onclick = null;
-        slot1.img.style.filter = "grayscale(30%)"; 
+        if(slot1.card) { slot1.img.src = IMG_QUEEN_MAIN; if(slot1.ref) slot1.ref.src = IMG_QUEEN_MAIN; }
+        if(mob1) mob1.src = IMG_QUEEN_MAIN;
+        if(rec1) rec1.src = IMG_QUEEN_MAIN;
     }
 
-    // Left
-    slot2.card.style.display = 'flex';
+    // --- RANK 2 (Left) ---
     if (bestOf[1]) {
-        slot2.img.src = altarThumbs[1];
+        let thumb = await getThumb(bestOf[1], 300);
         let realIndex = allItems.indexOf(bestOf[1]);
-        slot2.card.onclick = async () => {await window.openHistoryModal(realIndex);};
+        if(slot2.card) { slot2.card.style.display = 'flex'; slot2.img.src = thumb; slot2.card.onclick = () => window.openHistoryModal(realIndex); }
+        if(mob2) { mob2.src = thumb; mob2.onclick = () => window.openHistoryModal(realIndex); }
+        if(rec2) { rec2.src = thumb; rec2.onclick = () => window.openHistoryModal(realIndex); }
     } else {
-        slot2.img.src = IMG_STATUE_SIDE;
-        slot2.card.onclick = null;
+        if(slot2.img) slot2.img.src = IMG_STATUE_SIDE;
+        if(mob2) mob2.src = IMG_STATUE_SIDE;
+        if(rec2) rec2.src = IMG_STATUE_SIDE;
     }
 
-    // Right
-    slot3.card.style.display = 'flex';
+    // --- RANK 3 (Right) ---
     if (bestOf[2]) {
-        slot3.img.src = altarThumbs[2];
+        let thumb = await getThumb(bestOf[2], 300);
         let realIndex = allItems.indexOf(bestOf[2]);
-        slot3.card.onclick = async () => {await window.openHistoryModal(realIndex);};
+        if(slot3.card) { slot3.card.style.display = 'flex'; slot3.img.src = thumb; slot3.card.onclick = () => window.openHistoryModal(realIndex); }
+        if(mob3) { mob3.src = thumb; mob3.onclick = () => window.openHistoryModal(realIndex); }
+        if(rec3) { rec3.src = thumb; rec3.onclick = () => window.openHistoryModal(realIndex); }
     } else {
-        slot3.img.src = IMG_STATUE_SIDE;
-        slot3.card.onclick = null;
+        if(slot3.img) slot3.img.src = IMG_STATUE_SIDE;
+        if(mob3) mob3.src = IMG_STATUE_SIDE;
+        if(rec3) rec3.src = IMG_STATUE_SIDE;
     }
 
-    // --- 2. MIDDLE (ARCHIVE) - BATCH DOM UPDATES ---
+    // --- 2. MIDDLE (ARCHIVE) - SYNC DESKTOP & MOBILE GRID ---
     const middleItems = allItems.filter(item => {
         if (bestOf.includes(item)) return false; 
         const s = (item.status || "").toLowerCase();
         return !s.includes('rej') && !s.includes('fail');
     });
 
-    let middleHtml = '';
+    let desktopHtml = '';
+    let mobileHtml = '';
+
     if (middleItems.length === 0 && allItems.length > 0) {
         for(let i=0; i<6; i++) {
-            middleHtml += `<div class="item-placeholder-slot"><img src="${IMG_MIDDLE_EMPTY}"></div>`;
+            desktopHtml += `<div class="item-placeholder-slot"><img src="${IMG_MIDDLE_EMPTY}"></div>`;
         }
-        gridOkay.innerHTML = middleHtml;
     } else if (middleItems.length > 0) {
-        // Load all middle images in parallel
         const middlePromises = middleItems.map(item => 
             getSignedUrl(getOptimizedUrl(item.proofUrl || item.media, 300))
         );
         const middleThumbs = await Promise.all(middlePromises);
         
-        // Build HTML string all at once
         for (let i = 0; i < middleItems.length; i++) {
-            const item = middleItems[i];
             const thumb = middleThumbs[i];
-            const realIndex = allItems.indexOf(item);
-            const isPending = (item.status || "").toLowerCase().includes('pending');
+            const realIndex = allItems.indexOf(middleItems[i]);
+            const isPending = (middleItems[i].status || "").toLowerCase().includes('pending');
             const overlay = isPending ? `<div class="pending-overlay"><div class="pending-icon">⏳</div></div>` : ``;
+            const mobBadge = isPending ? `<div class="mob-pending-badge">⏳</div>` : ``;
 
-            middleHtml += `
+            // Desktop Blueprints
+            desktopHtml += `
                 <div class="item-blueprint" onclick="window.openHistoryModal(${realIndex})">
                     <img class="blueprint-img" src="${thumb}" loading="lazy">
-                    <div class="bp-corner bl-tl"></div>
-                    <div class="bp-corner bl-tr"></div>
-                    <div class="bp-corner bl-bl"></div>
-                    <div class="bp-corner bl-br"></div>
+                    <div class="bp-corner bl-tl"></div><div class="bp-corner bl-tr"></div>
+                    <div class="bp-corner bl-bl"></div><div class="bp-corner bl-br"></div>
                     ${overlay}
                 </div>`;
+            
+            // Mobile Grid Squares
+            mobileHtml += `
+                <div class="mob-archive-item" onclick="window.openHistoryModal(${realIndex})">
+                    <img class="mob-archive-img" src="${thumb}" loading="lazy">
+                    ${mobBadge}
+                </div>`;
         }
-        gridOkay.innerHTML = middleHtml;
     }
+    
+    // Inject HTML
+    gridOkay.innerHTML = desktopHtml;
+    if(recGrid) recGrid.innerHTML = mobileHtml;
 
-    // --- 3. BOTTOM (HEAP) - BATCH DOM UPDATES ---
+
+    // --- 3. BOTTOM (HEAP) - DESKTOP ONLY ---
     const failedItems = allItems.filter(item => {
         const s = (item.status || "").toLowerCase();
         return s.includes('rej') || s.includes('fail');
@@ -250,19 +281,15 @@ export async function renderGallery() {
         for(let i=0; i<6; i++) {
             failedHtml += `<div class="item-placeholder-slot"><img src="${IMG_BOTTOM_EMPTY}"></div>`;
         }
-        gridFailed.innerHTML = failedHtml;
     } else if (failedItems.length > 0) {
-        // Load all failed images in parallel
         const failedPromises = failedItems.map(item => 
             getSignedUrl(getOptimizedUrl(item.proofUrl || item.media, 300))
         );
         const failedThumbs = await Promise.all(failedPromises);
         
-        // Build HTML string all at once
         for (let i = 0; i < failedItems.length; i++) {
-            const item = failedItems[i];
             const thumb = failedThumbs[i];
-            const realIndex = allItems.indexOf(item);
+            const realIndex = allItems.indexOf(failedItems[i]);
             
             failedHtml += `
                 <div class="item-trash" onclick="window.openHistoryModal(${realIndex})">
@@ -270,8 +297,8 @@ export async function renderGallery() {
                     <div class="trash-stamp">DENIED</div>
                 </div>`;
         }
-        gridFailed.innerHTML = failedHtml;
     }
+    gridFailed.innerHTML = failedHtml;
 }
 
 // --- CRITICAL FIX: EXPORT THIS EMPTY FUNCTION TO PREVENT CRASH ---
