@@ -459,12 +459,21 @@ window.toggleMobileView = function(viewName) {
         }
     }
     else if (viewName === 'record') {
-        // *** CRITICAL FIX: Open the Mobile Vault ***
-        if (mobRecord) {
+
+        if(mobRecord) {
+
             mobRecord.style.display = 'flex';
-            // Trigger the gallery to paint the images
+
             if(window.renderGallery) window.renderGallery();
-        } 
+
+        } else if(history) {
+
+            history.style.display = 'flex';
+
+            if(window.renderGallery) window.renderGallery();
+
+        }
+
     }
     else if (viewName === 'chat') {
         if(chatCard && mobileApp) {
