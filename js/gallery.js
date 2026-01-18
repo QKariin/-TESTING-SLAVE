@@ -1,4 +1,4 @@
-// gallery.js - FINAL (TRILOGY + MOBILE HOME + MOBILE VAULT)
+// gallery.js - FINAL FIXED VERSION (NO CRASH)
 import { mediaType } from './media.js';
 import { 
     galleryData, 
@@ -17,6 +17,9 @@ import { triggerSound } from './utils.js';
 import { getOptimizedUrl, getThumbnail, getSignedUrl } from './media.js';
 
 // STICKERS
+const STICKER_APPROVE = "https://static.wixstatic.com/media/ce3e5b_a19d81b7f45c4a31a4aeaf03a41b999f~mv2.png";
+const STICKER_DENIED = "https://static.wixstatic.com/media/ce3e5b_63a0c8320e29416896d071d5b46541d7~mv2.png";
+const PLACEHOLDER_IMG = "https://static.wixstatic.com/media/ce3e5b_1bd27ba758ce465fa89a36d70a68f355~mv2.png";
 const IMG_QUEEN_MAIN = "https://static.wixstatic.com/media/ce3e5b_5fc6a144908b493b9473757471ec7ebb~mv2.png";
 const IMG_STATUE_SIDE = "https://static.wixstatic.com/media/ce3e5b_5424edc9928d49e5a3c3a102cb4e3525~mv2.png";
 const IMG_MIDDLE_EMPTY = "https://static.wixstatic.com/media/ce3e5b_1628753a2b5743f1bef739cc392c67b5~mv2.webp";
@@ -24,13 +27,13 @@ const IMG_BOTTOM_EMPTY = "https://static.wixstatic.com/media/ce3e5b_33f53711eece
 
 let activeStickerFilter = "ALL";
 
-// --- HELPERS ---
+// --- HELPER: POINTS ---
 function getPoints(item) {
     let val = item.points || item.score || item.value || item.amount || item.reward || 0;
     return Number(val);
 }
 
-// NORMALIZE DATA
+// --- HELPER: NORMALIZE DATA ---
 let normalizedCache = new Set();
 function normalizeGalleryItem(item) {
     const cacheKey = item._id || item._createdDate;
@@ -75,21 +78,21 @@ function getGalleryList() {
 export async function renderGallery() {
     if (!galleryData) return;
     
-    // Desktop Targets
     const gridFailed = document.getElementById('gridFailed'); 
     const gridOkay = document.getElementById('gridOkay');     
     const historySection = document.getElementById('historySection');
     
+    // Desktop Altar Elements
     const slot1 = { card: document.getElementById('altarSlot1'), img: document.getElementById('imgSlot1'), ref: document.getElementById('reflectSlot1') };
     const slot2 = { card: document.getElementById('altarSlot2'), img: document.getElementById('imgSlot2') };
     const slot3 = { card: document.getElementById('altarSlot3'), img: document.getElementById('imgSlot3') };
 
-    // Mobile Home Targets
+    // Mobile Home Targets (The Sync Logic)
     const mob1 = document.getElementById('mobImgSlot1');
     const mob2 = document.getElementById('mobImgSlot2');
     const mob3 = document.getElementById('mobImgSlot3');
 
-    // Mobile Record Targets (THE NEW VAULT)
+    // Mobile Record Targets (The New Vault)
     const rec1 = document.getElementById('mobRec_Slot1');
     const rec2 = document.getElementById('mobRec_Slot2');
     const rec3 = document.getElementById('mobRec_Slot3');
@@ -99,7 +102,7 @@ export async function renderGallery() {
 
     gridFailed.innerHTML = "";
     gridOkay.innerHTML = "";
-    if(recGrid) recGrid.innerHTML = ""; // Clear mobile grid
+    if(recGrid) recGrid.innerHTML = "";
 
     const allItems = getGalleryList(); 
 
@@ -121,7 +124,7 @@ export async function renderGallery() {
         return await getSignedUrl(getThumbnail(getOptimizedUrl(item.proofUrl || item.media, size)));
     };
 
-    // --- RANK 1 ---
+    // --- RANK 1 (Center) ---
     if (bestOf[0]) {
         let thumb = await getThumb(bestOf[0], 400);
         let realIndex = allItems.indexOf(bestOf[0]);
@@ -144,7 +147,7 @@ export async function renderGallery() {
         if(rec1) rec1.src = IMG_QUEEN_MAIN;
     }
 
-    // --- RANK 2 ---
+    // --- RANK 2 (Left) ---
     if (bestOf[1]) {
         let thumb = await getThumb(bestOf[1], 300);
         let realIndex = allItems.indexOf(bestOf[1]);
@@ -157,7 +160,7 @@ export async function renderGallery() {
         if(rec2) rec2.src = IMG_STATUE_SIDE;
     }
 
-    // --- RANK 3 ---
+    // --- RANK 3 (Right) ---
     if (bestOf[2]) {
         let thumb = await getThumb(bestOf[2], 300);
         let realIndex = allItems.indexOf(bestOf[2]);
@@ -170,8 +173,7 @@ export async function renderGallery() {
         if(rec3) rec3.src = IMG_STATUE_SIDE;
     }
 
-
-    // --- 2. MIDDLE (ARCHIVE) & MOBILE GRID ---
+    // --- 2. MIDDLE (ARCHIVE) ---
     const middleItems = allItems.filter(item => {
         if (bestOf.includes(item)) return false; 
         const s = (item.status || "").toLowerCase();
@@ -211,15 +213,15 @@ export async function renderGallery() {
                 </div>`;
         }
     } else {
-        // Desktop Placeholders
+        // Placeholders
         for(let i=0; i<6; i++) desktopArchiveHtml += `<div class="item-placeholder-slot"><img src="${IMG_MIDDLE_EMPTY}"></div>`;
     }
     
-    // Inject HTML
+    // Inject
     gridOkay.innerHTML = desktopArchiveHtml;
     if(recGrid) recGrid.innerHTML = mobileArchiveHtml;
 
-    // --- 3. BOTTOM (HEAP) - Desktop Only ---
+    // --- 3. BOTTOM (HEAP) ---
     const failedItems = allItems.filter(item => {
         const s = (item.status || "").toLowerCase();
         return s.includes('rej') || s.includes('fail');
