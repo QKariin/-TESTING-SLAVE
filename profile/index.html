@@ -617,17 +617,13 @@
         <div style="height: 120px;"></div>
     </div>
 
-    <!-- 2. MOBILE RECORD (HORIZONTAL STRIPS) -->
-    <div id="viewMobileRecord" class="mob-frame" style="display:none; flex-direction:column; padding-left:0; padding-right:0;">
+    <!-- 2. MOBILE RECORD (HEADLESS VAULT) -->
+    <div id="viewMobileRecord" class="mob-frame" style="display:none; flex-direction:column; padding-left:0; padding-right:0; padding-top:5px;">
         
-        <!-- HEADER -->
-        <div class="mob-header">
-            <div class="mob-name" style="margin-top:20px;">SLAVE RECORD</div>
-        </div>
-
-        <!-- SECTION 1: THE ALTAR (Top 3 Pyramid) -->
-        <div class="mob-altar-container">
-            <div class="mob-grid-label-center">HIGHEST MERIT</div>
+        <!-- TOP SECTION: THE ALTAR (No Header, starts at top) -->
+        <div class="mob-altar-container" style="margin-top: 0;">
+            <div class="mob-grid-label-center" style="margin-top: 5px;">HIGHEST MERIT</div>
+            
             <div class="mob-pyramid-stage">
                 <div class="mob-idol side"><img id="mobRec_Slot2" src=""><div class="mob-rank-badge">II</div></div>
                 <div class="mob-idol side right"><img id="mobRec_Slot3" src=""><div class="mob-rank-badge">III</div></div>
@@ -635,15 +631,14 @@
             </div>
         </div>
 
-        <!-- SECTION 2: ARCHIVE (Horizontal Scroll - Normal) -->
-        <div class="mob-section-wrapper" style="margin-top:20px; align-items:flex-start; padding-left:20px;">
+        <!-- SECTION 2: ARCHIVE (Horizontal Scroll) -->
+        <div class="mob-section-wrapper" style="margin-top:10px; align-items:flex-start; padding-left:20px;">
             <div class="mob-grid-label">ACCEPTED PROTOCOLS</div>
-            <!-- Note: ID kept as mobRec_Grid for ease, but logic changes -->
             <div id="mobRec_Grid" class="mob-horiz-scroll"></div>
         </div>
 
-        <!-- SECTION 3: HEAP (Horizontal Scroll - Small) -->
-        <div class="mob-section-wrapper" style="margin-top:20px; align-items:flex-start; padding-left:20px;">
+        <!-- SECTION 3: HEAP (Horizontal Scroll) -->
+        <div class="mob-section-wrapper" style="margin-top:10px; align-items:flex-start; padding-left:20px;">
             <div class="mob-grid-label" style="color:var(--neon-red);">DENIED / FAILED</div>
             <div id="mobRec_Heap" class="mob-horiz-scroll small"></div>
         </div>
