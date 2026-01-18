@@ -40,92 +40,60 @@
         }
         #DESKTOP_APP { display: none !important; }
 
+        /* 1. TIGHTEN THE PAGE FRAME */
         .mob-frame {
-            flex: 1; overflow-y: auto; padding: 30px 20px; padding-bottom: 120px;
-            display: flex; flex-direction: column; align-items: center; gap: 25px; width: 100%;
+            flex: 1;
+            overflow-y: auto;
+            /* Almost zero padding */
+            padding: 5px 4px; 
+            padding-bottom: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px; /* Reduced gap between cards */
+            width: 100%;
         }
 
-      /* --- HEADER IDENTITY (ROYAL CARD) --- */
-        
-        /* 1. THE CARD CONTAINER */
+        /* 2. THE CARD (NOW A COLUMN STACK) */
         .mob-profile-card {
-            background: rgba(10, 10, 10, 0.8); /* Dark Glass */
+            background: rgba(10, 10, 10, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
-            margin: 15px 5px 5px 5px; /* 5px from sides */
-            padding: 15px 10px;
+            margin: 10px 2px 0 2px; /* Tight margins */
+            padding: 15px 10px 10px 10px; /* Padding for internal content */
             
             display: flex;
-            flex-direction: row;
+            flex-direction: column; /* Stack Top Row and Button */
             align-items: center;
-            justify-content: space-between;
-            position: relative;
             box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
         }
 
-        /* 2. THE DIAMOND (Narrower Hexagon) */
-        .mob-visual-col {
-            display: flex; flex-direction: column; align-items: center;
-            width: 40%; /* Fixed width for visual column */
+        /* NEW: Wrapper for the Side-by-Side Content */
+        .mob-card-top {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px; /* Space above the button */
         }
 
-        .mob-hex-wrap {
-            width: 85px; /* Narrower width */
-            height: 110px; /* Taller height = Diamond look */
-            position: relative;
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            background: linear-gradient(135deg, #c5a059, #444);
-            padding: 2px;
-            filter: drop-shadow(0 0 10px rgba(197, 160, 89, 0.3));
-        }
-
-        .mob-hex-img {
-            width: 100%; height: 100%; object-fit: cover; background: #111;
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-        }
-
-        /* 3. RANK BANNER */
-        .mob-rank-banner {
-            margin-top: -12px;
-            background: linear-gradient(90deg, #b88a44, #eebf63, #b88a44);
-            color: #000; font-family: 'Cinzel', serif; font-weight: 700; font-size: 0.6rem;
-            padding: 3px 10px; border: 1px solid #fff; z-index: 10;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.8);
-            text-transform: uppercase; white-space: nowrap;
-        }
-
-        /* 4. RIGHT DATA STACK */
-        .mob-data-col {
-            display: flex; flex-direction: column; align-items: center;
-            width: 60%; /* Takes remaining space */
-            gap: 12px;
-        }
-
-        .mob-name-static {
-            font-family: 'Cinzel', serif; font-size: 1.8rem; color: white;
-            line-height: 1; text-transform: uppercase; text-align: center;
-            text-shadow: 0 0 10px rgba(255,255,255,0.2);
-        }
-
-        .mob-stat-row { display: flex; align-items: center; gap: 15px; }
-        .stat-pair { display: flex; flex-direction: column; align-items: center; }
-        .stat-val { font-family: 'Cinzel', serif; font-size: 1.4rem; color: #e0d0b0; line-height: 1; }
-        .stat-lbl { font-family: 'Orbitron', sans-serif; font-size: 0.5rem; color: #666; letter-spacing: 2px; margin-top: 2px; }
-        .stat-divider-vert { width: 1px; height: 25px; background: rgba(255,255,255,0.2); }
-
-        /* 5. GHOST BUTTON (60% Opacity) */
+        /* 3. BUTTON (FULL WIDTH, GREY GHOST) */
         .mob-stats-toggle-btn {
+            width: 100%;
             background: transparent;
-            border: 1px solid #c5a059;
-            color: #c5a059;
-            opacity: 0.6;
+            border: 1px solid rgba(136, 136, 136, 0.3); /* Dim Grey Border */
+            color: #888; /* Grey Text */
+            opacity: 0.7;
             
-            font-family: 'Cinzel', serif; font-weight: 700; font-size: 0.7rem;
-            padding: 6px 15px; cursor: pointer; letter-spacing: 1px;
-            display: flex; align-items: center; gap: 6px;
+            font-family: 'Cinzel', serif; font-weight: 700; font-size: 0.75rem;
+            padding: 8px 0; /* Vertical padding */
+            cursor: pointer; letter-spacing: 2px;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
             transition: 0.3s;
+            border-radius: 4px;
         }
-        .mob-stats-toggle-btn:active { opacity: 1; background: rgba(197, 160, 89, 0.1); }
+        .mob-stats-toggle-btn:active { opacity: 1; border-color: #fff; color: #fff; }
 
     /* DRAWER ANIMATION */
     .mob-stats-drawer {
@@ -641,38 +609,44 @@
     
    <div id="viewMobileHome" class="mob-frame no-scroll" style="display:flex !important; flex-direction:column;">
         
-        <!-- HEADER: ROYAL CARD LAYOUT -->
         <!-- HEADER: ROYAL CARD -->
         <div class="mob-profile-card">
             
-            <!-- LEFT: DIAMOND + BANNER -->
-            <div class="mob-visual-col">
-                <div class="mob-hex-wrap">
-                    <img id="mob_profilePic" src="https://static.wixstatic.com/media/ce3e5b_e06c7a2254d848a480eb98107c35e246~mv2.png" class="mob-hex-img">
-                </div>
-                <div id="mob_rankStamp" class="mob-rank-banner">INITIATE</div>
-            </div>
-
-            <!-- RIGHT: NAME & STATS -->
-            <div class="mob-data-col">
-                <div id="mob_slaveName" class="mob-name-static">SLAVE</div>
+            <!-- TOP ROW: FACE + DATA -->
+            <div class="mob-card-top">
                 
-                <div class="mob-stat-row">
-                    <div class="stat-pair">
-                        <span class="stat-val" id="mobPoints">0</span>
-                        <span class="stat-lbl">MERIT</span>
+                <!-- LEFT: DIAMOND + BANNER -->
+                <div class="mob-visual-col">
+                    <div class="mob-hex-wrap">
+                        <img id="mob_profilePic" src="https://static.wixstatic.com/media/ce3e5b_e06c7a2254d848a480eb98107c35e246~mv2.png" class="mob-hex-img">
                     </div>
-                    <div class="stat-divider-vert"></div>
-                    <div class="stat-pair">
-                        <span class="stat-val" id="mobCoins">0</span>
-                        <span class="stat-lbl">NET</span>
-                    </div>
+                    <div id="mob_rankStamp" class="mob-rank-banner">INITIATE</div>
                 </div>
 
-                <div class="mob-stats-toggle-btn" onclick="toggleMobileStats()">
-                    SLAVE STATS <span id="mobStatsArrow">▼</span>
+                <!-- RIGHT: NAME & STATS -->
+                <div class="mob-data-col">
+                    <div id="mob_slaveName" class="mob-name-static">SLAVE</div>
+                    
+                    <div class="mob-stat-row">
+                        <div class="stat-pair">
+                            <span class="stat-val gray" id="mobPoints">0</span>
+                            <span class="stat-lbl">MERIT</span>
+                        </div>
+                        <div class="stat-divider-vert"></div>
+                        <div class="stat-pair">
+                            <span class="stat-val gold-dim" id="mobCoins">0</span>
+                            <span class="stat-lbl">NET</span>
+                        </div>
+                    </div>
                 </div>
+            
+            </div> <!-- End Top Row -->
+
+            <!-- BOTTOM ROW: FULL WIDTH BUTTON -->
+            <div class="mob-stats-toggle-btn" onclick="toggleMobileStats()">
+                SLAVE STATS <span id="mobStatsArrow">▼</span>
             </div>
+            
         </div>
      
         <!-- CARD 1: THE EXECUTION BAR (Wide Kneel Button) -->
