@@ -1,4 +1,4 @@
-// gallery.js - FINAL FIXED VERSION (NO CRASH)
+// gallery.js - FINAL STABLE VERSION (NO CRASH)
 import { mediaType } from './media.js';
 import { 
     galleryData, 
@@ -17,9 +17,6 @@ import { triggerSound } from './utils.js';
 import { getOptimizedUrl, getThumbnail, getSignedUrl } from './media.js';
 
 // STICKERS
-const STICKER_APPROVE = "https://static.wixstatic.com/media/ce3e5b_a19d81b7f45c4a31a4aeaf03a41b999f~mv2.png";
-const STICKER_DENIED = "https://static.wixstatic.com/media/ce3e5b_63a0c8320e29416896d071d5b46541d7~mv2.png";
-const PLACEHOLDER_IMG = "https://static.wixstatic.com/media/ce3e5b_1bd27ba758ce465fa89a36d70a68f355~mv2.png";
 const IMG_QUEEN_MAIN = "https://static.wixstatic.com/media/ce3e5b_5fc6a144908b493b9473757471ec7ebb~mv2.png";
 const IMG_STATUE_SIDE = "https://static.wixstatic.com/media/ce3e5b_5424edc9928d49e5a3c3a102cb4e3525~mv2.png";
 const IMG_MIDDLE_EMPTY = "https://static.wixstatic.com/media/ce3e5b_1628753a2b5743f1bef739cc392c67b5~mv2.webp";
@@ -27,13 +24,13 @@ const IMG_BOTTOM_EMPTY = "https://static.wixstatic.com/media/ce3e5b_33f53711eece
 
 let activeStickerFilter = "ALL";
 
-// --- HELPER: POINTS ---
+// --- HELPERS ---
 function getPoints(item) {
     let val = item.points || item.score || item.value || item.amount || item.reward || 0;
     return Number(val);
 }
 
-// --- HELPER: NORMALIZE DATA ---
+// NORMALIZE DATA
 let normalizedCache = new Set();
 function normalizeGalleryItem(item) {
     const cacheKey = item._id || item._createdDate;
@@ -74,7 +71,7 @@ function getGalleryList() {
     return items.sort((a, b) => new Date(b._createdDate) - new Date(a._createdDate));
 }
 
-// --- MAIN RENDERER ---
+// --- MAIN RENDERER (THIS IS WHERE THE MAGIC HAPPENS) ---
 export async function renderGallery() {
     if (!galleryData) return;
     
@@ -82,17 +79,17 @@ export async function renderGallery() {
     const gridOkay = document.getElementById('gridOkay');     
     const historySection = document.getElementById('historySection');
     
-    // Desktop Altar Elements
+    // Desktop Targets
     const slot1 = { card: document.getElementById('altarSlot1'), img: document.getElementById('imgSlot1'), ref: document.getElementById('reflectSlot1') };
     const slot2 = { card: document.getElementById('altarSlot2'), img: document.getElementById('imgSlot2') };
     const slot3 = { card: document.getElementById('altarSlot3'), img: document.getElementById('imgSlot3') };
 
-    // Mobile Home Targets (The Sync Logic)
+    // Mobile Targets (SYNC LOGIC IS HERE NOW)
     const mob1 = document.getElementById('mobImgSlot1');
     const mob2 = document.getElementById('mobImgSlot2');
     const mob3 = document.getElementById('mobImgSlot3');
 
-    // Mobile Record Targets (The New Vault)
+    // Mobile Record Targets (Vault)
     const rec1 = document.getElementById('mobRec_Slot1');
     const rec2 = document.getElementById('mobRec_Slot2');
     const rec3 = document.getElementById('mobRec_Slot3');
@@ -137,9 +134,9 @@ export async function renderGallery() {
             slot1.card.onclick = () => window.openHistoryModal(realIndex);
             slot1.img.style.filter = "none";
         }
-        // Mobile Home
+        // Mobile Home Sync
         if(mob1) { mob1.src = thumb; mob1.onclick = () => window.openHistoryModal(realIndex); }
-        // Mobile Record
+        // Mobile Record Sync
         if(rec1) { rec1.src = thumb; rec1.onclick = () => window.openHistoryModal(realIndex); }
     } else {
         if(slot1.card) { slot1.img.src = IMG_QUEEN_MAIN; if(slot1.ref) slot1.ref.src = IMG_QUEEN_MAIN; }
@@ -180,7 +177,6 @@ export async function renderGallery() {
         return !s.includes('rej') && !s.includes('fail');
     });
 
-    // BATCH RENDER STRINGS
     let desktopArchiveHtml = '';
     let mobileArchiveHtml = '';
 
@@ -196,7 +192,7 @@ export async function renderGallery() {
             const overlay = isPending ? `<div class="pending-overlay"><div class="pending-icon">⏳</div></div>` : ``;
             const mobBadge = isPending ? `<div class="mob-pending-badge">⏳</div>` : ``;
 
-            // Desktop Blueprints
+            // Desktop
             desktopArchiveHtml += `
                 <div class="item-blueprint" onclick="window.openHistoryModal(${realIndex})">
                     <img class="blueprint-img" src="${thumb}" loading="lazy">
@@ -205,7 +201,7 @@ export async function renderGallery() {
                     ${overlay}
                 </div>`;
             
-            // Mobile Grid Squares
+            // Mobile (New)
             mobileArchiveHtml += `
                 <div class="mob-archive-item" onclick="window.openHistoryModal(${realIndex})">
                     <img class="mob-archive-img" src="${thumb}" loading="lazy">
@@ -213,11 +209,9 @@ export async function renderGallery() {
                 </div>`;
         }
     } else {
-        // Placeholders
         for(let i=0; i<6; i++) desktopArchiveHtml += `<div class="item-placeholder-slot"><img src="${IMG_MIDDLE_EMPTY}"></div>`;
     }
     
-    // Inject
     gridOkay.innerHTML = desktopArchiveHtml;
     if(recGrid) recGrid.innerHTML = mobileArchiveHtml;
 
@@ -415,4 +409,5 @@ window.loadMoreHistory = loadMoreHistory;
 window.setGalleryFilter = function(filterType) {
     activeStickerFilter = filterType;
     renderGallery(); 
+    console.log("render render", filterType);
 };
