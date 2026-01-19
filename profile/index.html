@@ -282,14 +282,51 @@
         .kneel-text { font-family: 'Orbitron'; font-family: 'Cinzel', serif; letter-spacing: 3px; color: #ccc; }
       
 
-        /* 3. HEATMAP STRIP */
-        .mob-grid-label-center { font-size: 0.4rem; color: #555; letter-spacing: 2px; top: 50px; margin-bottom: 5px; }
+       /* 24-HOUR TIMELINE GRID */
         .mob-streak-strip {
-            display: grid; grid-template-columns: repeat(12, 1fr); /* 2 Rows of 12 */
-            gap: 4px; width: 80%;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr); /* 12 Hours per row */
+            gap: 3px;
+            width: 100%;
+            margin-top: 5px;
         }
-        .streak-sq { height: 5px; background: #1a1a1a; border-radius: 50%; }
-        .streak-sq.active { background: #5fff14; box-shadow: 0 0 5px #c5a059; opacity: 50%; }
+
+        .streak-sq {
+            height: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            border-radius: 2px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* The "Light" inside the square */
+        .streak-sq::after {
+            content: '';
+            width: 4px; height: 4px;
+            background: #444; /* Dead/Failed Color */
+            border-radius: 50%;
+            box-shadow: none;
+            transition: all 0.3s ease;
+        }
+
+        /* ACTIVE (Kneeled) */
+        .streak-sq.active {
+            border-color: #c5a059;
+            background: rgba(197, 160, 89, 0.1);
+        }
+        .streak-sq.active::after {
+            background: #c5a059; /* Gold Light */
+            box-shadow: 0 0 5px #c5a059;
+            width: 6px; height: 6px;
+        }
+
+        /* FAILED (Missed Hour - We can add logic for this later) */
+        .streak-sq.failed {
+            border-color: #ff003c;
+        }
 
         /* 4. TASK CARD */
         .operations-card {
