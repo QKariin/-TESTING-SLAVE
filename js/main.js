@@ -805,27 +805,30 @@ window.syncMobileDashboard = function() {
         let rawUrl = userProfile.profilePicture;
         let finalUrl = rawUrl;
 
-        // Wix URL Fixer (Decodes wix:image://... to https://...)
-        const defaultPic = "https://static.wixstatic.com/media/ce3e5b_e06c7a2254d848a480eb98107c35e246~mv2.png";
+       // 4. SMART IMAGE SYNC (The Decision Engine)
+    const defaultPic = "https://static.wixstatic.com/media/ce3e5b_e06c7a2254d848a480eb98107c35e246~mv2.png";
+    let finalUrl = defaultPic; // Start with default assumption
+
+    // CHECK: Do we have a real photo?
+    if (userProfile.profilePicture && userProfile.profilePicture.length > 5) {
+        let rawUrl = userProfile.profilePicture;
         
-        if (!rawUrl || rawUrl === "" || rawUrl === "undefined") {
-            finalUrl = defaultPic;
-        } 
-        else if (rawUrl.startsWith("wix:image")) {
+        // Fix Wix URLs
+        if (rawUrl.startsWith("wix:image")) {
             const uri = rawUrl.split('/')[3].split('#')[0]; 
             finalUrl = `https://static.wixstatic.com/media/${uri}`;
+        } else {
+            finalUrl = rawUrl;
         }
-
-        // Apply to Hexagon
-        if (elPic) elPic.src = finalUrl;
-        
-        // Apply to Background (Atmosphere)
-        if (elBg) elBg.src = finalUrl;
-        
-        // Apply to HUD Small Circle (Settings Button)
-        const hud = document.getElementById('hudSlavePic');
-        if (hud) hud.src = finalUrl;
     }
+
+    // PAINT: Apply the result (Either Real or Default)
+    // We update all 3 places
+    if (elPic) elPic.src = finalUrl;       // Hexagon
+    if (elBg) elBg.src = finalUrl;         // Background
+    
+    const hud = document.getElementById('hudSlavePic');
+    if (hud) hud.src = finalUrl;           // HUD
 
     // 5. Fill Grid
     const grid = document.getElementById('mob_streakGrid');
