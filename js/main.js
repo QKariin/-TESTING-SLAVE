@@ -426,16 +426,12 @@ window.addEventListener("message", (event) => {
                 renderRewardGrid();
                 if (data.profile.lastWorship) setLastWorshipTime(new Date(data.profile.lastWorship).getTime());
                 setStats(migrateGameStatsToStats(data.profile, stats));
-                // *** THE FIX: SAVE PICTURE TO MEMORY ***
                 if(data.profile.profilePicture) {
-                    // 1. Save it so Mobile can see it
-                    userProfile.profilePicture = data.profile.profilePicture;
-                    
-                    // 2. Update Desktop Sidebar
                     const picEl = document.getElementById('profilePic');
                     if(picEl) picEl.src = getOptimizedUrl(data.profile.profilePicture, 150);
                 }
-                updateStats();
+                updateStats(); 
+            }
 
             if (data.type === "INSTANT_REVEAL_SYNC") {
                 if (data.currentLibraryMedia) setCurrentLibraryMedia(data.currentLibraryMedia);
