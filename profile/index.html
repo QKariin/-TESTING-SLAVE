@@ -282,52 +282,45 @@
         .kneel-text { font-family: 'Orbitron'; font-family: 'Cinzel', serif; letter-spacing: 3px; color: #ccc; }
       
 
-       /* 24-HOUR TIMELINE GRID */
+      /* 3. MICRO-TIMELINE (ELEGANT) */
+        .mob-section-wrapper { 
+            width: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 2px; /* Tight gap between label and grid */
+        }
+
+        .mob-grid-label-center { 
+            font-size: 0.5rem; 
+            color: #444; /* Darker, subtler label */
+            letter-spacing: 3px; 
+            margin-bottom: 5px; 
+            text-align: center; 
+            width: 100%; 
+        }
+
         .mob-streak-strip {
-            display: grid;
+            display: grid; 
             grid-template-columns: repeat(12, 1fr); /* 12 Hours per row */
-            gap: 3px;
-            width: 100%;
-            margin-top: 5px;
+            gap: 3px; 
+            width: 70%; /* RESTRICTED WIDTH */
+            margin-bottom: 10px;
         }
 
         .streak-sq {
-            height: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid #333;
-            border-radius: 2px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            height: 6px; /* Tiny, flat markers */
+            background: rgba(255, 255, 255, 0.05); /* Faint grey when empty */
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1px;
         }
 
-        /* The "Light" inside the square */
-        .streak-sq::after {
-            content: '';
-            width: 4px; height: 4px;
-            background: #444; /* Dead/Failed Color */
-            border-radius: 50%;
-            box-shadow: none;
-            transition: all 0.3s ease;
-        }
-
-        /* ACTIVE (Kneeled) */
+        /* ACTIVE STATE (Classy Gold) */
         .streak-sq.active {
+            background: rgba(197, 160, 89, 0.6); /* 60% Opacity Gold */
             border-color: #c5a059;
-            background: rgba(197, 160, 89, 0.1);
+            box-shadow: 0 0 8px rgba(197, 160, 89, 0.2); /* Very soft glow */
         }
-        .streak-sq.active::after {
-            background: #c5a059; /* Gold Light */
-            box-shadow: 0 0 5px #c5a059;
-            width: 6px; height: 6px;
-        }
-
-        /* FAILED (Missed Hour - We can add logic for this later) */
-        .streak-sq.failed {
-            border-color: #ff003c;
-        }
-
         /* 4. TASK CARD */
         .operations-card {
             width: 100%; background:transparent; 
