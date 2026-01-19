@@ -801,45 +801,35 @@ window.toggleMobileStats = function() {
     }
 };
 
-// 3. MAIN NAVIGATION CONTROLLER (FIXED FOR MOBILE RECORD)
+// 3. MAIN NAVIGATION CONTROLLER (AUTO-RESET FIX)
 window.toggleMobileView = function(viewName) {
-    // 1. Define All Views
+    // --- 1. CLEANUP (Reset Overlays) ---
+    // This ensures we always land on a clean page, not an open menu
+    if (window.closeLobby) window.closeLobby();
+    
+    // Also close the Poverty card if it's open
+    if (window.closePoverty) window.closePoverty();
+
+    // --- 2. HIDE ALL VIEWS ---
     const home = document.getElementById('viewMobileHome');
-    const mobRecord = document.getElementById('viewMobileRecord'); // <--- THE NEW VAULT
+    const mobRecord = document.getElementById('viewMobileRecord');
     const chatCard = document.getElementById('chatCard');
     const mobileApp = document.getElementById('MOBILE_APP');
-    const history = document.getElementById('historySection'); // Desktop View
+    const history = document.getElementById('historySection');
     const news = document.getElementById('viewNews');
     const protocol = document.getElementById('viewProtocol');
     
-    // 2. Hide Everything First
-    const views = [home, mobRecord, history, news, protocol];
+    const views = [home, history, mobRecord, news, protocol];
     views.forEach(el => { if(el) el.style.display = 'none'; });
 
-    // 3. Reset Chat
+    // Reset Chat Visibility
     if (chatCard) chatCard.style.setProperty('display', 'none', 'important');
 
-    // 4. SHOW THE TARGET
-        if (viewName === 'home') {
+    // --- 3. SHOW TARGET ---
+    if (viewName === 'home') {
         if(home) {
             home.style.display = 'flex';
             if(window.syncMobileDashboard) window.syncMobileDashboard();
-        }
-    }
-    else if (viewName === 'record') {
-        if (mobRecord) {
-            mobRecord.style.display = 'flex';
-
-            // --- START OF FIX ---
-            // DELETE the old logic that looked for .accepted or .failed
-            // REPLACE it with this simple call:
-            
-            if (window.renderGallery) {
-                window.renderGallery();
-            } else {
-                console.error("renderGallery function missing");
-            }
-            // --- END OF FIX ---
         }
     }
     else if (viewName === 'chat') {
@@ -854,6 +844,15 @@ window.toggleMobileView = function(viewName) {
             if (chatBox) setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
         }
     }
+    else if (viewName === 'record') {
+        if (mobRecord) {
+            mobRecord.style.display = 'flex';
+            if(window.renderGallery) window.renderGallery();
+        } else if (history) {
+            history.style.display = 'flex';
+            if(window.renderGallery) window.renderGallery();
+        }
+    }
     else if (viewName === 'queen') {
         if(news) news.style.display = 'block';
     }
@@ -861,24 +860,11 @@ window.toggleMobileView = function(viewName) {
         if(protocol) protocol.style.display = 'block';
     }
     
-    // 5. Cleanup UI
+    // --- 4. SIDEBAR CLEANUP ---
     const sidebar = document.querySelector('.layout-left');
     if (sidebar) sidebar.classList.remove('mobile-open');
     document.querySelectorAll('.mf-btn').forEach(btn => btn.classList.remove('active'));
 };
-
-// HELPER: Restore Chat to Desktop on Resize
-// (Prevents chat from getting stuck in mobile view if user goes back to desktop)
-window.addEventListener('resize', () => {
-    if (window.innerWidth > 768) {
-        const chatCard = document.getElementById('chatCard');
-        const desktopParent = document.getElementById('viewServingTop');
-        if (chatCard && desktopParent && chatCard.parentElement !== desktopParent) {
-            desktopParent.appendChild(chatCard);
-            chatCard.style.display = 'flex'; // Reset display
-        }
-    }
-});
 
 // 3. KNEEL BUTTON
 window.triggerKneel = function() {
