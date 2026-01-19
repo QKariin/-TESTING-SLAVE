@@ -523,6 +523,45 @@
         -ms-overflow-style: none;  /* IE and Edge */
         scrollbar-width: none;  /* Firefox */
     }
+    /* HUD STYLES */
+    .mob-hud-row {
+        position: absolute; top: 15px; left: 0; width: 100%;
+        display: flex; justify-content: space-between; padding: 0 20px;
+        z-index: 10;
+    }
+    .hud-circle {
+        width: 45px; height: 45px; border-radius: 50%;
+        border: 1px solid rgba(255,255,255,0.2);
+        background: #000; position: relative; overflow: visible;
+        box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    }
+    .hud-circle img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; opacity: 0.8; }
+    
+    .hud-gear {
+        position: absolute; bottom: -5px; right: -5px;
+        font-size: 0.8rem; color: #fff; text-shadow: 0 0 5px #000;
+    }
+    .hud-status-dot {
+        position: absolute; bottom: 0; right: 0;
+        width: 10px; height: 10px; border-radius: 50%;
+        border: 2px solid #000;
+    }
+    .hud-status-dot.online { background: #00ff00; box-shadow: 0 0 10px #00ff00; }
+    .hud-status-dot.offline { background: #c5a059; box-shadow: 0 0 5px #c5a059; opacity: 0.5; }
+
+    /* SETTINGS STYLES */
+    .setting-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .setting-input {
+        background: #111; border: 1px solid #333; color: white;
+        padding: 8px; flex: 1; font-family: 'Rajdhani';
+    }
+    .setting-btn {
+        background: #333; border: 1px solid #555; color: #fff;
+        padding: 8px 12px; font-family: 'Orbitron'; font-size: 0.6rem; cursor: pointer;
+    }
+    .setting-btn.outline { background: transparent; }
+    .setting-btn.gold { border-color: #c5a059; color: #c5a059; margin-bottom: 5px; width:100%; }
+    .setting-label { font-size: 0.7rem; color: #888; margin-bottom: 5px; font-family:'Orbitron'; }
 
     
     
@@ -809,6 +848,65 @@
         <div class="mob-bg-layer">
             <img id="mob_profilePic" src="https://static.wixstatic.com/media/ce3e5b_e06c7a2254d848a480eb98107c35e246~mv2.png" class="bg-blur">
             <div class="bg-overlay"></div>
+        </div>
+
+         <!-- A. THE NEW HUD (Top Corners) -->
+        <div class="mob-hud-row">
+            <!-- Left: Slave Settings -->
+            <div class="hud-circle slave" onclick="openSlaveSettings()">
+                <img id="hudSlavePic" src="">
+                <div class="hud-gear">⚙</div>
+            </div>
+            <!-- Right: Queen Status -->
+            <div class="hud-circle queen">
+                <img src="https://static.wixstatic.com/media/ce3e5b_e06c7a2254d848a480eb98107c35e246~mv2.png">
+                <!-- Green/Gold Dot -->
+                <div id="hudDomStatus" class="hud-status-dot offline"></div>
+            </div>
+        </div>
+
+        <!-- B. DAILY ROUTINE BUTTON (Hidden by default, shows if active) -->
+        <div id="btnDailyRoutine" class="mob-section-wrapper hidden" style="width:90%; margin-top:20px; z-index:5;">
+            <div class="mob-kneel-bar" style="border-color:#fff;" onclick="document.getElementById('routineUpload').click()">
+                <input type="file" id="routineUpload" hidden onchange="handleRoutineUpload(this)">
+                <div class="mob-bar-content">
+                    <span style="font-size:1.2rem;">📝</span>
+                    <span class="kneel-text" style="color:#fff;">SUBMIT DAILY ROUTINE</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ... (Keep your existing Background, Halo, Stats, etc. here) ... -->
+
+        <!-- C. SLAVE SETTINGS OVERLAY (Hidden) -->
+        <div id="slaveSettingsOverlay" class="mob-reward-overlay hidden">
+            <div class="mob-reward-card" style="align-items:stretch; text-align:left; gap:15px;">
+                <div style="text-align:center; margin-bottom:10px;">
+                    <h2 class="mob-reward-title">IDENTITY CONFIG</h2>
+                    <div style="font-size:0.6rem; color:#666;">CAPITAL: <span id="settingsCoins">0</span></div>
+                </div>
+
+                <!-- 1. NAME CHANGE -->
+                <div class="setting-row">
+                    <input type="text" id="inputNewName" class="setting-input" placeholder="NEW DESIGNATION">
+                    <button class="setting-btn" onclick="buyNameChange()">UPDATE (100)</button>
+                </div>
+
+                <!-- 2. PHOTO CHANGE -->
+                <div class="setting-row">
+                    <button class="setting-btn outline" onclick="document.getElementById('settingPhotoInput').click()">SELECT PHOTO</button>
+                    <input type="file" id="settingPhotoInput" hidden>
+                    <button class="setting-btn" onclick="buyPhotoChange()">UPDATE (500)</button>
+                </div>
+
+                <!-- 3. ROUTINE -->
+                <div style="border-top:1px solid #333; margin:10px 0;"></div>
+                <div class="setting-label">DAILY PROTOCOL</div>
+                <button class="setting-btn gold" onclick="buyRoutine('standard')">STANDARD (1000)</button>
+                <button class="setting-btn gold" onclick="buyRoutine('custom')">CUSTOM (2000)</button>
+
+                <button onclick="closeSlaveSettings()" style="margin-top:20px; background:none; border:none; color:#888; width:100%;">CLOSE</button>
+            </div>
         </div>
 
         <!-- 2. THE HALO (Identity) -->
