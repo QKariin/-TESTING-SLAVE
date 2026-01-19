@@ -846,8 +846,11 @@ window.toggleMobileView = function(viewName) {
     else if (viewName === 'record') {
         if (mobRecord) {
             mobRecord.style.display = 'flex';
-            if(window.renderGallery) window.renderGallery();
-            console.log("Rendering Gallery from Mobile Record View");
+            if(window.renderGallery) {
+                window.renderGallery();
+                console.log("Rendering Gallery from Mobile Record View");
+            }
+            console.log("End Rendering Gallery from Mobile Record View");
         } else if (history) {
             history.style.display = 'flex';
             if(window.renderGallery) window.renderGallery();
