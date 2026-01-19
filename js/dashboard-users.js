@@ -8,7 +8,7 @@ import {
 } from './dashboard-state.js';
 import { clean, raw, formatTimer } from './dashboard-utils.js';
 import { Bridge } from './bridge.js';
-import { getOptimizedUrl } from './media.js';
+import { getOptimizedUrl, getSignedUrl } from './media.js';
 
 // --- STEP 2: EXPANSION MEMORY ---
 // This keeps tasks open during the 4-second Wix refresh
