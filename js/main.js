@@ -123,12 +123,11 @@ Bridge.listen((data) => {
 });
 
 // =========================================
-// NEW: THE QUEEN'S LOBBY (ROUTINE LOGIC)
+// NEW: SETTINGS LOGIC (DIRECT & FUNCTIONAL)
 // =========================================
 
 let currentActionType = "";
 let currentActionCost = 0;
-let selectedRoutineMode = ""; // 'standard' or 'custom'
 
 // 1. NAVIGATION
 window.openLobby = function() {
@@ -149,100 +148,100 @@ window.backToLobbyMenu = function() {
 window.showLobbyAction = function(type) {
     currentActionType = type;
     
-    // Elements
     const prompt = document.getElementById('lobbyPrompt');
     const input = document.getElementById('lobbyInputText');
     const fileBtn = document.getElementById('lobbyInputFileBtn');
     const routineArea = document.getElementById('routineSelectionArea');
-    const confirmBtn = document.getElementById('btnLobbyConfirm');
     const costDisplay = document.getElementById('lobbyCostDisplay');
 
     // Reset UI
     input.classList.add('hidden');
     fileBtn.classList.add('hidden');
     routineArea.classList.add('hidden');
-    confirmBtn.classList.remove('hidden');
     
     // Switch View
     document.getElementById('lobbyMenu').classList.add('hidden');
     document.getElementById('lobbyActionView').classList.remove('hidden');
 
     if (type === 'name') {
-        prompt.innerHTML = "State your desired designation.";
+        prompt.innerText = "Enter your new name.";
         input.classList.remove('hidden');
         currentActionCost = 100;
     } 
     else if (type === 'photo') {
-        prompt.innerHTML = "Present your visage.";
+        prompt.innerText = "Upload a new profile picture.";
         fileBtn.classList.remove('hidden');
         currentActionCost = 500;
     }
-    else if (type === 'kinks' || type === 'limits') {
-        prompt.innerHTML = "Update your file.";
+    else if (type === 'kinks') {
+        prompt.innerText = "Add kinks to your profile.";
+        input.classList.remove('hidden');
+        currentActionCost = 200;
+    }
+    else if (type === 'limits') {
+        prompt.innerText = "Add limits to your profile.";
         input.classList.remove('hidden');
         currentActionCost = 200;
     }
     else if (type === 'routine') {
-        prompt.innerHTML = "Select Protocol Level.";
+        prompt.innerText = "Select a Daily Routine.";
         routineArea.classList.remove('hidden');
-        // Reset Routine UI
-        document.getElementById('routinePathBtns').classList.remove('hidden');
-        document.getElementById('routineDropdown').classList.add('hidden');
-        document.getElementById('routineCustomInput').classList.add('hidden');
-        confirmBtn.classList.add('hidden'); // Hide submit until they pick a path
-        currentActionCost = 0;
+        
+        // Reset Dropdown logic
+        document.getElementById('routineDropdown').value = "Morning Kneel";
+        window.checkRoutineDropdown(); // This sets the price/visibility
+        return; // checkRoutineDropdown handles the cost display
     }
 
-    costDisplay.innerText = currentActionCost + " COINS";
+    costDisplay.innerText = currentActionCost;
 };
 
-// 3. ROUTINE SELECTION LOGIC
-window.selectRoutinePath = function(mode) {
-    selectedRoutineMode = mode;
-    document.getElementById('routinePathBtns').classList.add('hidden');
-    document.getElementById('btnLobbyConfirm').classList.remove('hidden');
+// 3. ROUTINE DROPDOWN LOGIC
+window.checkRoutineDropdown = function() {
+    const val = document.getElementById('routineDropdown').value;
+    const input = document.getElementById('routineCustomInput');
+    const costDisplay = document.getElementById('lobbyCostDisplay');
 
-    if (mode === 'standard') {
-        document.getElementById('routineDropdown').classList.remove('hidden');
-        currentActionCost = 1000;
-    } else {
-        document.getElementById('routineCustomInput').classList.remove('hidden');
+    if (val === 'custom') {
+        input.classList.remove('hidden');
         currentActionCost = 2000;
+    } else {
+        input.classList.add('hidden');
+        currentActionCost = 1000;
     }
-    document.getElementById('lobbyCostDisplay').innerText = currentActionCost + " COINS";
+    costDisplay.innerText = currentActionCost;
 };
 
 // 4. EXECUTE ACTION
 window.confirmLobbyAction = function() {
-    // CHECK FUNDS
     if (gameStats.coins < currentActionCost) {
-        alert("INSUFFICIENT FUNDS");
+        alert("NOT ENOUGH COINS");
         return;
     }
 
     let payload = "";
-    let taskName = "";
-
-    // GATHER DATA
+    
+    // ROUTINE LOGIC
     if (currentActionType === 'routine') {
-        if (selectedRoutineMode === 'standard') {
-            taskName = document.getElementById('routineDropdown').value;
-        } else {
+        const val = document.getElementById('routineDropdown').value;
+        let taskName = val;
+        
+        if (val === 'custom') {
             taskName = document.getElementById('routineCustomInput').value;
         }
+        
         if(!taskName) return;
-        
         payload = "Routine Purchased: " + taskName;
-        
-        // ACTIVATE DASHBOARD BUTTON
+
+        // Show Button on Dashboard
         const btn = document.getElementById('btnDailyRoutine');
         if(btn) {
             btn.classList.remove('hidden');
-            // Update the button text to show what they bought
             const txt = btn.querySelector('.kneel-text');
             if(txt) txt.innerText = "SUBMIT: " + taskName.toUpperCase();
         }
     } 
+    // PHOTO LOGIC
     else if (currentActionType === 'photo') {
         const fileInput = document.getElementById('lobbyFile');
         if (fileInput.files.length > 0) {
@@ -250,19 +249,20 @@ window.confirmLobbyAction = function() {
             payload = "Photo Update";
         } else { return; }
     }
+    // TEXT LOGIC
     else {
-        // Text Input
         const text = document.getElementById('lobbyInputText').value;
         if(!text) return;
         payload = currentActionType.toUpperCase() + ": " + text;
         
         if(currentActionType === 'name') {
-            document.getElementById('mob_slaveName').innerText = text;
+            const el = document.getElementById('mob_slaveName');
+            if(el) el.innerText = text;
             userProfile.name = text;
         }
     }
 
-    // SEND TO CMS
+    // Send to CMS
     window.parent.postMessage({ 
         type: "PURCHASE_ITEM", 
         itemName: payload, 
