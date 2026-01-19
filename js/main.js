@@ -402,7 +402,8 @@ window.addEventListener("message", (event) => {
                     name: data.profile.name || "Slave",
                     hierarchy: data.profile.hierarchy || "HallBoy",
                     memberId: data.profile.memberId || "",
-                    joined: data.profile.joined
+                    joined: data.profile.joined,
+                    profilePicture: data.profile.profilePicture // <--- ADD THIS LINE
                 });
                 
                 if (data.profile.taskQueue) setTaskQueue(data.profile.taskQueue);
