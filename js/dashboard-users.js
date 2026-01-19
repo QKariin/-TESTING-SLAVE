@@ -202,21 +202,20 @@ async function updateHistory(u) {
         const loadBtn = document.getElementById('loadMoreHist');
         if (loadBtn) loadBtn.style.display = (cleanHist.length > histLimit) ? 'block' : 'none';
         
-        const normalized = await Promise.all(
-            historyToShow.map(async h => {
-                const raw = h.proofUrl || "";
-                console.log("RAW:", h.proofUrl);
+        const signingPromises = historyToShow.map(async h => {
+            const raw = h.proofUrl || "";
+            console.log("RAW:", h.proofUrl);
 
-                const thumbSigned = await getSignedUrl(getOptimizedUrl(raw, 150));
-                const fullSigned  = await getSignedUrl(raw);
+            const thumbSigned = await getSignedUrl(getOptimizedUrl(raw, 150));
+            const fullSigned  = await getSignedUrl(raw);
 
-                return {
-                    ...h,
-                    thumbSigned,
-                    fullSigned
-                };
-            })
-        );
+            return {
+                ...h,
+                thumbSigned,
+                fullSigned
+            };
+        });
+        await Promise.all(signingPromises);
 
         hGrid.innerHTML = historyToShow.length > 0 ? historyToShow.map(h => {
             const cls = h.status === 'approve' ? 'hb-app' : 'hb-rej';
