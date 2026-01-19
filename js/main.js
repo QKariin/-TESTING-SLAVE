@@ -123,11 +123,12 @@ Bridge.listen((data) => {
 });
 
 // =========================================
-// NEW: THE QUEEN'S LOBBY (LOGIC)
+// NEW: THE QUEEN'S LOBBY (ROUTINE LOGIC)
 // =========================================
 
 let currentActionType = "";
 let currentActionCost = 0;
+let selectedRoutineMode = ""; // 'standard' or 'custom'
 
 // 1. NAVIGATION
 window.openLobby = function() {
@@ -142,134 +143,135 @@ window.closeLobby = function() {
 window.backToLobbyMenu = function() {
     document.getElementById('lobbyMenu').classList.remove('hidden');
     document.getElementById('lobbyActionView').classList.add('hidden');
-    // Reset inputs
-    document.getElementById('lobbyInputText').value = "";
-    document.getElementById('lobbyInputFileBtn').innerText = "CHOOSE FILE";
 };
 
 // 2. SETUP ACTION SCREEN
 window.showLobbyAction = function(type) {
     currentActionType = type;
     
+    // Elements
     const prompt = document.getElementById('lobbyPrompt');
     const input = document.getElementById('lobbyInputText');
     const fileBtn = document.getElementById('lobbyInputFileBtn');
-    const routineBtns = document.getElementById('lobbyRoutineBtns');
+    const routineArea = document.getElementById('routineSelectionArea');
     const confirmBtn = document.getElementById('btnLobbyConfirm');
     const costDisplay = document.getElementById('lobbyCostDisplay');
 
-    // Hide all inputs first
+    // Reset UI
     input.classList.add('hidden');
     fileBtn.classList.add('hidden');
-    routineBtns.classList.add('hidden');
-    confirmBtn.classList.remove('hidden'); // Show submit by default
-
+    routineArea.classList.add('hidden');
+    confirmBtn.classList.remove('hidden');
+    
+    // Switch View
     document.getElementById('lobbyMenu').classList.add('hidden');
     document.getElementById('lobbyActionView').classList.remove('hidden');
 
-    // CONFIGURE UI BASED ON TYPE
     if (type === 'name') {
-        prompt.innerHTML = "State your desired designation.<br>The Queen must approve.";
+        prompt.innerHTML = "State your desired designation.";
         input.classList.remove('hidden');
         currentActionCost = 100;
     } 
     else if (type === 'photo') {
-        prompt.innerHTML = "Present your visage for inspection.";
+        prompt.innerHTML = "Present your visage.";
         fileBtn.classList.remove('hidden');
         currentActionCost = 500;
     }
-    else if (type === 'kinks') {
-        prompt.innerHTML = "Confess your perversions.<br>Be explicit.";
-        input.classList.remove('hidden');
-        currentActionCost = 200;
-    }
-    else if (type === 'limits') {
-        prompt.innerHTML = "State your hard limits.<br>Do not show weakness.";
+    else if (type === 'kinks' || type === 'limits') {
+        prompt.innerHTML = "Update your file.";
         input.classList.remove('hidden');
         currentActionCost = 200;
     }
     else if (type === 'routine') {
-        prompt.innerHTML = "Select a Protocol Level.";
-        routineBtns.classList.remove('hidden');
-        confirmBtn.classList.add('hidden'); // Hide default submit, buttons handle it
-        currentActionCost = 0; // Handled by buttons
+        prompt.innerHTML = "Select Protocol Level.";
+        routineArea.classList.remove('hidden');
+        // Reset Routine UI
+        document.getElementById('routinePathBtns').classList.remove('hidden');
+        document.getElementById('routineDropdown').classList.add('hidden');
+        document.getElementById('routineCustomInput').classList.add('hidden');
+        confirmBtn.classList.add('hidden'); // Hide submit until they pick a path
+        currentActionCost = 0;
     }
 
     costDisplay.innerText = currentActionCost + " COINS";
 };
 
-// 3. EXECUTE ACTION
-window.confirmLobbyAction = function(subType) {
-    // Handle Routine Special Case
-    if (currentActionType === 'routine' && subType) {
-        currentActionCost = subType === 'standard' ? 1000 : 2000;
-    }
+// 3. ROUTINE SELECTION LOGIC
+window.selectRoutinePath = function(mode) {
+    selectedRoutineMode = mode;
+    document.getElementById('routinePathBtns').classList.add('hidden');
+    document.getElementById('btnLobbyConfirm').classList.remove('hidden');
 
+    if (mode === 'standard') {
+        document.getElementById('routineDropdown').classList.remove('hidden');
+        currentActionCost = 1000;
+    } else {
+        document.getElementById('routineCustomInput').classList.remove('hidden');
+        currentActionCost = 2000;
+    }
+    document.getElementById('lobbyCostDisplay').innerText = currentActionCost + " COINS";
+};
+
+// 4. EXECUTE ACTION
+window.confirmLobbyAction = function() {
     // CHECK FUNDS
     if (gameStats.coins < currentActionCost) {
-        // FAIL STATE
-        const btn = document.getElementById('btnLobbyConfirm');
-        btn.innerText = "INSUFFICIENT FUNDS - BUY COINS";
-        btn.style.borderColor = "#ff003c";
-        btn.style.color = "#ff003c";
-        
-        // Redirect to Exchequer on next click
-        btn.onclick = function() {
-            window.closeLobby();
-            window.toggleMobileView('buy'); // Go to Store
-            // Reset button
-            setTimeout(() => {
-                btn.innerText = "SUBMIT REQUEST";
-                btn.style.borderColor = ""; 
-                btn.style.color = "";
-                btn.onclick = () => window.confirmLobbyAction();
-            }, 1000);
-        };
+        alert("INSUFFICIENT FUNDS");
         return;
     }
 
-    // SUCCESS - SEND TO CMS
     let payload = "";
-    
-    if (currentActionType === 'photo') {
+    let taskName = "";
+
+    // GATHER DATA
+    if (currentActionType === 'routine') {
+        if (selectedRoutineMode === 'standard') {
+            taskName = document.getElementById('routineDropdown').value;
+        } else {
+            taskName = document.getElementById('routineCustomInput').value;
+        }
+        if(!taskName) return;
+        
+        payload = "Routine Purchased: " + taskName;
+        
+        // ACTIVATE DASHBOARD BUTTON
+        const btn = document.getElementById('btnDailyRoutine');
+        if(btn) {
+            btn.classList.remove('hidden');
+            // Update the button text to show what they bought
+            const txt = btn.querySelector('.kneel-text');
+            if(txt) txt.innerText = "SUBMIT: " + taskName.toUpperCase();
+        }
+    } 
+    else if (currentActionType === 'photo') {
         const fileInput = document.getElementById('lobbyFile');
         if (fileInput.files.length > 0) {
-            // Use existing upload handler
             if(window.handleProfileUpload) window.handleProfileUpload(fileInput);
-            payload = "Photo Update Initiated";
+            payload = "Photo Update";
         } else { return; }
-    } 
-    else if (currentActionType === 'routine') {
-        payload = "Routine Requested: " + subType;
-        // Show the upload button on dashboard
-        document.getElementById('btnDailyRoutine').classList.remove('hidden');
     }
     else {
-        // Text Input (Name, Kinks, Limits)
+        // Text Input
         const text = document.getElementById('lobbyInputText').value;
         if(!text) return;
         payload = currentActionType.toUpperCase() + ": " + text;
         
-        // Optimistic Name Update
         if(currentActionType === 'name') {
             document.getElementById('mob_slaveName').innerText = text;
-            userProfile.name = text; // Update local state
+            userProfile.name = text;
         }
     }
 
-    // CHARGE & NOTIFY
+    // SEND TO CMS
     window.parent.postMessage({ 
         type: "PURCHASE_ITEM", 
-        itemName: "Lobby Request: " + currentActionType, 
+        itemName: payload, 
         cost: currentActionCost, 
         messageToDom: payload 
     }, "*");
 
     window.closeLobby();
 };
-
-
-
 
 
 window.addEventListener("message", (event) => {
