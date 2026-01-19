@@ -268,9 +268,7 @@ window.confirmLobbyAction = function(subType) {
     window.closeLobby();
 };
 
-// 4. SYNC HUD AVATAR (Add to syncMobileDashboard)
-// I will just add a line here, make sure your sync function uses it.
-// document.getElementById('hudSlavePic').src = elPic.src;
+
 
 
 
@@ -687,10 +685,14 @@ window.syncMobileDashboard = function() {
     const elName = document.getElementById('mob_slaveName');   // WAS mobName (WRONG)
     const elRank = document.getElementById('mob_rankStamp');   // WAS mobHierarchy (WRONG)
     const elPic = document.getElementById('mob_profilePic');   // Correct
+    const hudPic = document.getElementById('hudSlavePic');
+
 
     // 3. Fill Data
     if (elName) elName.innerText = userProfile.name || "SLAVE";
     if (elRank) elRank.innerText = userProfile.hierarchy || "INITIATE";
+    if(hudPic && elPic) hudPic.src = elPic.src;
+
     
     // 4. Profile Picture (The Wix Decrypter)
     if (elPic) {
