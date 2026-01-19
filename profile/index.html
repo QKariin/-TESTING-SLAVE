@@ -952,23 +952,40 @@
                     <button class="lobby-btn close" onclick="closeLobby()">LEAVE</button>
                 </div>
 
-                <!-- VIEW 2: ACTION INPUT -->
+               <!-- VIEW 2: ACTION INPUT -->
                 <div id="lobbyActionView" class="lobby-content hidden">
                     <div id="lobbyPrompt" class="lobby-prompt">...</div>
                     
-                    <!-- Text Input -->
+                    <!-- 1. GENERIC TEXT INPUT (Name/Kinks/Limits) -->
                     <input type="text" id="lobbyInputText" class="lobby-input hidden" placeholder="Type here...">
                     
-                    <!-- File Input -->
+                    <!-- 2. FILE INPUT (Photo) -->
                     <button id="lobbyInputFileBtn" class="lobby-file-btn hidden" onclick="document.getElementById('lobbyFile').click()">CHOOSE FILE</button>
                     <input type="file" id="lobbyFile" hidden onchange="document.getElementById('lobbyInputFileBtn').innerText = 'FILE SELECTED'">
 
-                    <!-- Routine Buttons -->
-                    <div id="lobbyRoutineBtns" class="hidden" style="width:100%; display:flex; gap:10px;">
-                        <button class="lobby-btn small" onclick="confirmLobbyAction('standard')">STANDARD (1000)</button>
-                        <button class="lobby-btn small" onclick="confirmLobbyAction('custom')">CUSTOM (2000)</button>
+                    <!-- 3. ROUTINE SELECTOR (The New Logic) -->
+                    <div id="routineSelectionArea" class="hidden" style="width:100%; display:flex; flex-direction:column; gap:10px;">
+                        
+                        <!-- Step A: Choose Path -->
+                        <div id="routinePathBtns" style="display:flex; gap:10px;">
+                            <button class="lobby-btn small" onclick="selectRoutinePath('standard')">STANDARD (1000)</button>
+                            <button class="lobby-btn small" onclick="selectRoutinePath('custom')">CUSTOM (2000)</button>
+                        </div>
+
+                        <!-- Step B1: Standard List -->
+                        <select id="routineDropdown" class="lobby-input hidden">
+                            <option value="Morning Kneel">Morning Kneel</option>
+                            <option value="Chastity Verification">Chastity Verification</option>
+                            <option value="Collar Check">Collar Check</option>
+                            <option value="Hydration Report">Hydration Report</option>
+                            <option value="Sleep Position">Sleep Position</option>
+                        </select>
+
+                        <!-- Step B2: Custom Input -->
+                        <input type="text" id="routineCustomInput" class="lobby-input hidden" placeholder="Describe your routine...">
                     </div>
 
+                    <!-- COST DISPLAY -->
                     <div class="lobby-cost-area">
                         <span class="cost-lbl">TRIBUTE REQUIRED:</span>
                         <span id="lobbyCostDisplay" class="cost-val">0</span>
