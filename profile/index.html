@@ -120,7 +120,7 @@
         display: flex; align-items: center; justify-content: space-around;
         box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         backdrop-filter: blur(15px);
-        margin-bottom: 40px;
+        margin-bottom: 20px;
     }
 
     .h-stat { display: flex; flex-direction: column; align-items: center; }
@@ -284,7 +284,7 @@
       
 
         /* 3. HEATMAP STRIP */
-        .mob-grid-label-center { font-size: 0.4rem; color: #555; letter-spacing: 2px; top: 20px; margin-bottom: 5px; }
+        .mob-grid-label-center { font-size: 0.4rem; color: #555; letter-spacing: 2px; top: 50px; margin-bottom: 5px; }
         .mob-streak-strip {
             display: grid; grid-template-columns: repeat(12, 1fr); /* 2 Rows of 12 */
             gap: 4px; width: 80%;
@@ -823,7 +823,7 @@
                     </div>
                     <div class="chat-footer">
                         <button id="tributeHuntBtn" onclick="toggleTributeHunt()" class="icon-btn">🎁</button>
-                        <input type="text" id="chatMsgInput" class="chat-input" placeholder="AWAITING INPUT..." onkeypress="handleChatKey(event)">
+                        <input type="text" id="chatMsgInput" class="chat-input" placeholder="Whisper to Queen Karin..." onkeypress="handleChatKey(event)">
                         <button class="chat-send" onclick="sendChatMessage()" class="icon-btn">Send</button>
                     </div>
                 </div>
@@ -963,7 +963,7 @@
                 <input type="file" id="routineUpload" hidden onchange="handleRoutineUpload(this)">
                 <div class="mob-bar-content">
                     
-                    <span class="kneel-text" style="color:#fff;">SUBMIT DAILY ROUTINE</span>
+                    <span class="kneel-text" style="color:#fff;">SUBMIT YOUR ROUTINE</span>
                 </div>
             </div>
         </div>
