@@ -699,15 +699,38 @@ function updateStats() {
         }
     }
 
-    // 3. MOBILE GRID UPDATE (The 24 Squares)
+// 5. FILL GRID (Local Midnight Reset)
     const grid = document.getElementById('mob_streakGrid');
     if(grid) {
         grid.innerHTML = '';
-        const progress = (gameStats.kneelCount || 0) % 24;
+        
+        let todayCount = 0;
+
+        // LOGIC: Check if the last kneel happened "Today" on this device
+        if (userProfile.lastWorship) {
+            const lastDate = new Date(userProfile.lastWorship);
+            const now = new Date();
+            
+            // Compare Day, Month, Year (Local Time)
+            const isToday = lastDate.getDate() === now.getDate() &&
+                            lastDate.getMonth() === now.getMonth() &&
+                            lastDate.getFullYear() === now.getFullYear();
+            
+            if (isToday) {
+                // If it is today, use the backend count (or cycle math)
+                // Use todayKneeling if available, otherwise fallback to cycle
+                todayCount = gameStats.todayKneeling || (gameStats.kneelCount % 24);
+            } else {
+                // If last worship was yesterday (or older), show 0
+                todayCount = 0;
+            }
+        }
+
+        // Render 24 Micro-Squares
         for(let i=0; i<24; i++) {
             const sq = document.createElement('div');
-            // If i is less than progress, color it Gold
-            sq.className = 'streak-sq' + (i < progress ? ' active' : '');
+            // Fill squares based on the calculated todayCount
+            sq.className = 'streak-sq' + (i < todayCount ? ' active' : '');
             grid.appendChild(sq);
         }
     }
