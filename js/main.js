@@ -701,38 +701,40 @@ function updateStats() {
         }
     }
 
-// 5. FILL GRID (Local Midnight Reset)
+// --- GRID SYNC (TRUST THE BACKEND) ---
     const grid = document.getElementById('mob_streakGrid');
     if(grid) {
         grid.innerHTML = '';
-        
-        let todayCount = 0;
+        let loggedHours = [];
+        const now = new Date();
 
-        // LOGIC: Check if the last kneel happened "Today" on this device
-        if (userProfile.lastWorship) {
-            const lastDate = new Date(userProfile.lastWorship);
-            const now = new Date();
-            
-            // Compare Day, Month, Year (Local Time)
-            const isToday = lastDate.getDate() === now.getDate() &&
-                            lastDate.getMonth() === now.getMonth() &&
-                            lastDate.getFullYear() === now.getFullYear();
-            
-            if (isToday) {
-                // If it is today, use the backend count (or cycle math)
-                // Use todayKneeling if available, otherwise fallback to cycle
-                todayCount = gameStats.todayKneeling || (gameStats.kneelCount % 24);
-            } else {
-                // If last worship was yesterday (or older), show 0
-                todayCount = 0;
-            }
+        if (userProfile.kneelHistory) {
+            try {
+                const hObj = JSON.parse(userProfile.kneelHistory);
+                
+                // FIX: Trust the backend data. 
+                // The backend already resets this at midnight.
+                // We do not check the date here to avoid Timezone bugs.
+                loggedHours = hObj.hours || [];
+                
+            } catch(e) { console.error("Grid parse error", e); }
         }
 
-        // Render 24 Micro-Squares
         for(let i=0; i<24; i++) {
             const sq = document.createElement('div');
-            // Fill squares based on the calculated todayCount
-            sq.className = 'streak-sq' + (i < todayCount ? ' active' : '');
+            sq.className = 'streak-sq';
+            
+            // 1. Is this hour logged? (Gold)
+            if (loggedHours.includes(i)) {
+                sq.classList.add('active');
+            }
+            // 2. Has this hour passed? (Dim/Dark)
+            else if (i < now.getHours()) {
+                sq.style.opacity = "0.3"; 
+                sq.style.borderColor = "#333";
+            }
+            // 3. Future hours are normal style
+            
             grid.appendChild(sq);
         }
     }
