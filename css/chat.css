@@ -299,7 +299,7 @@
     .msg {
         max-width: 88% !important;
         font-size: 0.65rem !important;
-        padding: 1px 12px !important;
+        padding: 5px 12px !important;
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
@@ -317,6 +317,6 @@
         border: none !important;
         border-bottom: 1px solid rgba(255,255,255,0.1) !important;
         width: 90% !important;
-        margin: 6px auto !important;
+        margin: 2px auto !important;
     }
 }
