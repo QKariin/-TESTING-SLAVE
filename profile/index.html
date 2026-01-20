@@ -1058,6 +1058,32 @@
                 <!-- 1. DAILY ROUTINE (Permanent Text + Toggle Action) -->
                 <div class="duty-wrapper" style="width:100%; margin-bottom:15px;">
                     <div class="lobby-label">DAILY PROTOCOL</div>
+
+                    <!-- 3. TASK PROTOCOL -->
+                    <div class="duty-wrapper" style="width:100%;">
+                        <div class="lobby-label">CURRENT PROTOCOL</div>
+                        
+                        <!-- IDLE: Request Button -->
+                        <button id="mob_btnRequest" class="lobby-btn" onclick="if(window.getRandomTask) window.getRandomTask()">
+                            RECEIVE TASK
+                        </button>
+    
+                        <!-- ACTIVE: The Gold Timer (Moved here) -->
+                        <div id="mob_activeTimer" class="mob-timer-row hidden">
+                            <div class="timer-gauge">
+                                <div id="ring_H" class="gauge-ring"></div>
+                                <div class="gauge-content"><span id="m_timerH" class="g-val">00</span><span class="g-lbl">HRS</span></div>
+                            </div>
+                            <div class="timer-gauge">
+                                <div id="ring_M" class="gauge-ring"></div>
+                                <div class="gauge-content"><span id="m_timerM" class="g-val">00</span><span class="g-lbl">MIN</span></div>
+                            </div>
+                            <div class="timer-gauge">
+                                <div id="ring_S" class="gauge-ring"></div>
+                                <div class="gauge-content"><span id="m_timerS" class="g-val">00</span><span class="g-lbl">SEC</span></div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <!-- A. THE PERMANENT ROUTINE NAME (Reads from CMS) -->
                     <div id="mobRoutineDisplay" style="font-family:'Cinzel'; font-size:1.2rem; color:#fff; text-align:center; margin:10px 0; letter-spacing:2px; text-shadow:0 0 10px rgba(197, 160, 89, 0.4);">
@@ -1090,31 +1116,7 @@
 
                 <div class="lobby-divider"></div>
 
-                <!-- 3. TASK PROTOCOL -->
-                <div class="duty-wrapper" style="width:100%;">
-                    <div class="lobby-label">CURRENT PROTOCOL</div>
-                    
-                    <!-- IDLE: Request Button -->
-                    <button id="mob_btnRequest" class="lobby-btn" onclick="if(window.getRandomTask) window.getRandomTask()">
-                        REQUEST NEW TASK
-                    </button>
-
-                    <!-- ACTIVE: The Gold Timer (Moved here) -->
-                    <div id="mob_activeTimer" class="mob-timer-row hidden">
-                        <div class="timer-gauge">
-                            <div id="ring_H" class="gauge-ring"></div>
-                            <div class="gauge-content"><span id="m_timerH" class="g-val">00</span><span class="g-lbl">HRS</span></div>
-                        </div>
-                        <div class="timer-gauge">
-                            <div id="ring_M" class="gauge-ring"></div>
-                            <div class="gauge-content"><span id="m_timerM" class="g-val">00</span><span class="g-lbl">MIN</span></div>
-                        </div>
-                        <div class="timer-gauge">
-                            <div id="ring_S" class="gauge-ring"></div>
-                            <div class="gauge-content"><span id="m_timerS" class="g-val">00</span><span class="g-lbl">SEC</span></div>
-                        </div>
-                    </div>
-                </div>
+                
 
                 <button class="lobby-btn close" style="margin-top:20px;" onclick="closeQueenMenu()">CLOSE</button>
             </div>
@@ -1235,7 +1237,7 @@
                 You cannot afford my attention.
             </div>
             <div class="mob-reward-actions" style="margin-top:10px;">
-                <button onclick="goToExchequer()" class="mob-action-btn" style="border-color: #ff003c; color: #ff003c;">GO TO EXCHEQUER</button>
+                <button onclick="goToExchequer()" class="mob-action-btn" style="border-color: #ff003c; color: #ff003c;">BOOST WALLET</button>
                 <button onclick="closePoverty()" class="mob-action-btn" style="border-color: #444; color: #888;">APOLOGIZE & RETURN</button>
             </div>
         </div>
