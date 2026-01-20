@@ -291,7 +291,7 @@
     }
 
     .chat-input {
-        font-size: 12px !important; /* Prevents Zoom on iPhone */
+        font-size: 16px !important; /* Prevents Zoom on iPhone */
         height: 40px !important;
     }
 
