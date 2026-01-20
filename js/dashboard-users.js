@@ -69,6 +69,7 @@ export function updateDetail(u) {
     
     document.getElementById('dTasks').innerText = u.completed || 0;
     document.getElementById('dStreak').innerText = u.streak || 0;
+    document.getElementById('dStrikes').innerText = u.strikeCount || 0;
     
     const joined = u.joinedDate ? new Date(u.joinedDate).toLocaleDateString() : "N/A";
     const joinedEl = document.getElementById('dJoined');
