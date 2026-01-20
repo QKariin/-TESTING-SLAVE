@@ -1403,7 +1403,22 @@ window.syncMobileDashboard = function() {
     }
 };
 
+// --- EXCHEQUER NAVIGATION ---
+window.openExchequer = function() {
+    const store = document.getElementById('mobExchequer');
+    if (store) {
+        store.classList.remove('hidden');
+        store.style.display = 'flex';
+    }
+};
 
+window.closeExchequer = function() {
+    const store = document.getElementById('mobExchequer');
+    if (store) {
+        store.classList.add('hidden');
+        store.style.display = 'none';
+    }
+};
 
 // =========================================
 // PART 2: FINAL APP MODE (NATIVE FLOW)
@@ -1486,7 +1501,8 @@ window.syncMobileDashboard = function() {
 <img src="https://static.wixstatic.com/media/ce3e5b_19faff471a434690b7a40aacf5bf42c4~mv2.png" alt="Avatar" style="width:68px;height:68px;border-radius:50%;object-fit:cover;border:1px solid #ff003c;display:block;">
 </button>
 <button onclick="window.toggleMobileView('queen')" style="${btnStyle}"><span style="font-size:1.4rem;color:#888;">♛</span><span>QUEEN</span></button>
-<button onclick="window.toggleMobileView('global')" style="${btnStyle}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+<button onclick="window.toggleMobileView('global')" style="${btnStyle}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
 <span>GLOBAL</span></button>`;
 document.body.appendChild(footer);
     }
@@ -1567,22 +1583,5 @@ setInterval(() => {
         }
     }
 }, 500);
-
-// --- EXCHEQUER NAVIGATION ---
-window.openExchequer = function() {
-    const store = document.getElementById('mobExchequer');
-    if (store) {
-        store.classList.remove('hidden');
-        store.style.display = 'flex';
-    }
-};
-
-window.closeExchequer = function() {
-    const store = document.getElementById('mobExchequer');
-    if (store) {
-        store.classList.add('hidden');
-        store.style.display = 'none';
-    }
-};
 
 window.parent.postMessage({ type: "UI_READY" }, "*");
