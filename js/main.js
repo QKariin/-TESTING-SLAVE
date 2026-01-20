@@ -1,6 +1,7 @@
 
 
 
+
 // main.js - FINAL COMPLETE VERSION (DESKTOP + MOBILE)
 
 import { CONFIG, URLS, LEVELS, FUNNY_SAYINGS, STREAM_PASSWORDS } from './config.js';
@@ -1048,12 +1049,13 @@ window.syncMobileDashboard = function() {
         }
     }
 
-   // --- 5. QUEEN'S MENU UPDATES ---
+    // --- 5. QUEEN'S MENU UPDATES (This was missing) ---
     
-    // A. Kneel Progress Bar (ALWAYS VISIBLE)
+    // A. Kneel Progress Bar
     const kneelFill = document.getElementById('kneelDailyFill');
     const kneelText = document.getElementById('kneelDailyText');
     if (kneelFill && kneelText) {
+        // Fallback to modulo if todayKneeling isn't tracked yet
         const count = gameStats.todayKneeling || (gameStats.kneelCount % 8) || 0; 
         const goal = 8;
         const pct = Math.min(100, (count / goal) * 100);
@@ -1062,56 +1064,21 @@ window.syncMobileDashboard = function() {
         kneelText.innerText = `${count} / ${goal}`;
     }
 
-    // B. ROUTINE BUTTON (TIME GATED LOGIC)
+    // B. Routine Button Text
     const routineBtn = document.getElementById('btnDailyRoutine');
     const noRoutineMsg = document.getElementById('noRoutineMsg');
     
-    // Check if user has a routine assigned in CMS
     if (userProfile.routine && userProfile.routine.length > 2) {
-        
-        // 1. Time Check (User's Local Time)
-        const now = new Date();
-        const currentHour = now.getHours(); 
-        const isTime = currentHour >= 7; // 7:00 AM or later
-        
-        // 2. Completion Check (Local Memory)
-        const lastDoneDate = localStorage.getItem('routine_done_date');
-        const isDoneToday = lastDoneDate === now.toDateString();
-
-        // 3. DECISION: Show Button OR Show Status Message
-        if (isTime && !isDoneToday) {
-            // SHOW THE BUTTON (It's time and he hasn't done it)
-            if (routineBtn) {
-                routineBtn.classList.remove('hidden');
-                routineBtn.innerText = "SUBMIT: " + userProfile.routine.toUpperCase();
-            }
-            if (noRoutineMsg) noRoutineMsg.style.display = 'none';
-        } else {
-            // HIDE THE BUTTON (Too early OR already done)
-            if (routineBtn) routineBtn.classList.add('hidden');
-            
-            // Show Status Message instead
-            if (noRoutineMsg) {
-                noRoutineMsg.style.display = 'block';
-                if (isDoneToday) {
-                    noRoutineMsg.innerText = "DUTY COMPLETED FOR TODAY";
-                    noRoutineMsg.style.color = "#00ff00"; // Green
-                } else {
-                    noRoutineMsg.innerText = "AWAITING 07:00 HOURS";
-                    noRoutineMsg.style.color = "#666"; // Grey
-                }
-            }
+        if (routineBtn) {
+            routineBtn.classList.remove('hidden');
+            routineBtn.innerText = "SUBMIT: " + userProfile.routine.toUpperCase();
         }
-
+        if (noRoutineMsg) noRoutineMsg.style.display = 'none';
     } else {
-        // NO ROUTINE ASSIGNED YET
         if (routineBtn) routineBtn.classList.add('hidden');
-        if (noRoutineMsg) {
-            noRoutineMsg.style.display = 'block';
-            noRoutineMsg.innerText = "NO ROUTINE ASSIGNED";
-            noRoutineMsg.style.color = "#666";
-        }
+        if (noRoutineMsg) noRoutineMsg.style.display = 'block';
     }
+};
 
 // =========================================
 // PART 2: FINAL APP MODE (NATIVE FLOW)
