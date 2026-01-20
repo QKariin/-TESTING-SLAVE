@@ -1403,6 +1403,23 @@ window.syncMobileDashboard = function() {
     }
 };
 
+// --- EXCHEQUER NAVIGATION ---
+window.openExchequer = function() {
+    const store = document.getElementById('mobExchequer');
+    if (store) {
+        store.classList.remove('hidden');
+        store.style.display = 'flex';
+    }
+};
+
+window.closeExchequer = function() {
+    const store = document.getElementById('mobExchequer');
+    if (store) {
+        store.classList.add('hidden');
+        store.style.display = 'none';
+    }
+};
+
 // =========================================
 // PART 2: FINAL APP MODE (NATIVE FLOW)
 // =========================================
