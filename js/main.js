@@ -699,37 +699,47 @@ function updateStats() {
         }
     }
 
-// 5. FILL GRID (Local Midnight Reset)
+// 5. FILL GRID (Safe Midnight Reset)
     const grid = document.getElementById('mob_streakGrid');
     if(grid) {
         grid.innerHTML = '';
         
         let todayCount = 0;
+        const totalCount = gameStats.kneelCount || 0;
+        
+        // 1. Get the timestamps
+        const lastDate = userProfile.lastWorship ? new Date(userProfile.lastWorship) : null;
+        const now = new Date();
 
-        // LOGIC: Check if the last kneel happened "Today" on this device
-        if (userProfile.lastWorship) {
-            const lastDate = new Date(userProfile.lastWorship);
-            const now = new Date();
+        // 2. The "Is Today" Check
+        let isToday = false;
+        if (lastDate) {
+            // Compare "Mon Jan 19 2026" strings. Ignores timezones/hours.
+            isToday = lastDate.toDateString() === now.toDateString();
+        }
+        
+        // 3. The "Locked" Safety Check
+        // If you are currently locked (cooldown), you MUST have kneeled today.
+        // This fixes glitches where the date might be slightly off.
+        const isLockedState = document.querySelector('.mob-kneel-text') && 
+                              document.querySelector('.mob-kneel-text').innerText.includes("LOCKED");
+                              
+        if (isToday || isLockedState) {
+            // It is today. Show the progress (0-24).
+            todayCount = totalCount % 24;
             
-            // Compare Day, Month, Year (Local Time)
-            const isToday = lastDate.getDate() === now.getDate() &&
-                            lastDate.getMonth() === now.getMonth() &&
-                            lastDate.getFullYear() === now.getFullYear();
-            
-            if (isToday) {
-                // If it is today, use the backend count (or cycle math)
-                // Use todayKneeling if available, otherwise fallback to cycle
-                todayCount = gameStats.todayKneeling || (gameStats.kneelCount % 24);
-            } else {
-                // If last worship was yesterday (or older), show 0
-                todayCount = 0;
-            }
+            // Edge case: If count is 24, 48, etc, mod is 0, but we want to show full if just finished?
+            // For now, let's stick to the cycle.
+            if (todayCount === 0 && totalCount > 0) todayCount = 24; 
+        } else {
+            // It was yesterday (or older). Reset visuals to 0.
+            todayCount = 0;
         }
 
-        // Render 24 Micro-Squares
+        // 4. Render 24 Micro-Squares
         for(let i=0; i<24; i++) {
             const sq = document.createElement('div');
-            // Fill squares based on the calculated todayCount
+            // If i is less than todayCount, light it up
             sq.className = 'streak-sq' + (i < todayCount ? ' active' : '');
             grid.appendChild(sq);
         }
