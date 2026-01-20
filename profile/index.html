@@ -1055,15 +1055,26 @@
             <div class="lobby-content">
                 
                 <!-- 1. DAILY ROUTINE -->
+                <!-- 1. DAILY ROUTINE (Permanent Text + Toggle Action) -->
                 <div class="duty-wrapper" style="width:100%; margin-bottom:15px;">
-                    <div class="lobby-label">DAILY ROUTINE</div>
-                    <!-- The Upload Button (Hidden until routine bought) -->
+                    <div class="lobby-label">DAILY PROTOCOL</div>
+                    
+                    <!-- A. THE PERMANENT ROUTINE NAME (Reads from CMS) -->
+                    <div id="mobRoutineDisplay" style="font-family:'Cinzel'; font-size:1.2rem; color:#fff; text-align:center; margin:10px 0; letter-spacing:2px; text-shadow:0 0 10px rgba(197, 160, 89, 0.4);">
+                        LOADING...
+                    </div>
+
+                    <!-- B. STATE 1: UPLOAD BUTTON (Visible if NOT done) -->
                     <button id="btnDailyRoutine" class="lobby-btn gold hidden" onclick="document.getElementById('routineUpload').click()">
-                        SUBMIT EVIDENCE
+                        UPLOAD EVIDENCE
                     </button>
-                    <input type="file" id="routineUpload" hidden onchange="handleRoutineUpload(this)">
-                    <!-- Placeholder text if no routine -->
-                    <div id="noRoutineMsg" style="color:#666; font-size:0.6rem; text-align:center; margin-top:5px;">NO ROUTINE ASSIGNED</div>
+                    <input type="file" id="routineUpload" hidden onchange="window.handleRoutineUpload(this)">
+
+                    <!-- C. STATE 2: CHECKMARK (Visible if DONE) -->
+                    <div id="mobRoutineCheck" class="hidden" style="text-align:center; margin-top:5px;">
+                        <div style="font-size:2rem; color:#00ff00; text-shadow:0 0 15px #00ff00;">✔</div>
+                        <div style="font-family:'Orbitron'; font-size:0.6rem; color:#888; letter-spacing:2px;">DUTY COMPLETED</div>
+                    </div>
                 </div>
 
                 <div class="lobby-divider"></div>
