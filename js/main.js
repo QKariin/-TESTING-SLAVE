@@ -171,12 +171,11 @@ Bridge.listen((data) => {
 });
 
 // =========================================
-// NEW: SETTINGS LOGIC (FIXED ROUTINE CRASH)
+// PART 3: LOBBY & SETTINGS LOGIC (DEBUGGED)
 // =========================================
 
 let currentActionType = "";
 let currentActionCost = 0;
-let selectedRoutineValue = ""; // <--- NEW VARIABLE TO STORE SELECTION
 
 // 1. NAVIGATION
 window.openLobby = function() {
@@ -193,9 +192,7 @@ window.backToLobbyMenu = function() {
     document.getElementById('lobbyActionView').classList.add('hidden');
 };
 
-// 2. SETUP ACTION SCREEN
-let selectedKinks = new Set(); // Store selections
-
+// 2. SHOW ACTION SCREEN
 window.showLobbyAction = function(type) {
     currentActionType = type;
     
@@ -203,7 +200,7 @@ window.showLobbyAction = function(type) {
     const input = document.getElementById('lobbyInputText');
     const fileBtn = document.getElementById('lobbyInputFileBtn');
     const routineArea = document.getElementById('routineSelectionArea');
-    const kinkArea = document.getElementById('kinkSelectionArea'); // NEW
+    const kinkArea = document.getElementById('kinkSelectionArea');
     const costDisplay = document.getElementById('lobbyCostDisplay');
 
     // Reset UI
@@ -216,6 +213,9 @@ window.showLobbyAction = function(type) {
     document.getElementById('lobbyMenu').classList.add('hidden');
     document.getElementById('lobbyActionView').classList.remove('hidden');
 
+    // Default Cost
+    currentActionCost = 0;
+
     if (type === 'name') {
         prompt.innerText = "Enter your new name.";
         input.classList.remove('hidden');
@@ -226,6 +226,14 @@ window.showLobbyAction = function(type) {
         fileBtn.classList.remove('hidden');
         currentActionCost = 500;
     }
+    else if (type === 'kinks') {
+        prompt.innerText = "Select your perversions.";
+        if(kinkArea) {
+            kinkArea.classList.remove('hidden');
+            if(window.renderKinkGrid) window.renderKinkGrid(); // Ensure grid exists
+        }
+        currentActionCost = 0;
+    }
     else if (type === 'limits') {
         prompt.innerText = "Define your hard limits.";
         input.classList.remove('hidden');
@@ -234,66 +242,30 @@ window.showLobbyAction = function(type) {
     else if (type === 'routine') {
         prompt.innerText = "Select a Daily Routine.";
         routineArea.classList.remove('hidden');
-        document.getElementById('routineDropdown').value = "Morning Kneel";
-        window.checkRoutineDropdown();
-        return; 
-    }
-    // *** NEW KINK LOGIC ***
-    else if (type === 'kinks') {
-        prompt.innerText = "Select your perversions.";
-        if(kinkArea) {
-            kinkArea.classList.remove('hidden');
-            renderKinkGrid();
-        }
+        
+        // Reset Routine UI
+        document.querySelectorAll('.routine-tile').forEach(t => t.classList.remove('selected'));
+        document.getElementById('routineCustomInput').classList.add('hidden');
+        
+        // Clear stored value
+        routineArea.dataset.selected = ""; 
         currentActionCost = 0;
     }
 
-    costDisplay.innerText = currentActionCost;
+    if(costDisplay) costDisplay.innerText = currentActionCost;
 };
 
-// NEW: RENDER KINK GRID
-function renderKinkGrid() {
-    const grid = document.getElementById('kinkGrid');
-    if(!grid) return;
-    grid.innerHTML = ""; // Clear
-    selectedKinks.clear(); // Reset selection
-
-    KINK_LIST.forEach(kink => {
-        const btn = document.createElement('div');
-        btn.className = "routine-tile";
-        btn.innerText = kink.toUpperCase();
-        btn.onclick = () => toggleKinkSelection(btn, kink);
-        grid.appendChild(btn);
-    });
-}
-
-// NEW: TOGGLE SELECTION
-window.toggleKinkSelection = function(el, value) {
-    if (selectedKinks.has(value)) {
-        selectedKinks.delete(value);
-        el.classList.remove('selected');
-    } else {
-        selectedKinks.add(value);
-        el.classList.add('selected');
-    }
-    
-    // Update Price (100 per kink)
-    currentActionCost = selectedKinks.size * 100;
-    document.getElementById('lobbyCostDisplay').innerText = currentActionCost;
-};
-
-// 3. HANDLE ROUTINE TILE SELECTION (FIXED)
+// 3. HANDLE ROUTINE TILE SELECTION (ROBUST STORAGE)
 window.selectRoutineItem = function(el, value) {
-    // 1. Visually deselect all others
+    // A. Visuals
     document.querySelectorAll('.routine-tile').forEach(t => t.classList.remove('selected'));
-    
-    // 2. Select clicked
     el.classList.add('selected');
     
-    // 3. Save Value to Variable (Not Element)
-    selectedRoutineValue = value;
+    // B. Logic - Store in HTML Dataset (Safe)
+    const routineArea = document.getElementById('routineSelectionArea');
+    if(routineArea) routineArea.dataset.selected = value;
 
-    // 4. Handle Logic
+    // C. Custom Input Handling
     const input = document.getElementById('routineCustomInput');
     const costDisplay = document.getElementById('lobbyCostDisplay');
     
@@ -305,48 +277,46 @@ window.selectRoutineItem = function(el, value) {
         currentActionCost = 1000;
     }
     
-    costDisplay.innerText = currentActionCost;
+    if(costDisplay) costDisplay.innerText = currentActionCost;
 };
 
+// 4. SUBMIT ACTION (WITH ERROR CHECKING)
 window.confirmLobbyAction = function() {
-    // Kink Safety Check
-    if (currentActionType === 'kinks' && selectedKinks.size === 0) return;
-
+    
+    // CHECK 1: FUNDS
     if (gameStats.coins < currentActionCost) {
-        window.triggerPoverty(); // <--- ADD THIS
+        window.triggerPoverty();
         return;
     }
 
-    let payload = "";
     let notifyTitle = "SYSTEM UPDATE";
     let notifyText = "Changes saved.";
-    
-    // --- KINK LOGIC ---
-    if (currentActionType === 'kinks') {
-        // Convert Set to String: "SPH, Chastity, Control"
-        const kinkString = Array.from(selectedKinks).join(", ");
+
+    // --- A. ROUTINE LOGIC ---
+    if (currentActionType === 'routine') {
+        // Retrieve from HTML Dataset
+        const routineArea = document.getElementById('routineSelectionArea');
+        let taskName = routineArea ? routineArea.dataset.selected : "";
         
-        notifyTitle = "FILE UPDATED";
-        notifyText = "Kinks registered.";
+        // Validation: Did they pick anything?
+        if (!taskName || taskName === "") {
+            alert("PROTOCOL REQUIRED: Select a routine.");
+            return;
+        }
 
-        window.parent.postMessage({ 
-            type: "UPDATE_CMS_FIELD", 
-            field: "kink", 
-            value: kinkString,
-            cost: currentActionCost,
-            message: "Kinks updated: " + kinkString
-        }, "*");
-    }
-
-    // --- ROUTINE LOGIC ---
-    else if (currentActionType === 'routine') {
-        let taskName = document.getElementById('routineDropdown').value; 
-        if (taskName === 'custom') taskName = document.getElementById('routineCustomInput').value;
-        if(!taskName) return;
+        // Handle Custom Text
+        if (taskName === 'custom') {
+            taskName = document.getElementById('routineCustomInput').value;
+            if (!taskName) {
+                alert("PROTOCOL REQUIRED: Describe your custom routine.");
+                return;
+            }
+        }
 
         notifyTitle = "PROTOCOL ASSIGNED";
-        notifyText = taskName;
+        notifyText = taskName.toUpperCase();
 
+        // 1. Send to Wix
         window.parent.postMessage({ 
             type: "UPDATE_CMS_FIELD", 
             field: "routine", 
@@ -355,15 +325,23 @@ window.confirmLobbyAction = function() {
             message: "Routine set to: " + taskName
         }, "*");
         
+        // 2. Update Memory
+        userProfile.routine = taskName;
+        
+        // 3. Update Dashboard Button
         const btn = document.getElementById('btnDailyRoutine');
         if(btn) {
             btn.classList.remove('hidden');
-            const txt = btn.querySelector('.kneel-text');
+            const txt = btn.querySelector('.kneel-text') || btn; // Safe selector
             if(txt) txt.innerText = "SUBMIT: " + taskName.toUpperCase();
         }
+        
+        // 4. Update Queen Menu Display
+        const mobDisp = document.getElementById('mobRoutineDisplay');
+        if(mobDisp) mobDisp.innerText = taskName.toUpperCase();
     } 
     
-    // --- PHOTO LOGIC ---
+    // --- B. PHOTO LOGIC ---
     else if (currentActionType === 'photo') {
         const fileInput = document.getElementById('lobbyFile');
         if (fileInput.files.length > 0) {
@@ -371,13 +349,16 @@ window.confirmLobbyAction = function() {
             notifyText = "Uploading...";
             window.parent.postMessage({ type: "PROCESS_PAYMENT", cost: 500, note: "Photo Change" }, "*");
             if(window.handleProfileUpload) window.handleProfileUpload(fileInput);
-        } else { return; }
+        } else {
+             alert("VISUALS REQUIRED: Select a file.");
+             return;
+        }
     }
     
-    // --- NAME LOGIC ---
+    // --- C. NAME LOGIC ---
     else if (currentActionType === 'name') {
         const text = document.getElementById('lobbyInputText').value;
-        if(!text) return;
+        if(!text) { alert("DESIGNATION REQUIRED."); return; }
         
         notifyTitle = "IDENTITY REWRITTEN";
         notifyText = text.toUpperCase();
@@ -390,29 +371,55 @@ window.confirmLobbyAction = function() {
             message: "Name changed to: " + text
         }, "*");
 
+        // Update UI everywhere
         const el = document.getElementById('mob_slaveName');
         const halo = document.getElementById('mob_slaveName');
         if(el) el.innerText = text;
         if(halo) halo.innerText = text;
         userProfile.name = text;
     }
+    
+    // --- D. KINKS LOGIC ---
+    else if (currentActionType === 'kinks') {
+        if (!selectedKinks || selectedKinks.size === 0) {
+            alert("DATA REQUIRED: Select at least one.");
+            return;
+        }
+        
+        const kinkString = Array.from(selectedKinks).join(", ");
+        notifyTitle = "FILE UPDATED";
+        notifyText = "Kinks registered.";
 
-    // --- LIMITS (Generic) ---
+        window.parent.postMessage({ 
+            type: "UPDATE_CMS_FIELD", 
+            field: "kink", 
+            value: kinkString,
+            cost: currentActionCost,
+            message: "Kinks: " + kinkString
+        }, "*");
+    }
+
+    // --- E. LIMITS LOGIC ---
     else {
         const text = document.getElementById('lobbyInputText').value;
-        if(!text) return;
+        if(!text) { alert("DATA REQUIRED."); return; }
+
         notifyTitle = "DATA APPENDED";
         notifyText = "Limits updated.";
+
         window.parent.postMessage({ 
             type: "PURCHASE_ITEM", 
-            itemName: "LIMITS: " + text, 
+            itemName: currentActionType.toUpperCase() + ": " + text, 
             cost: currentActionCost, 
             messageToDom: "Limits: " + text 
         }, "*");
     }
 
+    // SUCCESS
     window.closeLobby();
-    window.showSystemNotification(notifyTitle, notifyText);
+    if(window.showSystemNotification) {
+        window.showSystemNotification(notifyTitle, notifyText);
+    }
 };
 
 // NEW: RENDER KINK GRID
