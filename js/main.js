@@ -533,7 +533,7 @@ window.addEventListener("message", (event) => {
                     profilePicture: data.profile.profilePicture,
                     kneelHistory: data.profile.kneelHistory,
                     routine: data.profile.routine
-                });
+                }
                 
                 if (data.profile.taskQueue) setTaskQueue(data.profile.taskQueue);
                 
