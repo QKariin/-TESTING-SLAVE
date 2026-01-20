@@ -1,6 +1,7 @@
 
 
 
+
 // main.js - FINAL COMPLETE VERSION (DESKTOP + MOBILE)
 
 import { CONFIG, URLS, LEVELS, FUNNY_SAYINGS, STREAM_PASSWORDS } from './config.js';
@@ -171,11 +172,12 @@ Bridge.listen((data) => {
 });
 
 // =========================================
-// PART 3: LOBBY & SETTINGS LOGIC (DEBUGGED)
+// NEW: SETTINGS LOGIC (FIXED ROUTINE CRASH)
 // =========================================
 
 let currentActionType = "";
 let currentActionCost = 0;
+let selectedRoutineValue = ""; // <--- NEW VARIABLE TO STORE SELECTION
 
 // 1. NAVIGATION
 window.openLobby = function() {
@@ -192,7 +194,9 @@ window.backToLobbyMenu = function() {
     document.getElementById('lobbyActionView').classList.add('hidden');
 };
 
-// 2. SHOW ACTION SCREEN
+// 2. SETUP ACTION SCREEN
+let selectedKinks = new Set(); // Store selections
+
 window.showLobbyAction = function(type) {
     currentActionType = type;
     
@@ -200,7 +204,7 @@ window.showLobbyAction = function(type) {
     const input = document.getElementById('lobbyInputText');
     const fileBtn = document.getElementById('lobbyInputFileBtn');
     const routineArea = document.getElementById('routineSelectionArea');
-    const kinkArea = document.getElementById('kinkSelectionArea');
+    const kinkArea = document.getElementById('kinkSelectionArea'); // NEW
     const costDisplay = document.getElementById('lobbyCostDisplay');
 
     // Reset UI
@@ -213,9 +217,6 @@ window.showLobbyAction = function(type) {
     document.getElementById('lobbyMenu').classList.add('hidden');
     document.getElementById('lobbyActionView').classList.remove('hidden');
 
-    // Default Cost
-    currentActionCost = 0;
-
     if (type === 'name') {
         prompt.innerText = "Enter your new name.";
         input.classList.remove('hidden');
@@ -226,14 +227,6 @@ window.showLobbyAction = function(type) {
         fileBtn.classList.remove('hidden');
         currentActionCost = 500;
     }
-    else if (type === 'kinks') {
-        prompt.innerText = "Select your perversions.";
-        if(kinkArea) {
-            kinkArea.classList.remove('hidden');
-            if(window.renderKinkGrid) window.renderKinkGrid(); // Ensure grid exists
-        }
-        currentActionCost = 0;
-    }
     else if (type === 'limits') {
         prompt.innerText = "Define your hard limits.";
         input.classList.remove('hidden');
@@ -242,184 +235,21 @@ window.showLobbyAction = function(type) {
     else if (type === 'routine') {
         prompt.innerText = "Select a Daily Routine.";
         routineArea.classList.remove('hidden');
-        
-        // Reset Routine UI
-        document.querySelectorAll('.routine-tile').forEach(t => t.classList.remove('selected'));
-        document.getElementById('routineCustomInput').classList.add('hidden');
-        
-        // Clear stored value
-        routineArea.dataset.selected = ""; 
+        document.getElementById('routineDropdown').value = "Morning Kneel";
+        window.checkRoutineDropdown();
+        return; 
+    }
+    // *** NEW KINK LOGIC ***
+    else if (type === 'kinks') {
+        prompt.innerText = "Select your perversions.";
+        if(kinkArea) {
+            kinkArea.classList.remove('hidden');
+            renderKinkGrid();
+        }
         currentActionCost = 0;
     }
 
-    if(costDisplay) costDisplay.innerText = currentActionCost;
-};
-
-// 3. HANDLE ROUTINE TILE SELECTION (ROBUST STORAGE)
-window.selectRoutineItem = function(el, value) {
-    // A. Visuals
-    document.querySelectorAll('.routine-tile').forEach(t => t.classList.remove('selected'));
-    el.classList.add('selected');
-    
-    // B. Logic - Store in HTML Dataset (Safe)
-    const routineArea = document.getElementById('routineSelectionArea');
-    if(routineArea) routineArea.dataset.selected = value;
-
-    // C. Custom Input Handling
-    const input = document.getElementById('routineCustomInput');
-    const costDisplay = document.getElementById('lobbyCostDisplay');
-    
-    if (value === 'custom') {
-        input.classList.remove('hidden');
-        currentActionCost = 2000;
-    } else {
-        input.classList.add('hidden');
-        currentActionCost = 1000;
-    }
-    
-    if(costDisplay) costDisplay.innerText = currentActionCost;
-};
-
-// 4. SUBMIT ACTION (WITH ERROR CHECKING)
-window.confirmLobbyAction = function() {
-    
-    // CHECK 1: FUNDS
-    if (gameStats.coins < currentActionCost) {
-        window.triggerPoverty();
-        return;
-    }
-
-    let notifyTitle = "SYSTEM UPDATE";
-    let notifyText = "Changes saved.";
-
-    // --- A. ROUTINE LOGIC ---
-    if (currentActionType === 'routine') {
-        // Retrieve from HTML Dataset
-        const routineArea = document.getElementById('routineSelectionArea');
-        let taskName = routineArea ? routineArea.dataset.selected : "";
-        
-        // Validation: Did they pick anything?
-        if (!taskName || taskName === "") {
-            alert("PROTOCOL REQUIRED: Select a routine.");
-            return;
-        }
-
-        // Handle Custom Text
-        if (taskName === 'custom') {
-            taskName = document.getElementById('routineCustomInput').value;
-            if (!taskName) {
-                alert("PROTOCOL REQUIRED: Describe your custom routine.");
-                return;
-            }
-        }
-
-        notifyTitle = "PROTOCOL ASSIGNED";
-        notifyText = taskName.toUpperCase();
-
-        // 1. Send to Wix
-        window.parent.postMessage({ 
-            type: "UPDATE_CMS_FIELD", 
-            field: "routine", 
-            value: taskName,
-            cost: currentActionCost,
-            message: "Routine set to: " + taskName
-        }, "*");
-        
-        // 2. Update Memory
-        userProfile.routine = taskName;
-        
-        // 3. Update Dashboard Button
-        const btn = document.getElementById('btnDailyRoutine');
-        if(btn) {
-            btn.classList.remove('hidden');
-            const txt = btn.querySelector('.kneel-text') || btn; // Safe selector
-            if(txt) txt.innerText = "SUBMIT: " + taskName.toUpperCase();
-        }
-        
-        // 4. Update Queen Menu Display
-        const mobDisp = document.getElementById('mobRoutineDisplay');
-        if(mobDisp) mobDisp.innerText = taskName.toUpperCase();
-    } 
-    
-    // --- B. PHOTO LOGIC ---
-    else if (currentActionType === 'photo') {
-        const fileInput = document.getElementById('lobbyFile');
-        if (fileInput.files.length > 0) {
-            notifyTitle = "VISUALS LOGGED";
-            notifyText = "Uploading...";
-            window.parent.postMessage({ type: "PROCESS_PAYMENT", cost: 500, note: "Photo Change" }, "*");
-            if(window.handleProfileUpload) window.handleProfileUpload(fileInput);
-        } else {
-             alert("VISUALS REQUIRED: Select a file.");
-             return;
-        }
-    }
-    
-    // --- C. NAME LOGIC ---
-    else if (currentActionType === 'name') {
-        const text = document.getElementById('lobbyInputText').value;
-        if(!text) { alert("DESIGNATION REQUIRED."); return; }
-        
-        notifyTitle = "IDENTITY REWRITTEN";
-        notifyText = text.toUpperCase();
-
-        window.parent.postMessage({ 
-            type: "UPDATE_CMS_FIELD", 
-            field: "title_fld", 
-            value: text,
-            cost: 100,
-            message: "Name changed to: " + text
-        }, "*");
-
-        // Update UI everywhere
-        const el = document.getElementById('mob_slaveName');
-        const halo = document.getElementById('mob_slaveName');
-        if(el) el.innerText = text;
-        if(halo) halo.innerText = text;
-        userProfile.name = text;
-    }
-    
-    // --- D. KINKS LOGIC ---
-    else if (currentActionType === 'kinks') {
-        if (!selectedKinks || selectedKinks.size === 0) {
-            alert("DATA REQUIRED: Select at least one.");
-            return;
-        }
-        
-        const kinkString = Array.from(selectedKinks).join(", ");
-        notifyTitle = "FILE UPDATED";
-        notifyText = "Kinks registered.";
-
-        window.parent.postMessage({ 
-            type: "UPDATE_CMS_FIELD", 
-            field: "kink", 
-            value: kinkString,
-            cost: currentActionCost,
-            message: "Kinks: " + kinkString
-        }, "*");
-    }
-
-    // --- E. LIMITS LOGIC ---
-    else {
-        const text = document.getElementById('lobbyInputText').value;
-        if(!text) { alert("DATA REQUIRED."); return; }
-
-        notifyTitle = "DATA APPENDED";
-        notifyText = "Limits updated.";
-
-        window.parent.postMessage({ 
-            type: "PURCHASE_ITEM", 
-            itemName: currentActionType.toUpperCase() + ": " + text, 
-            cost: currentActionCost, 
-            messageToDom: "Limits: " + text 
-        }, "*");
-    }
-
-    // SUCCESS
-    window.closeLobby();
-    if(window.showSystemNotification) {
-        window.showSystemNotification(notifyTitle, notifyText);
-    }
+    costDisplay.innerText = currentActionCost;
 };
 
 // NEW: RENDER KINK GRID
@@ -479,45 +309,35 @@ window.selectRoutineItem = function(el, value) {
     costDisplay.innerText = currentActionCost;
 };
 
+// 4. EXECUTE ACTION (FIXED ROUTINE SELECTION)
 window.confirmLobbyAction = function() {
-    // Kink Safety Check
-    if (currentActionType === 'kinks' && selectedKinks.size === 0) return;
-
+    // 1. Check Funds
     if (gameStats.coins < currentActionCost) {
-        window.triggerPoverty(); // <--- ADD THIS
+        window.triggerPoverty();
         return;
     }
 
     let payload = "";
     let notifyTitle = "SYSTEM UPDATE";
     let notifyText = "Changes saved.";
-    
-    // --- KINK LOGIC ---
-    if (currentActionType === 'kinks') {
-        // Convert Set to String: "SPH, Chastity, Control"
-        const kinkString = Array.from(selectedKinks).join(", ");
+
+    // --- A. ROUTINE LOGIC (THE FIX) ---
+    if (currentActionType === 'routine') {
+        // USE THE GLOBAL VARIABLE FROM TILE SELECTION
+        let taskName = selectedRoutineValue; 
         
-        notifyTitle = "FILE UPDATED";
-        notifyText = "Kinks registered.";
-
-        window.parent.postMessage({ 
-            type: "UPDATE_CMS_FIELD", 
-            field: "kink", 
-            value: kinkString,
-            cost: currentActionCost,
-            message: "Kinks updated: " + kinkString
-        }, "*");
-    }
-
-    // --- ROUTINE LOGIC ---
-    else if (currentActionType === 'routine') {
-        let taskName = document.getElementById('routineDropdown').value; 
-        if (taskName === 'custom') taskName = document.getElementById('routineCustomInput').value;
+        // If Custom, read the input box
+        if (taskName === 'custom') {
+            taskName = document.getElementById('routineCustomInput').value;
+        }
+        
+        // If still empty, stop here
         if(!taskName) return;
 
         notifyTitle = "PROTOCOL ASSIGNED";
-        notifyText = taskName;
+        notifyText = taskName.toUpperCase();
 
+        // Send to Wix
         window.parent.postMessage({ 
             type: "UPDATE_CMS_FIELD", 
             field: "routine", 
@@ -526,26 +346,39 @@ window.confirmLobbyAction = function() {
             message: "Routine set to: " + taskName
         }, "*");
         
+        // Immediate UI Update
+        userProfile.routine = taskName; // Update memory
+        
         const btn = document.getElementById('btnDailyRoutine');
+        const noMsg = document.getElementById('noRoutineMsg');
+        
         if(btn) {
             btn.classList.remove('hidden');
-            const txt = btn.querySelector('.kneel-text');
+            // Update button text inside the Queen Menu
+            const txt = document.getElementById('routineBtnText'); 
             if(txt) txt.innerText = "SUBMIT: " + taskName.toUpperCase();
         }
+        if(noMsg) noMsg.style.display = 'none';
     } 
     
-    // --- PHOTO LOGIC ---
+    // --- B. PHOTO LOGIC ---
     else if (currentActionType === 'photo') {
         const fileInput = document.getElementById('lobbyFile');
         if (fileInput.files.length > 0) {
             notifyTitle = "VISUALS LOGGED";
             notifyText = "Uploading...";
-            window.parent.postMessage({ type: "PROCESS_PAYMENT", cost: 500, note: "Photo Change" }, "*");
+
+            window.parent.postMessage({ 
+                type: "PROCESS_PAYMENT", 
+                cost: 500, 
+                note: "Photo Change" 
+            }, "*");
+            
             if(window.handleProfileUpload) window.handleProfileUpload(fileInput);
         } else { return; }
     }
     
-    // --- NAME LOGIC ---
+    // --- C. NAME LOGIC ---
     else if (currentActionType === 'name') {
         const text = document.getElementById('lobbyInputText').value;
         if(!text) return;
@@ -561,29 +394,55 @@ window.confirmLobbyAction = function() {
             message: "Name changed to: " + text
         }, "*");
 
+        // Update UI
         const el = document.getElementById('mob_slaveName');
-        const halo = document.getElementById('mob_slaveName');
+        const halo = document.getElementById('mob_slaveName'); // Halo uses same ID usually
         if(el) el.innerText = text;
         if(halo) halo.innerText = text;
         userProfile.name = text;
     }
+    
+    // --- D. KINKS LOGIC ---
+    else if (currentActionType === 'kinks') {
+        // Safe check
+        if (typeof selectedKinks === 'undefined' || selectedKinks.size === 0) return;
+        
+        const kinkString = Array.from(selectedKinks).join(", ");
+        notifyTitle = "FILE UPDATED";
+        notifyText = "Kinks registered.";
 
-    // --- LIMITS (Generic) ---
+        window.parent.postMessage({ 
+            type: "UPDATE_CMS_FIELD", 
+            field: "kink", 
+            value: kinkString,
+            cost: currentActionCost,
+            message: "Kinks: " + kinkString
+        }, "*");
+    }
+
+    // --- E. LIMITS LOGIC ---
     else {
         const text = document.getElementById('lobbyInputText').value;
         if(!text) return;
+
         notifyTitle = "DATA APPENDED";
         notifyText = "Limits updated.";
+
         window.parent.postMessage({ 
             type: "PURCHASE_ITEM", 
-            itemName: "LIMITS: " + text, 
+            itemName: currentActionType.toUpperCase() + ": " + text, 
             cost: currentActionCost, 
             messageToDom: "Limits: " + text 
         }, "*");
     }
 
+    // FINAL: Close & Celebrate
     window.closeLobby();
-    window.showSystemNotification(notifyTitle, notifyText);
+    
+    // Trigger the Green Notification
+    if(window.showSystemNotification) {
+        window.showSystemNotification(notifyTitle, notifyText);
+    }
 };
 
 // --- NOTIFICATION SYSTEM ---
@@ -665,6 +524,7 @@ window.addEventListener("message", (event) => {
                     memberId: data.profile.memberId || "",
                     joined: data.profile.joined,
                     profilePicture: data.profile.profilePicture, // <--- ADD THIS LINE
+                    routine: data.profile.routine,
                     kneelHistory: data.profile.kneelHistory
                     
                 });
@@ -774,12 +634,32 @@ window.addEventListener("message", (event) => {
 // --- EXPORTS & HELPERS ---
 window.handleUploadStart = function(inputElement) {
     if (inputElement.files && inputElement.files.length > 0) {
-        const btn = document.getElementById('btnUpload');
-        if (btn) { btn.innerHTML = '...'; btn.style.background = '#333'; btn.style.color = '#ffd700'; btn.style.cursor = 'wait'; }
+        
+        // Check if this is the Routine Upload button
+        const isRoutine = inputElement.id === 'routineUpload';
+        
+        if (isRoutine) {
+            // Visual Feedback
+            const btn = document.getElementById('btnDailyRoutine');
+            if(btn) { btn.innerText = "VERIFYING..."; btn.style.opacity = "0.5"; }
+            
+            // Tell Backend to mark as done
+            window.parent.postMessage({ type: "COMPLETE_ROUTINE" }, "*");
+            
+            // Trigger Notification
+            if(window.showSystemNotification) window.showSystemNotification("EVIDENCE SENT", "Daily routine logged.");
+        } else {
+            // Standard Button Feedback
+            const btn = document.getElementById('btnUpload');
+            if (btn) { btn.innerHTML = '...'; btn.style.background = '#333'; btn.style.color = '#ffd700'; btn.style.cursor = 'wait'; }
+        }
+
+        // Process the File Upload (Standard)
         if (typeof handleEvidenceUpload === 'function') handleEvidenceUpload(inputElement);
     }
 };
 
+window.handleRoutineUpload = window.handleUploadStart;
 window.switchTab = switchTab;
 window.toggleStats = toggleStats;
 window.openSessionUI = openSessionUI;
@@ -872,40 +752,38 @@ function updateStats() {
         }
     }
 
-// --- GRID SYNC (TRUST THE BACKEND) ---
+// 5. FILL GRID (Local Midnight Reset)
     const grid = document.getElementById('mob_streakGrid');
     if(grid) {
         grid.innerHTML = '';
-        let loggedHours = [];
-        const now = new Date();
+        
+        let todayCount = 0;
 
-        if (userProfile.kneelHistory) {
-            try {
-                const hObj = JSON.parse(userProfile.kneelHistory);
-                
-                // FIX: Trust the backend data. 
-                // The backend already resets this at midnight.
-                // We do not check the date here to avoid Timezone bugs.
-                loggedHours = hObj.hours || [];
-                
-            } catch(e) { console.error("Grid parse error", e); }
+        // LOGIC: Check if the last kneel happened "Today" on this device
+        if (userProfile.lastWorship) {
+            const lastDate = new Date(userProfile.lastWorship);
+            const now = new Date();
+            
+            // Compare Day, Month, Year (Local Time)
+            const isToday = lastDate.getDate() === now.getDate() &&
+                            lastDate.getMonth() === now.getMonth() &&
+                            lastDate.getFullYear() === now.getFullYear();
+            
+            if (isToday) {
+                // If it is today, use the backend count (or cycle math)
+                // Use todayKneeling if available, otherwise fallback to cycle
+                todayCount = gameStats.todayKneeling || (gameStats.kneelCount % 24);
+            } else {
+                // If last worship was yesterday (or older), show 0
+                todayCount = 0;
+            }
         }
 
+        // Render 24 Micro-Squares
         for(let i=0; i<24; i++) {
             const sq = document.createElement('div');
-            sq.className = 'streak-sq';
-            
-            // 1. Is this hour logged? (Gold)
-            if (loggedHours.includes(i)) {
-                sq.classList.add('active');
-            }
-            // 2. Has this hour passed? (Dim/Dark)
-            else if (i < now.getHours()) {
-                sq.style.opacity = "0.3"; 
-                sq.style.borderColor = "#333";
-            }
-            // 3. Future hours are normal style
-            
+            // Fill squares based on the calculated todayCount
+            sq.className = 'streak-sq' + (i < todayCount ? ' active' : '');
             grid.appendChild(sq);
         }
     }
@@ -1101,13 +979,18 @@ window.triggerKneel = function() {
     }
 };
 
-// 4. DATA SYNC (COMPLETE: Dashboard, Grid, & Queen Menu)
+// 4. DATA SYNC (COMPLETE & FIXED)
 window.syncMobileDashboard = function() {
+    // 1. Safety Check
     if (!gameStats || !userProfile) return;
 
-    // --- 1. IDENTITY & STATS ---
+    // --- A. IDENTITY & IMAGES ---
     const elName = document.getElementById('mob_slaveName');
     const elRank = document.getElementById('mob_rankStamp');
+    const elPic = document.getElementById('mob_profilePic');
+    const elBg = document.getElementById('mob_bgPic');
+    const hudPic = document.getElementById('hudSlavePic');
+
     const elPoints = document.getElementById('mobPoints');
     const elCoins = document.getElementById('mobCoins');
 
@@ -1115,14 +998,9 @@ window.syncMobileDashboard = function() {
     if (elRank) elRank.innerText = userProfile.hierarchy || "INITIATE";
     if (elPoints) elPoints.innerText = gameStats.points || 0;
     if (elCoins) elCoins.innerText = gameStats.coins || 0;
-    
-    // --- 2. IMAGES (Face, Background, HUD) ---
-    const elPic = document.getElementById('mob_profilePic');
-    const elBg = document.getElementById('mob_bgPic');
-    const hudPic = document.getElementById('hudSlavePic');
 
+    // Image Logic
     let finalUrl = "https://static.wixstatic.com/media/ce3e5b_e06c7a2254d848a480eb98107c35e246~mv2.png";
-    
     if (userProfile.profilePicture && userProfile.profilePicture.length > 5) {
         let rawUrl = userProfile.profilePicture;
         if (rawUrl.startsWith("wix:image")) {
@@ -1136,14 +1014,22 @@ window.syncMobileDashboard = function() {
     if (elBg) elBg.src = finalUrl;
     if (hudPic) hudPic.src = finalUrl;
 
-    // --- 3. THE GRID (24-Hour Timeline) ---
+    // Stats Drawer
+    const mobStreak = document.getElementById('mobStreak');
+    const mobTotal = document.getElementById('mobTotal');
+    const mobKneels = document.getElementById('mobKneels');
+    if (mobStreak) mobStreak.innerText = gameStats.taskdom_streak || 0;
+    if (mobTotal) mobTotal.innerText = gameStats.taskdom_total_tasks || 0;
+    if (mobKneels) mobKneels.innerText = gameStats.kneelCount || 0;
+
+    // --- B. TIME-BASED GRID (24h Timeline) ---
     const grid = document.getElementById('mob_streakGrid');
     if(grid) {
         grid.innerHTML = '';
         let loggedHours = [];
         const now = new Date();
 
-        // Try to read history from CMS
+        // Read History
         if (userProfile.kneelHistory) {
             try {
                 const historyObj = JSON.parse(userProfile.kneelHistory);
@@ -1153,15 +1039,11 @@ window.syncMobileDashboard = function() {
             } catch(e) { console.error("Grid parse error", e); }
         }
 
+        // Render Squares
         for(let i=0; i<24; i++) {
             const sq = document.createElement('div');
             sq.className = 'streak-sq';
-            
-            // Gold if logged
-            if (loggedHours.includes(i)) {
-                sq.classList.add('active');
-            } 
-            // Dim if hour passed & empty
+            if (loggedHours.includes(i)) sq.classList.add('active');
             else if (i < now.getHours()) {
                 sq.style.opacity = "0.3"; 
                 sq.style.borderColor = "#333";
@@ -1170,7 +1052,7 @@ window.syncMobileDashboard = function() {
         }
     }
     
-    // --- 4. OPERATIONS CARD (Status) ---
+    // --- C. OPERATIONS CARD (Status) ---
     const activeRow = document.getElementById('activeTimerRow');
     if (activeRow) {
         const isWorking = !activeRow.classList.contains('hidden');
@@ -1192,37 +1074,75 @@ window.syncMobileDashboard = function() {
         }
     }
 
-    // --- 5. QUEEN'S MENU UPDATES (This was missing) ---
+    // --- D. QUEEN'S MENU (TIME GATED ROUTINE) ---
     
-    // A. Kneel Progress Bar
+// --- D. QUEEN'S MENU UPDATES ---
+
+    // 1. Kneel Progress
     const kneelFill = document.getElementById('kneelDailyFill');
     const kneelText = document.getElementById('kneelDailyText');
     if (kneelFill && kneelText) {
-        // Fallback to modulo if todayKneeling isn't tracked yet
         const count = gameStats.todayKneeling || (gameStats.kneelCount % 8) || 0; 
         const goal = 8;
         const pct = Math.min(100, (count / goal) * 100);
-        
         kneelFill.style.width = pct + "%";
         kneelText.innerText = `${count} / ${goal}`;
     }
 
-    // B. Routine Button Text
+    // 2. Routine Button Logic (CMS BASED)
     const routineBtn = document.getElementById('btnDailyRoutine');
     const noRoutineMsg = document.getElementById('noRoutineMsg');
     
     if (userProfile.routine && userProfile.routine.length > 2) {
-        if (routineBtn) {
-            routineBtn.classList.remove('hidden');
-            routineBtn.innerText = "SUBMIT: " + userProfile.routine.toUpperCase();
+        // Time Check
+        const now = new Date();
+        const currentHour = now.getHours(); 
+        const isTime = currentHour >= 7; 
+        
+        // Completion Check (FROM CMS JSON)
+        let isDoneToday = false;
+        if (userProfile.kneelHistory) {
+            try {
+                const hObj = JSON.parse(userProfile.kneelHistory);
+                // Check if date matches today AND routineDone is true
+                if (hObj.date === now.toDateString() && hObj.routineDone === true) {
+                    isDoneToday = true;
+                }
+            } catch(e) {}
         }
-        if (noRoutineMsg) noRoutineMsg.style.display = 'none';
-    } else {
-        if (routineBtn) routineBtn.classList.add('hidden');
-        if (noRoutineMsg) noRoutineMsg.style.display = 'block';
-    }
-};
 
+        if (isTime && !isDoneToday) {
+            // SHOW BUTTON
+            if (routineBtn) {
+                routineBtn.classList.remove('hidden');
+                routineBtn.innerText = "SUBMIT: " + userProfile.routine.toUpperCase();
+                routineBtn.style.opacity = "1";
+            }
+            if (noRoutineMsg) noRoutineMsg.style.display = 'none';
+        } else {
+            // HIDE BUTTON
+            if (routineBtn) routineBtn.classList.add('hidden');
+            
+            if (noRoutineMsg) {
+                noRoutineMsg.style.display = 'block';
+                if (isDoneToday) {
+                    noRoutineMsg.innerText = "DUTY COMPLETED FOR TODAY";
+                    noRoutineMsg.style.color = "#00ff00";
+                } else {
+                    noRoutineMsg.innerText = "AWAITING 07:00 HOURS";
+                    noRoutineMsg.style.color = "#666";
+                }
+            }
+        }
+    } else {
+        // No Routine Assigned
+        if (routineBtn) routineBtn.classList.add('hidden');
+        if (noRoutineMsg) {
+            noRoutineMsg.style.display = 'block';
+            noRoutineMsg.innerText = "NO ROUTINE ASSIGNED";
+            noRoutineMsg.style.color = "#666";
+        }
+    }
 // =========================================
 // PART 2: FINAL APP MODE (NATIVE FLOW)
 // =========================================
