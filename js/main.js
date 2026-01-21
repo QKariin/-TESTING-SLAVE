@@ -1481,30 +1481,38 @@ document.body.appendChild(footer);
 })();
 
 window.mobileRequestTask = function() {
-    // 1. INSTANT VISUAL FEEDBACK
+    // 1. THE GATEKEEPER: Check for 300 Coins
+    // (If you have less than 300, she won't even talk to you)
+    if (gameStats.coins < 300) {
+        window.triggerPoverty(); // <--- SHOWS THE POVERTY OVERLAY
+        
+        if(window.triggerSound) triggerSound('sfx-deny');
+        
+        return; // <--- STOP! Do not switch view, do not get task.
+    }
+
+    // 2. IF YOU HAVE MONEY: Proceed with the fancy animation
     const taskIdle = document.getElementById('qm_TaskIdle');
     const taskActive = document.getElementById('qm_TaskActive');
     const txt = document.getElementById('mobTaskText');
     
-    // Force View Switch
+    // Switch View
     if(taskIdle) taskIdle.classList.add('hidden');
     if(taskActive) taskActive.classList.remove('hidden');
 
-    // Show "Loading" Animation
+    // Show "Connecting..."
     if(txt) {
         txt.innerHTML = "ESTABLISHING LINK...";
         txt.classList.add('text-pulse');
     }
 
-    // 2. CALL REAL FUNCTION (Small delay to let animation be seen, optional)
+    // 3. GET THE TASK
     setTimeout(() => {
-        window.getRandomTask(); // The real logic
+        window.getRandomTask(); 
         
-        // Remove pulse when text updates (The observer/sync will handle this, 
-        // but let's be safe)
         setTimeout(() => {
             if(txt) txt.classList.remove('text-pulse');
-            window.syncMobileDashboard(); // Refresh to show real text
+            window.syncMobileDashboard(); 
         }, 800);
     }, 300);
 };
