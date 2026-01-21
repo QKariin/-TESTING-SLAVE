@@ -1361,17 +1361,12 @@
                 
                         <!-- ACTION BUTTONS (Updated) -->
                         <div style="display:flex; gap:10px; margin-top: 15px;">
-                            
-                            <!-- UPLOAD BUTTON -->
-                            <button id="mobBtnUpload" class="btn-upload-sm" style="flex:1;" onclick="document.getElementById('evidenceInputMob').click()">
+                           <button id="mobBtnUpload" class="btn-upload-sm" style="flex:1;" onclick="document.getElementById('evidenceInputMob').click()">
                                 UPLOAD
                             </button>
-                            <!-- Hidden Input for Mobile Upload -->
                             <input type="file" id="evidenceInputMob" hidden onchange="window.mobileUploadEvidence(this)">
-                            
-                            <!-- SKIP BUTTON -->
-                            <button class="btn-skip-sm" style="flex:1;" onclick="window.mobileSkipTask()">
-                                SKIP (-300)
+                           <button class="btn-skip-sm" style="flex:1;" onclick="window.mobileSkipTask()">
+                                Failure (-300 coins)
                             </button>
                         </div>
                     </div>
