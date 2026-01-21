@@ -1028,7 +1028,10 @@ function updateStats() {
     const mobStreak = document.getElementById('mobStreak');
     const mobTotal = document.getElementById('mobTotal');
     const mobKneels = document.getElementById('mobKneels');
+
+    //Daily duties
     const mobDailyKneels = document.getElementById('kneelDailyText');
+    const kneelDailyFill = document.getElementById("kneelDailyFill");
 
     // FILL DATA
     if (mobName) mobName.innerText = userProfile.name || "SLAVE";
@@ -1044,8 +1047,14 @@ function updateStats() {
     if (mobKneels) mobKneels.innerText = gameStats.kneelCount || 0;
 
     //Daily Duties
-    if (mobDailyKneels) mobDailyKneels.innerText = (gameStats.kneelHistory ? JSON.parse(gameStats.kneelHistory).hours?.length || 0 : 0) + " / 8";
+    const dailyKneels = (gameStats.kneelHistory ? JSON.parse(gameStats.kneelHistory).hours?.length || 0 : 0) + " / 8";
+    if (mobDailyKneels) mobDailyKneels.innerText = dailyKneels;
 
+    if (kneelDailyFill) {
+        const percent = Math.min((dailyKneels / 8) * 100, 100);
+        kneelDailyFill.style.width = percent + "%";
+    }
+    
     // Profile Picture Logic (Wix Fix)
     if (mobPic && userProfile.profilePicture) {
         let rawUrl = userProfile.profilePicture;
