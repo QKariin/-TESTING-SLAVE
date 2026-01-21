@@ -1716,4 +1716,7 @@ setInterval(() => {
         }
     }
 }, 500);
+
+};
+
 window.parent.postMessage({ type: "UI_READY" }, "*");
