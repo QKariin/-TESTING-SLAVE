@@ -1384,11 +1384,21 @@ window.handleRoutineUpload = function(input) {
 
 window.openExchequer = function() {
     const store = document.getElementById('mobExchequer');
+    
     if (store) {
+        // 1. JAILBREAK: Move store to Body so it is never hidden by parent views
+        if (store.parentElement !== document.body) {
+            document.body.appendChild(store);
+        }
+
+        // 2. FORCE Z-INDEX: Make sure it sits on top (just under the poverty alert)
+        store.style.zIndex = "2147483640"; 
+
+        // 3. SHOW IT
         store.classList.remove('hidden');
-        store.style.display = 'flex'; // Force visible
+        store.style.display = 'flex'; 
     } else {
-        console.error("Exchequer Overlay not found!");
+        console.error("Exchequer Overlay not found! Check HTML IDs.");
     }
 };
 
