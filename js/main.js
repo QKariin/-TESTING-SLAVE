@@ -1541,36 +1541,39 @@ window.mobileUploadEvidence = function(input) {
 window.mobileSkipTask = function() {
     // 1. CHECK FUNDS (Need 300)
     if (gameStats.coins < 300) {
-        window.triggerPoverty(); // Reuse your poverty overlay
+        // A. Play Deny Sound
+        if(window.triggerSound) triggerSound('sfx-deny');
+        
+        // B. Trigger the visual Poverty Overlay (Insult)
+        if(window.triggerPoverty) {
+            window.triggerPoverty();
+        } else {
+            console.error("Poverty System missing!");
+        }
+        
+        // C. STOP EXECUTION (Do not skip the task)
         return;
     }
 
+    // --- IF WE HAVE MONEY, PROCEED ---
+
     // 2. DEDUCT COINS
     gameStats.coins -= 300;
-    window.updateStats(); // Refresh headers
+    if(window.updateStats) window.updateStats(); 
 
-    // 3. PLAY SOUND & INSULT
-    triggerSound('sfx-deny');
-    
-    const insults = [
-        "WEAKNESS DETECTED.", 
-        "PATHETIC. -300 COINS.", 
-        "YOU PAY FOR YOUR FAILURE.", 
-        "DISAPPOINTING."
-    ];
-    const randomInsult = insults[Math.floor(Math.random() * insults.length)];
+    // 3. PLAY SOUND & NOTIFY
+    if(window.triggerSound) triggerSound('sfx-deny'); // Deny sound fits "Task Failed" too
 
-    // Show Red Notification
     if(window.showSystemNotification) {
-        window.showSystemNotification("PROTOCOL ABORTED", randomInsult);
+        window.showSystemNotification("PROTOCOL ABORTED", "PENALTY: -300 COINS");
     }
 
-    // 4. CANCEL TASK & RESET UI
-    if(window.cancelPendingTask) window.cancelPendingTask(); // Backend cleanup
+    // 4. CANCEL TASK IN BACKEND
+    if(window.cancelPendingTask) window.cancelPendingTask(); 
     
-    // FORCE UI RESET
+    // 5. RESET MOBILE UI
     window.updateTaskUIState(false);
-    window.syncMobileDashboard();
+    if(window.syncMobileDashboard) window.syncMobileDashboard();
 };
 
 // TIMER SYNC & VISUALIZATION
