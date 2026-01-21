@@ -1044,7 +1044,7 @@ function updateStats() {
     if (mobKneels) mobKneels.innerText = gameStats.kneelCount || 0;
 
     //Daily Duties
-    if (mobDailyKneels) mobDailyKneels.innerText = (userProfile.todayKneeling || 0) + " / 8";
+    if (mobDailyKneels) mobDailyKneels.innerText = (gameStats.kneelHistory ? JSON.parse(gameStats.kneelHistory).hours?.length || 0 : 0) + " / 8";
 
     // Profile Picture Logic (Wix Fix)
     if (mobPic && userProfile.profilePicture) {
