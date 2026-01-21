@@ -254,6 +254,55 @@
         .kneel-icon-sm { color: #c5a059; font-size: 1.2rem; }
         .kneel-text { font-family: 'Orbitron'; font-family: 'Cinzel', serif; letter-spacing: 3px; color: #ccc; }
 
+        /* --- LUXURY DUTY CARDS --- */
+        .luxury-wrap {
+            padding: 0 20px; /* Outer spacing */
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* Space between the 3 cards */
+            width: 100%;
+        }
+        
+        .luxury-card {
+            background: linear-gradient(180deg, rgba(30,30,30,0.6) 0%, rgba(10,10,10,0.9) 100%);
+            border: 1px solid rgba(197, 160, 89, 0.2); /* Subtle Gold Border */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); /* Deep Shadow */
+            border-radius: 2px;
+            padding: 20px 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Top Gold Shine Line */
+        .luxury-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; width: 100%; height: 1px;
+            background: linear-gradient(90deg, transparent 0%, #c5a059 50%, transparent 100%);
+            opacity: 0.7;
+        }
+        
+        /* SECTION HEADERS (Redesigned) */
+        .duty-label {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 0.7rem;
+            color: #888; 
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        
+        /* The lines beside the title */
+        .duty-label::before, .duty-label::after {
+            content: ''; height: 1px; width: 30px; background: #333;
+        }
+        
+        /* Button override to fit card */
+        .lobby-btn { border-color: rgba(197, 160, 89, 0.4); }
+
         .mob-grid-label-center { 
             font-size: 0.5rem; 
             color: #444; 
@@ -1210,80 +1259,87 @@
             <button onclick="closeQueenMenu()" style="position: absolute; right: 20px; background: none; border: none; color: #666; font-size: 1.5rem; cursor: pointer;">×</button>
         </div>
 
-        <!-- SCROLLING CONTENT -->
+
+        <!-- SCROLLABLE CONTENT -->
         <div class="qm-scroll-content">
-
-            <!-- 1. PROTOCOL -->
-            <div class="duty-section">
-                <div class="duty-label">PROTOCOL</div>
-                
-                <div id="mobRoutineDisplay" style="font-family:'Cinzel'; font-size:1rem; color:#fff; margin-bottom:5px;">
-                    LOADING...
-                </div>
-
-                <!-- Statuses -->
-                <div id="routineTimeMsg" class="txt-status-gold hidden">LOCKED UNTIL 07:00</div>
-                <div id="routineDoneMsg" class="txt-status-green hidden">✔ EVIDENCE SUBMITTED</div>
-
-                <!-- Upload -->
-                <button id="btnRoutineUpload" class="btn-upload-sm hidden" onclick="document.getElementById('routineUpload').click()">
-                    UPLOAD EVIDENCE
-                </button>
-                <input type="file" id="routineUpload" hidden onchange="window.handleRoutineUpload(this)">
-            </div>
-
-            <div class="lobby-divider" style="width:100%;"></div>
-
-            <!-- 2. LABOR -->
-            <div class="duty-section" style="margin-top:10px;">
-                <div class="duty-label">LABOR</div>
-
-                <!-- IDLE -->
-                <div id="qm_TaskIdle" class="hidden">
-                    <div class="txt-status-red" style="margin-bottom:10px;">UNPRODUCTIVE</div>
-                    <button class="lobby-btn" onclick="window.getRandomTask()">REQUEST TASK</button>
-                </div>
-
-                <!-- ACTIVE TASK STATE -->
-                <div id="qm_TaskActive" class="hidden">
-                    <div class="txt-status-green" style="margin-bottom:10px; text-align: center;">WORKING</div>
-                    
-                    <!-- *** NEW: THE TASK TEXT *** -->
-                    <div id="mobTaskText">LOADING ORDERS...</div>
-                
-                    <!-- THE TIMER (Fixed Layout) -->
-                    <div class="card-timer-row">
-                        <div id="qm_timerH" class="card-t-box">00</div>
-                        <div style="color:#666; font-size:1.2rem;">:</div>
-                        <div id="qm_timerM" class="card-t-box">00</div>
-                        <div style="color:#666; font-size:1.2rem;">:</div>
-                        <div id="qm_timerS" class="card-t-box">00</div>
-                    </div>
-                
-                    <!-- BUTTONS -->
-                    <div style="display:flex; gap:10px; margin-top: 10px;">
-                        <button class="btn-upload-sm" style="flex:1;" onclick="document.getElementById('evidenceInput').click()">UPLOAD</button>
-                        <button class="btn-skip-sm" style="flex:1;" onclick="window.cancelPendingTask()">SKIP</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="lobby-divider" style="width:100%;"></div>
-
-            <!-- 3. KNEELING -->
-            <div class="duty-wrapper" style="width:100%; margin-top:10px;">
-                <div class="duty-label">KNEELING GOAL (8/DAY)</div>
-                <div class="kneel-track-reverted">
-                    <div id="kneelDailyFill" class="kneel-fill-reverted"></div>
-                </div>
-                <div id="kneelDailyText" style="text-align:center; font-family:'Orbitron'; font-size:0.7rem; color:#fff; margin-top:5px;">0 / 8</div>
-            </div>
             
-            <!-- Bottom Close Button -->
-            <button class="lobby-btn close" style="margin-top:30px;" onclick="closeQueenMenu()">CLOSE</button>
+            <div class="luxury-wrap">
+        
+                <!-- CARD 1: PROTOCOL -->
+                <div class="luxury-card">
+                    <div class="duty-label">PROTOCOL</div>
+                    
+                    <div id="mobRoutineDisplay" style="font-family:'Cinzel'; font-size:1.1rem; color:#fff; margin-bottom:10px; line-height:1.4; text-align:center; text-shadow:0 0 10px rgba(255,255,255,0.1);">
+                        LOADING...
+                    </div>
+        
+                    <!-- Statuses -->
+                    <div style="text-align:center;">
+                        <div id="routineTimeMsg" class="txt-status-gold hidden">🔒 LOCKED UNTIL 07:00</div>
+                        <div id="routineDoneMsg" class="txt-status-green hidden">✔ EVIDENCE SUBMITTED</div>
+                    </div>
+        
+                    <!-- Upload -->
+                    <div style="display:flex; justify-content:center; margin-top:10px;">
+                        <button id="btnRoutineUpload" class="btn-upload-sm hidden" style="width:100%;" onclick="document.getElementById('routineUpload').click()">
+                            UPLOAD EVIDENCE
+                        </button>
+                    </div>
+                    <input type="file" id="routineUpload" hidden onchange="window.handleRoutineUpload(this)">
+                </div>
+        
+                <!-- CARD 2: LABOR -->
+                <div class="luxury-card">
+                    <div class="duty-label">LABOR</div>
+        
+                    <!-- IDLE -->
+                    <div id="qm_TaskIdle" class="hidden">
+                        <div class="txt-status-red" style="margin-bottom:15px; font-size: 0.9rem; text-align:center;">UNPRODUCTIVE</div>
+                        <button class="lobby-btn" style="width:100%;" onclick="window.getRandomTask()">REQUEST TASK</button>
+                    </div>
+        
+                    <!-- ACTIVE -->
+                    <div id="qm_TaskActive" class="hidden">
+                        <div class="txt-status-green" style="margin-bottom:10px; font-size: 0.9rem; text-align:center;">WORKING</div>
+                        
+                        <!-- Task Text Container -->
+                        <div id="mobTaskText">LOADING ORDERS...</div>
+        
+                        <div class="card-timer-row">
+                            <div id="qm_timerH" class="card-t-box">00</div>
+                            <div style="color:#444; font-size:1.2rem;">:</div>
+                            <div id="qm_timerM" class="card-t-box">00</div>
+                            <div style="color:#444; font-size:1.2rem;">:</div>
+                            <div id="qm_timerS" class="card-t-box">00</div>
+                        </div>
+        
+                        <div style="display:flex; gap:10px; margin-top: 15px;">
+                            <button class="btn-upload-sm" style="flex:1;" onclick="document.getElementById('evidenceInput').click()">UPLOAD</button>
+                            <button class="btn-skip-sm" style="flex:1;" onclick="window.cancelPendingTask()">SKIP</button>
+                        </div>
+                    </div>
+                </div>
+        
+                <!-- CARD 3: KNEELING -->
+                <div class="luxury-card">
+                    <div class="duty-label">KNEELING GOAL</div>
+                    
+                    <div class="kneel-track-reverted">
+                        <div id="kneelDailyFill" class="kneel-fill-reverted"></div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; margin-top:10px; padding:0 5px;">
+                        <span style="font-family:'Orbitron'; font-size:0.6rem; color:#666;">DAILY TARGET</span>
+                        <span id="kneelDailyText" style="font-family:'Orbitron'; font-size:0.8rem; color:#fff;">0 / 8</span>
+                    </div>
+                </div>
+        
+                <!-- CLOSE BUTTON -->
+                <button class="lobby-btn close" style="margin-top:10px; border-color: #333; color: #666;" onclick="closeQueenMenu()">CLOSE CARD</button>
+        
+                <div style="height: 60px;"></div>
+            </div>
         </div>
-    </div>
-</div>
         <!-- 2. THE HALO (Identity) -->
         <div class="halo-section">
             <div class="halo-ring">
