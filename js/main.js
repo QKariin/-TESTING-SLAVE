@@ -845,6 +845,7 @@ window.addEventListener("message", (event) => {
                     memberId: data.profile.memberId || "",
                     joined: data.profile.joined,
                     profilePicture: data.profile.profilePicture, // <--- ADD THIS LINE
+                    routine: data.profile.routine,
                     kneelHistory: data.profile.kneelHistory
                     
                 });
@@ -1283,53 +1284,42 @@ window.triggerKneel = function() {
 window.syncMobileDashboard = function() {
     if (!gameStats || !userProfile) return;
 
-    // --- 1. EXISTING DASHBOARD SYNC (Keep your existing Header/Grid logic) ---
-    const elName = document.getElementById('mob_slaveName');
-    if (elName) elName.innerText = userProfile.name || "SLAVE";
-    const elRank = document.getElementById('mob_rankStamp');
-    if (elRank) elRank.innerText = userProfile.hierarchy || "INITIATE";
-    // ... (Keep grid/image sync) ...
-
-    // --- 2. QUEEN MENU LOGIC ---
-
-    // A. DATE
+    // --- HEADER DATA ---
     const dateEl = document.getElementById('dutyDateDisplay');
     if(dateEl) dateEl.innerText = new Date().toLocaleDateString().toUpperCase();
 
-    // B. PROTOCOL (From CMS 'routine' field)
-    const routineName = userProfile.routine || "NO PROTOCOL";
+    // --- 1. PROTOCOL ---
+    // If we fixed the CMS issue, this will now work:
+    const routineName = userProfile.routine || "NO PROTOCOL"; 
     const rDisplay = document.getElementById('mobRoutineDisplay');
     if(rDisplay) rDisplay.innerText = routineName.toUpperCase();
 
-    // Logic: 7AM Check + Done Check
+    // Status Check
     const nowHour = new Date().getHours();
     const isMorning = nowHour >= 7; 
-    const isDone = gameStats.routineDoneToday === true;
+    const isDone = gameStats.routineDoneToday === true; // Requires simple memory flag
 
     const btnUpload = document.getElementById('btnRoutineUpload');
-    const msgTime = document.getElementById('routineTimeMsg'); // "LOCKED UNTIL 7"
-    const msgDone = document.getElementById('routineDoneMsg'); // "COMPLETED"
+    const msgTime = document.getElementById('routineTimeMsg');
+    const msgDone = document.getElementById('routineDoneMsg');
 
     if (isDone) {
         if(btnUpload) btnUpload.classList.add('hidden');
         if(msgTime) msgTime.classList.add('hidden');
         if(msgDone) msgDone.classList.remove('hidden');
-    } 
-    else if (isMorning) {
-        // OPEN
+    } else if (isMorning) {
         if(btnUpload) btnUpload.classList.remove('hidden');
         if(msgTime) msgTime.classList.add('hidden');
         if(msgDone) msgDone.classList.add('hidden');
-    } 
-    else {
-        // LOCKED (<7AM)
+    } else {
         if(btnUpload) btnUpload.classList.add('hidden');
         if(msgTime) msgTime.classList.remove('hidden');
         if(msgDone) msgDone.classList.add('hidden');
     }
 
-    // C. LABOR (Task)
-    const activeRow = document.getElementById('activeTimerRow'); // Desktop source of truth
+    // --- 2. LABOR ---
+    // Read from Desktop State
+    const activeRow = document.getElementById('activeTimerRow'); 
     const isWorking = activeRow && !activeRow.classList.contains('hidden');
     
     const taskIdle = document.getElementById('qm_TaskIdle');
@@ -1343,7 +1333,7 @@ window.syncMobileDashboard = function() {
         if(taskActive) taskActive.classList.add('hidden');
     }
 
-    // D. KNEELING (Reverted Style + Green Logic)
+    // --- 3. KNEELING ---
     const kneelFill = document.getElementById('kneelDailyFill');
     const kneelText = document.getElementById('kneelDailyText');
     
@@ -1351,16 +1341,11 @@ window.syncMobileDashboard = function() {
         const kCount = gameStats.todayKneeling || (gameStats.kneelCount % 8) || 0; 
         const kGoal = 8;
         const pct = Math.min(100, (kCount / kGoal) * 100);
-        
         kneelFill.style.width = pct + "%";
         kneelText.innerText = `${kCount} / ${kGoal}`;
-
-        // Turn GREEN if 8 or more
-        if (kCount >= kGoal) {
-            kneelFill.classList.add('green'); 
-        } else {
-            kneelFill.classList.remove('green');
-        }
+        
+        if (kCount >= kGoal) kneelFill.classList.add('green'); 
+        else kneelFill.classList.remove('green');
     }
 };
 
