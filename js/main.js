@@ -1451,10 +1451,11 @@ window.closeExchequer = function() {
             height: height + 'px',
             width: '100%',
             position: 'fixed',
-            overflow: 'hidden',
+            overflow: 'hidden', // Body is frozen
             inset: '0',
             overscrollBehavior: 'none',
-            touchAction: 'none'
+            touchAction: 'none',
+            backgroundColor: '#000000'
         });
 
         // 2. LOCK THE APP CONTAINER
@@ -1462,7 +1463,7 @@ window.closeExchequer = function() {
         if (app) Object.assign(app.style, { height: '100%', overflow: 'hidden' });
 
         // 3. ALLOW SCROLLING *ONLY* ON THESE ELEMENTS
-        // (Note: Home, Record, and Global now handle their own internal scrolling in HTML)
+        // (Home, Global, and Record are REMOVED because they use internal scrolling)
         const scrollables = document.querySelectorAll('.content-stage, .chat-body-frame, #historySection, #viewNews');
         
         scrollables.forEach(el => {
