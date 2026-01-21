@@ -1317,37 +1317,34 @@ window.syncMobileDashboard = function() {
         if(msgDone) msgDone.classList.add('hidden');
     }
 
-    // --- 2. LABOR ---
-    // Read from Desktop State
-    const activeRow = document.getElementById('activeTimerRow'); 
+     // --- 2. LABOR ---
+    const activeRow = document.getElementById('activeTimerRow'); // Desktop source
     const isWorking = activeRow && !activeRow.classList.contains('hidden');
     
     const taskIdle = document.getElementById('qm_TaskIdle');
     const taskActive = document.getElementById('qm_TaskActive');
     
+    // NEW: Get Task Text
+    const mobTaskText = document.getElementById('mobTaskText');
+
     if (isWorking) {
         if(taskIdle) taskIdle.classList.add('hidden');
         if(taskActive) taskActive.classList.remove('hidden');
+
+        // *** INJECT TASK TEXT ***
+        // We use the same source as the desktop (currentTask global var)
+        if (mobTaskText && typeof currentTask !== 'undefined' && currentTask) {
+            mobTaskText.innerText = currentTask.instruction || currentTask.text || "AWAITING ORDERS";
+        } else if (mobTaskText) {
+            // Fallback if currentTask isn't ready yet, try reading desktop text
+            const desktopText = document.getElementById('readyText');
+            mobTaskText.innerText = desktopText ? desktopText.innerText : "PROCESSING...";
+        }
+
     } else {
         if(taskIdle) taskIdle.classList.remove('hidden');
         if(taskActive) taskActive.classList.add('hidden');
     }
-
-    // --- 3. KNEELING ---
-    const kneelFill = document.getElementById('kneelDailyFill');
-    const kneelText = document.getElementById('kneelDailyText');
-    
-    if (kneelFill && kneelText) {
-        const kCount = gameStats.todayKneeling || (gameStats.kneelCount % 8) || 0; 
-        const kGoal = 8;
-        const pct = Math.min(100, (kCount / kGoal) * 100);
-        kneelFill.style.width = pct + "%";
-        kneelText.innerText = `${kCount} / ${kGoal}`;
-        
-        if (kCount >= kGoal) kneelFill.classList.add('green'); 
-        else kneelFill.classList.remove('green');
-    }
-};
 
 window.handleRoutineUpload = function(input) {
     if(input.files.length > 0) {
