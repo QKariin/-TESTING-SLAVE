@@ -1028,6 +1028,7 @@ function updateStats() {
     const mobStreak = document.getElementById('mobStreak');
     const mobTotal = document.getElementById('mobTotal');
     const mobKneels = document.getElementById('mobKneels');
+    const mobDailyKneels = document.getElementById('kneelDailyText');
 
     // FILL DATA
     if (mobName) mobName.innerText = userProfile.name || "SLAVE";
@@ -1041,6 +1042,9 @@ function updateStats() {
     if (mobStreak) mobStreak.innerText = gameStats.taskdom_streak || 0;
     if (mobTotal) mobTotal.innerText = gameStats.taskdom_total_tasks || 0;
     if (mobKneels) mobKneels.innerText = gameStats.kneelCount || 0;
+
+    //Daily Duties
+    if (mobDailyKneels) mobDailyKneels.innerText = (userProfile.todayKneeling || 0) + " / 8";
 
     // Profile Picture Logic (Wix Fix)
     if (mobPic && userProfile.profilePicture) {
