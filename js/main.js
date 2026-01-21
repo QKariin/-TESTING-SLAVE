@@ -1480,32 +1480,36 @@ document.body.appendChild(footer);
 })();
 
 window.mobileRequestTask = function() {
-    // 1. INSTANT VISUAL FEEDBACK
+    // 1. GATEKEEPER: Check for 300 Coins
+    if (gameStats.coins < 300) {
+        window.triggerPoverty(); // Show Insult
+        if(window.triggerSound) triggerSound('sfx-deny');
+        return; // STOP
+    }
+
+    // 2. SUCCESS: Switch UI
     const taskIdle = document.getElementById('qm_TaskIdle');
     const taskActive = document.getElementById('qm_TaskActive');
     const txt = document.getElementById('mobTaskText');
     
-    // Force View Switch
     if(taskIdle) taskIdle.classList.add('hidden');
     if(taskActive) taskActive.classList.remove('hidden');
 
-    // Show "Loading" Animation
+    // 3. ANIMATION
     if(txt) {
         txt.innerHTML = "ESTABLISHING LINK...";
-        txt.classList.add('text-pulse');
+        txt.className = "text-pulse"; 
     }
 
-    // 2. CALL REAL FUNCTION (Small delay to let animation be seen, optional)
+    // 4. GET THE TASK
     setTimeout(() => {
-        window.getRandomTask(); // The real logic
+        window.getRandomTask(); // Call backend
         
-        // Remove pulse when text updates (The observer/sync will handle this, 
-        // but let's be safe)
+        // Refresh UI shortly after
         setTimeout(() => {
-            if(txt) txt.classList.remove('text-pulse');
-            window.syncMobileDashboard(); // Refresh to show real text
+            window.syncMobileDashboard(); 
         }, 800);
-    }, 300);
+    }, 500);
 };
 
 window.mobileUploadEvidence = function(input) {
