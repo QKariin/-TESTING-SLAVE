@@ -1215,33 +1215,37 @@ window.toggleMobileStats = function() {
     }
 };
 
+// ==========================
+// REPLACE window.toggleMobileView WITH THIS VERSION
+// ==========================
+
 window.toggleMobileView = function(viewName) {
-    // --- 1. CLEANUP ---
+    // 1. CLEANUP POPOVERS
     if (window.closeLobby) window.closeLobby();
     if (window.closeQueenMenu) window.closeQueenMenu();
     if (window.closePoverty) window.closePoverty();
 
-    // --- 2. DEFINE VIEWS ---
+    // 2. DEFINE VIEWS
     const home = document.getElementById('viewMobileHome');
     const mobRecord = document.getElementById('viewMobileRecord');
-    const mobGlobal = document.getElementById('viewMobileGlobal'); // Must match HTML ID
+    const mobGlobal = document.getElementById('viewMobileGlobal');
     
-    // Desktop/Shared Views
+    // Desktop/Shared Views to hide
     const chatCard = document.getElementById('chatCard');
     const mobileApp = document.getElementById('MOBILE_APP');
     const history = document.getElementById('historySection');
     const news = document.getElementById('viewNews');
     const protocol = document.getElementById('viewProtocol');
     
-    // --- 3. HIDE EVERYTHING ---
-    // We add a safety check (el && ...) to prevent crashes if a view is missing
+    // 3. HIDE EVERYTHING (Aggressive Reset)
     const views = [home, mobRecord, mobGlobal, history, news, protocol];
-    views.forEach(el => { if(el) el.style.display = 'none'; });
+    views.forEach(el => { 
+        if(el) el.style.display = 'none'; 
+    });
 
-    // Reset Chat Visibility
     if (chatCard) chatCard.style.setProperty('display', 'none', 'important');
 
-    // --- 4. SHOW TARGET ---
+    // 4. SHOW TARGET VIEW
     if (viewName === 'home' && home) {
         home.style.display = 'flex';
         if(window.syncMobileDashboard) window.syncMobileDashboard();
@@ -1251,6 +1255,7 @@ window.toggleMobileView = function(viewName) {
             if (chatCard.parentElement !== mobileApp) mobileApp.appendChild(chatCard);
             chatCard.style.removeProperty('display');
             chatCard.style.display = 'flex';
+            // Scroll fix
             const chatBox = document.getElementById('chatBox');
             if (chatBox) setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 100);
         }
@@ -1262,11 +1267,29 @@ window.toggleMobileView = function(viewName) {
     else if (viewName === 'queen' && news) {
         news.style.display = 'block';
     }
+    // *** THE FIX FOR GLOBAL ***
     else if (viewName === 'global' && mobGlobal) {
         mobGlobal.style.display = 'flex';
+        
+        // FORCE STYLES VIA JS (Fixes "Invisible" issue)
+        mobGlobal.style.backgroundColor = "#000";
+        mobGlobal.style.color = "#fff";
+        mobGlobal.style.zIndex = "100";
+        
+        // Paint the headers inside it manually to be safe
+        const headers = mobGlobal.querySelectorAll('.mob-name, .mob-header, div');
+        headers.forEach(h => h.style.color = "#fff");
+        
+        const card = mobGlobal.querySelector('.mob-card');
+        if(card) {
+            card.style.border = "1px solid #333";
+            card.style.background = "rgba(20,20,20,0.8)";
+            card.style.padding = "20px";
+            card.style.borderRadius = "8px";
+        }
     }
     
-    // --- 5. SIDEBAR CLEANUP ---
+    // 5. SIDEBAR CLEANUP
     const sidebar = document.querySelector('.layout-left');
     if (sidebar) sidebar.classList.remove('mobile-open');
     document.querySelectorAll('.mf-btn').forEach(btn => btn.classList.remove('active'));
