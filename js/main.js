@@ -1479,6 +1479,100 @@ document.body.appendChild(footer);
     lockVisuals(); buildAppFooter();
 })();
 
+window.mobileRequestTask = function() {
+    // 1. INSTANT VISUAL FEEDBACK
+    const taskIdle = document.getElementById('qm_TaskIdle');
+    const taskActive = document.getElementById('qm_TaskActive');
+    const txt = document.getElementById('mobTaskText');
+    
+    // Force View Switch
+    if(taskIdle) taskIdle.classList.add('hidden');
+    if(taskActive) taskActive.classList.remove('hidden');
+
+    // Show "Loading" Animation
+    if(txt) {
+        txt.innerHTML = "ESTABLISHING LINK...";
+        txt.classList.add('text-pulse');
+    }
+
+    // 2. CALL REAL FUNCTION (Small delay to let animation be seen, optional)
+    setTimeout(() => {
+        window.getRandomTask(); // The real logic
+        
+        // Remove pulse when text updates (The observer/sync will handle this, 
+        // but let's be safe)
+        setTimeout(() => {
+            if(txt) txt.classList.remove('text-pulse');
+            window.syncMobileDashboard(); // Refresh to show real text
+        }, 800);
+    }, 300);
+};
+
+window.mobileUploadEvidence = function(input) {
+    if (input.files && input.files.length > 0) {
+        
+        // 1. Trigger the Backend Upload
+        window.handleEvidenceUpload(input);
+
+        // 2. UI FEEDBACK
+        const btn = document.getElementById('mobBtnUpload');
+        if(btn) btn.innerText = "SENDING...";
+
+        // 3. SHOW SUCCESS & CLOSE TASK (After 1.5 seconds)
+        setTimeout(() => {
+            // Show Green Notification (Reuse your system notification)
+            if(window.showSystemNotification) {
+                window.showSystemNotification("EVIDENCE SENT", "STATUS: PENDING REVIEW");
+            }
+            
+            // RESET UI TO "UNACTIVE"
+            // We trick the system into thinking we are idle
+            window.updateTaskUIState(false); 
+            
+            // Reset Button Text
+            if(btn) btn.innerText = "UPLOAD";
+            
+            // Force Mobile Sync
+            window.syncMobileDashboard();
+        }, 1500);
+    }
+};
+
+window.mobileSkipTask = function() {
+    // 1. CHECK FUNDS (Need 300)
+    if (gameStats.coins < 300) {
+        window.triggerPoverty(); // Reuse your poverty overlay
+        return;
+    }
+
+    // 2. DEDUCT COINS
+    gameStats.coins -= 300;
+    window.updateStats(); // Refresh headers
+
+    // 3. PLAY SOUND & INSULT
+    triggerSound('sfx-deny');
+    
+    const insults = [
+        "WEAKNESS DETECTED.", 
+        "PATHETIC. -300 COINS.", 
+        "YOU PAY FOR YOUR FAILURE.", 
+        "DISAPPOINTING."
+    ];
+    const randomInsult = insults[Math.floor(Math.random() * insults.length)];
+
+    // Show Red Notification
+    if(window.showSystemNotification) {
+        window.showSystemNotification("PROTOCOL ABORTED", randomInsult);
+    }
+
+    // 4. CANCEL TASK & RESET UI
+    if(window.cancelPendingTask) window.cancelPendingTask(); // Backend cleanup
+    
+    // FORCE UI RESET
+    window.updateTaskUIState(false);
+    window.syncMobileDashboard();
+};
+
 // TIMER SYNC & VISUALIZATION
 setInterval(() => {
     // 1. Get Source (Desktop Hidden Elements)
