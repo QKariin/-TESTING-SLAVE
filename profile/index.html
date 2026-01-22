@@ -479,6 +479,49 @@
         
         /* LEGENDARY TIER (Last items) */
         .reward-badge.unlocked.legendary .rb-icon { fill: #ff003c; filter: drop-shadow(0 0 8px #ff003c); }
+
+        /* --- REWARD DETAIL CARD --- */
+.rc-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+    width: 100%;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 15px;
+}
+
+.rc-icon-large {
+    width: 60px; height: 60px;
+    fill: #444;
+}
+.rc-icon-large svg { width: 100%; height: 100%; }
+
+.rc-meta { display: flex; flex-direction: column; align-items: flex-start; }
+.rc-title { font-family: 'Cinzel', serif; font-size: 1.2rem; color: #fff; text-transform: uppercase; }
+.rc-status { font-family: 'Orbitron'; font-size: 0.7rem; letter-spacing: 2px; color: #666; margin-top: 5px; }
+
+.rc-quote {
+    font-family: 'Cinzel', serif;
+    font-style: italic;
+    color: #888;
+    font-size: 0.9rem;
+    margin-bottom: 25px;
+    line-height: 1.4;
+    text-align: center;
+}
+
+/* Progress Bar */
+.rc-progress-wrap { width: 100%; margin-bottom: 20px; }
+.rc-progress-labels { display: flex; justify-content: space-between; margin-bottom: 5px; font-family: 'Orbitron'; font-size: 0.8rem; color: #ccc; }
+.rc-track { width: 100%; height: 6px; background: #111; border: 1px solid #333; border-radius: 3px; overflow: hidden; }
+.rc-fill { height: 100%; width: 0%; background: var(--gold); transition: width 0.5s ease; }
+
+/* Unlocked State overrides */
+.unlocked-mode .rc-icon-large { fill: var(--gold); filter: drop-shadow(0 0 10px var(--gold)); }
+.unlocked-mode .rc-status { color: var(--gold); text-shadow: 0 0 5px var(--gold); }
+.unlocked-mode .rc-fill { background: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
+      
         /* =========================================
            7. HUD & LOBBY
            ========================================= */
@@ -1322,6 +1365,38 @@
                 <button onclick="goToExchequer()" class="mob-action-btn" style="border-color: #ff003c; color: #ff003c;">BOOST WALLET</button>
                 <button onclick="closePoverty()" class="mob-action-btn" style="border-color: #444; color: #888;">APOLOGIZE & RETURN</button>
             </div>
+        </div>
+    </div>
+
+  <!-- REWARD DETAIL OVERLAY (The Intel Card) -->
+    <div id="rewardCardOverlay" class="mob-reward-overlay hidden" onclick="closeRewardCard()">
+        <div class="mob-reward-card" onclick="event.stopPropagation()">
+            
+            <!-- Icon & Status -->
+            <div class="rc-header">
+                <div id="rcIcon" class="rc-icon-large"></div>
+                <div class="rc-meta">
+                    <div id="rcTitle" class="rc-title">TITLE</div>
+                    <div id="rcStatus" class="rc-status">LOCKED</div>
+                </div>
+            </div>
+    
+            <!-- The Motivation Text -->
+            <div id="rcQuote" class="rc-quote">"Obedience is the only currency."</div>
+    
+            <!-- Progress Bar -->
+            <div class="rc-progress-wrap">
+                <div class="rc-progress-labels">
+                    <span id="rcCurrent">0</span>
+                    <span id="rcTarget">/ 100</span>
+                </div>
+                <div class="rc-track">
+                    <div id="rcFill" class="rc-fill"></div>
+                </div>
+            </div>
+    
+            <!-- Action -->
+            <button class="mob-action-btn" onclick="closeRewardCard()">ACKNOWLEDGE</button>
         </div>
     </div>
 
