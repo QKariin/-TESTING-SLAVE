@@ -457,11 +457,54 @@
         }
         .mob-reward-actions { width: 100%; display: flex; flex-direction: column; gap: 10px; }
 
-        #queenOverlay { background: #000 !important; align-items: flex-start !important; padding: 0 !important; z-index: 99999 !important; }
-        #queenOverlay .mob-reward-card { width: 100% !important; height: 100% !important; border: none !important; border-radius: 0 !important; background: #000 !important; box-shadow: none !important; }
+        /* --- FIX: QUEEN MENU FULL SCREEN MODE --- */
+
+        /* 1. Force the Overlay to be a solid black page */
+        #queenOverlay {
+            background: #000 !important;
+            padding: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
         
-        .qm-scroll-content { flex: 1; overflow-y: auto; padding: 20px 0; width: 100%; scrollbar-width: none; }
-        .qm-scroll-content::-webkit-scrollbar { display: none; }
+        /* 2. Strip the Card properties so it's just a transparent container */
+        #queenOverlay .mob-reward-card {
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: none !important;
+            max-height: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            background: #000 !important;
+            padding: 0 !important; /* KILL THE PADDING HERE */
+            margin: 0 !important;
+        }
+        
+        /* 3. Fix the Scroll Area (Remove Top Gap) */
+        .qm-scroll-content {
+            padding-top: 0 !important; /* Remove the gap below the header */
+            padding-bottom: 120px !important; /* Keep footer space */
+            width: 100% !important;
+        }
+        
+        /* 4. Fix the Side Margins (Optional: Keep side padding for cards, but ensure full width) */
+        .luxury-wrap {
+            padding: 15px 10px !important; /* Tighter padding, looks more like an app */
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        
+        /* 5. Fix the Header inside Queen Menu (Stop it from floating) */
+        #queenOverlay .mob-chat-header {
+            position: sticky !important; /* Stick to top of this view, not global */
+            top: 0 !important;
+            margin-bottom: 0 !important;
+            background: rgba(10,10,10,0.95) !important;
+            border-bottom: 1px solid #333 !important;
+            width: 100% !important;
+            z-index: 50 !important;
+        }
 
         #povertyOverlay {
             z-index: 2147483647 !important; background: rgba(0,0,0,0.95) !important;
