@@ -1,7 +1,7 @@
 /* --- LUXURY TACTICAL CHAT DNA --- */
 
 /* =========================================
-   [FIX] HEADER VISIBILITY LOGIC
+   [GLOBAL] HEADER VISIBILITY LOGIC
    ========================================= */
 /* DEFAULT (DESKTOP): Hide Giant Mobile Header, Show Black Bar */
 .mob-chat-header { display: none !important; }
@@ -283,7 +283,7 @@
     .mob-chat-header { display: flex !important; }
     .right-header { display: none !important; }
 
-    /* MOBILE CHAT HEADER */
+    /* MOBILE CHAT HEADER STYLING (Transferred from HTML) */
     .mob-chat-header {
         position: fixed; /* Sticks to top of chat card */
         top: 0; left: 0; width: 100%; height: 65px;
@@ -320,7 +320,6 @@
     .chat-status-text { font-family: 'Orbitron'; font-size: 0.55rem; color: #888; letter-spacing: 1px; }
 
     /* ADJUST CHAT BODY PADDING (Important!) */
-    /* Update your existing .chat-body-frame rule to add top padding so text isn't hidden */
     .chat-body-frame {
         padding-top: 75px !important; /* 65px header + 10px space */
     }
