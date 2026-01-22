@@ -1226,17 +1226,34 @@ window.renderRewards = function() {
 
     // HELPER: BUILD SHELF
     // shapeClass = 'shape-hex', 'shape-circle', etc.
-    const buildShelf = (containerId, data, shapeClass, checkFn) => {
+    // UPDATED HELPER: BUILD SHELF WITH CLICK HANDLER
+    const buildShelf = (containerId, data, shapeClass, checkFn, currentVal, typeLabel) => {
         const container = document.getElementById(containerId);
         if (!container) return;
         
         container.innerHTML = data.map((item, index) => {
-            const isUnlocked = checkFn(item, index);
-            const statusClass = isUnlocked ? "unlocked" : "locked";
-            const isLegendary = index === data.length - 1 ? "legendary" : ""; // Last item is legendary
+            // Determine Target Value
+            // For Ranks, target is simply the index (0, 1, 2). Current is User's Rank Index.
+            // For others, item.limit is the target.
+            const targetVal = (typeLabel === 'rank') ? index : item.limit;
             
+            // Logic for Ranks is slightly different (Current >= Target Index)
+            const isUnlocked = (typeLabel === 'rank') 
+                ? (currentVal >= index) 
+                : (currentVal >= targetVal);
+
+            const statusClass = isUnlocked ? "unlocked" : "locked";
+            const isLegendary = index === data.length - 1 ? "legendary" : "";
+            
+            // Generate Click Handler
+            // We pass the raw data to the opener function
+            // Note: For Ranks, we visualize '1/1' if unlocked, '0/1' if locked for simplicity
+            const displayCurrent = (typeLabel === 'rank') ? (isUnlocked ? 1 : 0) : currentVal;
+            const displayTarget = (typeLabel === 'rank') ? 1 : targetVal;
+
             return `
-                <div class="reward-badge ${shapeClass} ${statusClass} ${isLegendary}">
+                <div class="reward-badge ${shapeClass} ${statusClass} ${isLegendary}" 
+                     onclick="window.openRewardCard('${item.name}', '${item.icon}', ${displayCurrent}, ${displayTarget}, '${typeLabel}')">
                     <div class="rb-inner" style="display:flex; flex-direction:column; align-items:center;">
                         <svg class="rb-icon" viewBox="0 0 24 24"><path d="${item.icon}"/></svg>
                         <div class="rb-label">${item.name}</div>
@@ -1246,23 +1263,83 @@ window.renderRewards = function() {
         }).join('');
     };
 
-    // 2. RENDER (With Specific Shapes)
+    // 2. RENDER CALLS (Updated with Type Labels and Current Values)
     const rankList = REWARD_DATA.ranks.map(r => r.name.toLowerCase());
-    // Normalize rank string comparison
-    const myRankIndex = rankList.findIndex(r => r === currentRank.toLowerCase()) || 0;
+    const myRankIndex = rankList.findIndex(r => r === currentRank.toLowerCase());
 
-    // RANKS -> HEXAGONS
-    buildShelf('shelfRanks', REWARD_DATA.ranks, 'shape-hex', (item, idx) => idx <= myRankIndex);
+    // Note: Passing 'currentVal' and 'typeLabel' now
+    buildShelf('shelfRanks', REWARD_DATA.ranks, 'shape-hex', null, myRankIndex, 'rank');
+    buildShelf('shelfTasks', REWARD_DATA.tasks, 'shape-chip', null, totalTasks, 'task');
+    buildShelf('shelfKneel', REWARD_DATA.kneeling, 'shape-circle', null, totalKneels, 'kneel');
+    buildShelf('shelfSpend', REWARD_DATA.spending, 'shape-diamond', null, totalSpent, 'spend');
 
-    // TASKS -> CHIPS
-    buildShelf('shelfTasks', REWARD_DATA.tasks, 'shape-chip', (item) => totalTasks >= item.limit);
+window.openRewardCard = function(name, iconPath, current, target, type) {
+    const overlay = document.getElementById('rewardCardOverlay');
+    const container = overlay.querySelector('.mob-reward-card');
+    
+    // Elements
+    const elIcon = document.getElementById('rcIcon');
+    const elTitle = document.getElementById('rcTitle');
+    const elStatus = document.getElementById('rcStatus');
+    const elQuote = document.getElementById('rcQuote');
+    const elCurrent = document.getElementById('rcCurrent');
+    const elTarget = document.getElementById('rcTarget');
+    const elFill = document.getElementById('rcFill');
 
-    // KNEELING -> CIRCLES
-    buildShelf('shelfKneel', REWARD_DATA.kneeling, 'shape-circle', (item) => totalKneels >= item.limit);
+    // Logic
+    const isUnlocked = current >= target;
+    const percentage = Math.min((current / target) * 100, 100);
 
-    // SPENDING -> DIAMONDS
-    buildShelf('shelfSpend', REWARD_DATA.spending, 'shape-diamond', (item) => totalSpent >= item.limit);
+    // 1. Set Visuals
+    elIcon.innerHTML = `<svg viewBox="0 0 24 24"><path d="${iconPath}"/></svg>`;
+    elTitle.innerText = name;
+    
+    if (isUnlocked) {
+        container.classList.add('unlocked-mode');
+        elStatus.innerText = "ACQUIRED";
+        elQuote.innerHTML = getQuote(type, true); // Get Praise
+    } else {
+        container.classList.remove('unlocked-mode');
+        elStatus.innerText = "LOCKED";
+        elQuote.innerHTML = getQuote(type, false); // Get Insult
+    }
+
+    // 2. Set Progress
+    elCurrent.innerText = current.toLocaleString(); // Adds commas (1,000)
+    elTarget.innerText = "/ " + target.toLocaleString();
+    elFill.style.width = percentage + "%";
+
+    // 3. Show
+    overlay.classList.remove('hidden');
 };
+
+window.closeRewardCard = function() {
+    document.getElementById('rewardCardOverlay').classList.add('hidden');
+};
+
+// Helper: Generates Flavor Text
+function getQuote(type, isUnlocked) {
+    const insults = [
+        "You are not there yet. Suffer more.",
+        "Pathetic. Is this your best?",
+        "Do not look at me until you finish this.",
+        "Your dedication is lacking."
+    ];
+    const praise = [
+        "Accepted. You may continue.",
+        "Adequate service. Do not get arrogant.",
+        "I see your effort. Keep going.",
+        "This pleases me. Briefly."
+    ];
+
+    // Specific overrides
+    if (type === 'spend' && !isUnlocked) return "Your wallet is too full. Empty it.";
+    if (type === 'kneel' && !isUnlocked) return "Your knees are too strong. Break them.";
+
+    return isUnlocked 
+        ? praise[Math.floor(Math.random() * praise.length)] 
+        : insults[Math.floor(Math.random() * insults.length)];
+}
 // =========================================
 // PART 3: TRIBUTE & BACKEND FUNCTIONS (RESTORED)
 // =========================================
