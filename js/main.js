@@ -1023,7 +1023,7 @@ window.WISHLIST_ITEMS = WISHLIST_ITEMS;
 window.gameStats = gameStats;
 
 function updateStats() {
-    // 1. DESKTOP UPDATE (Original Logic - Keep safe)
+    // 1. DESKTOP UPDATE (Basic Header)
     const subName = document.getElementById('subName');
     const subHierarchy = document.getElementById('subHierarchy');
     const coinsEl = document.getElementById('coins');
@@ -1031,11 +1031,19 @@ function updateStats() {
 
     if (!subName || !userProfile || !gameStats) return; 
 
-    // Update Desktop Elements
+    // Update Basic Desktop Elements
     subName.textContent = userProfile.name || "Slave";
     if (subHierarchy) subHierarchy.textContent = userProfile.hierarchy || "HallBoy";
     if (coinsEl) coinsEl.textContent = gameStats.coins ?? 0;
     if (pointsEl) pointsEl.textContent = gameStats.points ?? 0;
+
+    // --- [NEW] CONNECT DESKTOP EXPANDED STATS ---
+    if (document.getElementById('statStreak')) document.getElementById('statStreak').innerText = gameStats.taskdom_streak || 0;
+    if (document.getElementById('statTotal')) document.getElementById('statTotal').innerText = gameStats.taskdom_total_tasks || 0;
+    if (document.getElementById('statCompleted')) document.getElementById('statCompleted').innerText = gameStats.taskdom_completed || 0;
+    if (document.getElementById('statSkipped')) document.getElementById('statSkipped').innerText = gameStats.taskdom_skipped || 0;
+    if (document.getElementById('statTotalKneels')) document.getElementById('statTotalKneels').innerText = gameStats.kneelCount || 0;
+    // ---------------------------------------------
 
     // 2. MOBILE UPDATE (The New Connection)
     // Header Identity
@@ -1089,7 +1097,7 @@ function updateStats() {
         }
     }
 
-// --- GRID SYNC (TRUST THE BACKEND) ---
+    // --- GRID SYNC (TRUST THE BACKEND) ---
     const grid = document.getElementById('mob_streakGrid');
     if(grid) {
         grid.innerHTML = '';
@@ -1099,12 +1107,8 @@ function updateStats() {
         if (userProfile.kneelHistory) {
             try {
                 const hObj = JSON.parse(userProfile.kneelHistory);
-                
-                // FIX: Trust the backend data. 
                 // The backend already resets this at midnight.
-                // We do not check the date here to avoid Timezone bugs.
                 loggedHours = hObj.hours || [];
-                
             } catch(e) { console.error("Grid parse error", e); }
         }
 
@@ -1122,7 +1126,6 @@ function updateStats() {
                 sq.style.borderColor = "#333";
             }
             // 3. Future hours are normal style
-            
             grid.appendChild(sq);
         }
     }
