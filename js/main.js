@@ -1447,9 +1447,16 @@ window.closeExchequer = function() {
     }
 };
 
-// --- RANK DEFINITIONS ---
-// Low to High
-const HIERARCHY_LEVELS = ["Slave", "Initiate", "Silverman", "Butler", "Chamberlain", "High Chamberlain"];
+// --- RANK DEFINITIONS (MATCHING YOUR IMAGE) ---
+const HIERARCHY_LEVELS = [
+    "Hall Boy", 
+    "Footman", 
+    "Silverman", 
+    "Butler", 
+    "Chamberlain", 
+    "Secretary", 
+    "Queen's Champion"
+];
 
 // MOCKING INSULTS
 const RANK_INSULTS = [
@@ -1460,34 +1467,52 @@ const RANK_INSULTS = [
 ];
 
 window.handleMediaPlus = function() {
-    const currentRank = window.userProfile?.hierarchy || "Slave";
-    const rankIndex = HIERARCHY_LEVELS.indexOf(currentRank);
+    // Get Rank (Default to Hall Boy if missing)
+    let currentRank = window.userProfile?.hierarchy || "Hall Boy";
     
-    // SILVERMAN IS INDEX 2 (0=Slave, 1=Initiate, 2=Silverman)
-    if (rankIndex < 2) {
-        triggerRankMock();
+    // Normalize string (Case insensitive check)
+    const rankIndex = HIERARCHY_LEVELS.findIndex(r => r.toLowerCase() === currentRank.toLowerCase());
+    
+    // SILVERMAN IS INDEX 2. BUTLER IS INDEX 3.
+    const SILVERMAN_IDX = 2;
+    const BUTLER_IDX = 3;
+
+    // 1. CHECK: BELOW SILVERMAN -> REJECT
+    if (rankIndex < SILVERMAN_IDX) {
+        triggerRankMock("SILVERMAN REQUIRED");
         return;
     }
 
-    // IF RANK IS OKAY -> Open File Picker
-    document.getElementById('chatMediaInput').click();
+    // 2. CONFIGURE INPUT BASED ON RANK
+    const fileInput = document.getElementById('chatMediaInput');
+    
+    if (rankIndex < BUTLER_IDX) {
+        // SILVERMAN: Photos Only
+        fileInput.setAttribute("accept", "image/*");
+        // Optional: Notify user they can't send video yet
+        // console.log("Rank: Silverman. Photos allowed. Videos restricted.");
+    } else {
+        // BUTLER+: Photos & Videos
+        fileInput.setAttribute("accept", "image/*,video/*");
+    }
+
+    // 3. OPEN PICKER
+    fileInput.click();
 };
 
-window.triggerRankMock = function() {
-    const overlay = document.getElementById('povertyOverlay'); // Reusing the visual container
+window.triggerRankMock = function(customTitle) {
+    const overlay = document.getElementById('povertyOverlay');
     const title = overlay.querySelector('.mob-reward-title');
     const text = document.getElementById('povertyInsult');
     const stamp = overlay.querySelector('.mob-rank-stamp');
 
     if (!overlay) return;
 
-    // Pick random insult
     const insult = RANK_INSULTS[Math.floor(Math.random() * RANK_INSULTS.length)];
 
-    // UPDATE UI FOR RANK MOCKING
     if(title) {
-        title.innerText = "RANK INSUFFICIENT";
-        title.style.color = "#888"; // Grey instead of Red
+        title.innerText = customTitle || "RANK INSUFFICIENT";
+        title.style.color = "#888";
     }
     if(text) text.innerText = `"${insult}"`;
     if(stamp) {
@@ -1495,14 +1520,12 @@ window.triggerRankMock = function() {
         stamp.style.borderColor = "#888";
     }
     
-    // Move to Body & Show
     if (overlay.parentElement !== document.body) document.body.appendChild(overlay);
     overlay.classList.remove('hidden');
     overlay.style.display = 'flex';
     
     if(window.triggerSound) triggerSound('sfx-deny');
 };
-
 // =========================================
 // PART 2: FINAL APP MODE (NATIVE FLOW)
 // =========================================
