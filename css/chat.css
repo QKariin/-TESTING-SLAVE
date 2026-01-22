@@ -23,12 +23,15 @@
 .chat-container {
     background: var(--panel-bg);
     border: 1px solid var(--border);
-    height: 100%;
+    flex: 1; 
+    min-height: 0; /* CRITICAL: Allows the internal scrollbar to work */
+    
     display: flex;
     flex-direction: column;
     overflow: hidden;
     box-shadow: inset 0 0 40px #000;
-    position: relative; /* Keep it relative on desktop */
+    position: relative;
+    margin-bottom: 20px; /* Add space at bottom so it doesn't touch edge */
 }
 
 /* --- DESKTOP RIGHT HEADER --- */
