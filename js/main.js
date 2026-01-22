@@ -1717,10 +1717,15 @@ window.triggerRankMock = function(customTitle) {
     function lockVisuals() {
         if (window.innerWidth > 768) return; // Mobile Only
 
+        // Calculate safe area
+        const safeAreaBottom = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-bottom')) || 0;
+        const footerHeight = 60;
+        const totalFooterSpace = footerHeight + safeAreaBottom;
+
         const lockStyles = {
             position: 'fixed',
             width: '100%',
-            height: '100%',
+            height: `calc(100% - ${totalFooterSpace}px)`,
             overflow: 'hidden',
             inset: '0',
             overscrollBehavior: 'none',
@@ -1797,13 +1802,14 @@ window.triggerRankMock = function(customTitle) {
         };
         
         // Apply styles with setAttribute for better compatibility
-        let styleString = 'display: flex !important; justify-content: space-around !important; align-items: center !important; position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; min-height: 60px !important; box-sizing: border-box !important; background: linear-gradient(to top, #000 40%, rgba(0,0,0,0.95)) !important; padding-bottom: env(safe-area-inset-bottom) !important; z-index: 2147483647 !important; border-top: 1px solid rgba(197, 160, 89, 0.3) !important; backdrop-filter: blur(10px) !important; pointer-events: auto !important; touch-action: none !important; visibility: visible !important; opacity: 1 !important;';
+        // Use calc to ensure footer stays within viewport bounds
+        let styleString = 'display: flex !important; justify-content: space-around !important; align-items: stretch !important; position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: 100vw !important; min-height: 60px !important; max-height: 60px !important; box-sizing: border-box !important; background: linear-gradient(to top, #000 40%, rgba(0,0,0,0.95)) !important; padding-bottom: env(safe-area-inset-bottom) !important; z-index: 2147483647 !important; border-top: 1px solid rgba(197, 160, 89, 0.3) !important; backdrop-filter: blur(10px) !important; pointer-events: auto !important; touch-action: none !important; visibility: visible !important; opacity: 1 !important; margin: 0 !important; overflow: hidden !important;';
         footer.setAttribute('style', styleString);
 
         footer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
 
-        const btnStyle = "background:none !important; border:none !important; color:#666 !important; display:flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important; gap:4px !important; font-family:'Cinzel',serif !important; font-size:0.55rem !important; width:20% !important; height:100% !important; cursor:pointer !important; -webkit-tap-highlight-color: transparent !important; flex:1 !important; min-height:60px !important; padding:8px 0 !important;";
-        const centerStyle = "background:none !important; border:none !important; color:#ff003c !important; display:flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important; gap:4px !important; font-family:'Cinzel',serif !important; font-size:0.55rem !important; width:20% !important; height:100% !important; cursor:pointer !important; -webkit-tap-highlight-color: transparent !important; flex:1 !important; min-height:60px !important; padding:8px 0 !important;";
+        const btnStyle = "background:none !important; border:none !important; color:#666 !important; display:flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important; gap:4px !important; font-family:'Cinzel',serif !important; font-size:0.55rem !important; flex:1 !important; height:60px !important; cursor:pointer !important; -webkit-tap-highlight-color: transparent !important; padding:0 !important; margin:0 !important; line-height: 1 !important;";
+        const centerStyle = "background:none !important; border:none !important; color:#ff003c !important; display:flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important; gap:4px !important; font-family:'Cinzel',serif !important; font-size:0.55rem !important; flex:1 !important; height:60px !important; cursor:pointer !important; -webkit-tap-highlight-color: transparent !important; padding:0 !important; margin:0 !important; line-height: 1 !important;";
 
         footer.innerHTML = `
             <button onclick="window.toggleMobileView('home')" style="${btnStyle}">
