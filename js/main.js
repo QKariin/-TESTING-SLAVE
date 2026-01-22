@@ -1272,6 +1272,7 @@ window.renderRewards = function() {
     buildShelf('shelfTasks', REWARD_DATA.tasks, 'shape-chip', null, totalTasks, 'task');
     buildShelf('shelfKneel', REWARD_DATA.kneeling, 'shape-circle', null, totalKneels, 'kneel');
     buildShelf('shelfSpend', REWARD_DATA.spending, 'shape-diamond', null, totalSpent, 'spend');
+    };
 
 window.openRewardCard = function(name, iconPath, current, target, type) {
     const overlay = document.getElementById('rewardCardOverlay');
