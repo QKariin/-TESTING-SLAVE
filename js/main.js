@@ -1619,7 +1619,7 @@ window.triggerRankMock = function(customTitle) {
                 <span style="font-size:1.4rem;color:#888;">▦</span><span>RECORD</span>
             </button>
             <button onclick="window.toggleMobileView('chat')" style="${centerStyle}">
-                <img src="https://static.wixstatic.com/media/ce3e5b_19faff471a434690b7a40aacf5bf42c4~mv2.png" alt="Avatar" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid #ff003c;box-shadow:0 0 10px rgba(255,0,60,0.3);">
+                <img src="https://static.wixstatic.com/media/ce3e5b_19faff471a434690b7a40aacf5bf42c4~mv2.png" alt="Avatar" style="width:70px;height:70px;border-radius:50%;object-fit:cover;border:1px solid #ff003c;box-shadow:0 0 10px rgba(255,0,60,0.3);">
             </button>
             <button onclick="window.toggleMobileView('queen')" style="${btnStyle}">
                 <span style="font-size:1.4rem;color:#888;">♛</span><span>QUEEN</span>
