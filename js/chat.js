@@ -167,16 +167,21 @@ export async function renderChat(messages) {
     // ============================================================
     if (sortedMessages.length > visibleMessages.length) {
         messagesHtml = `
-            <div id="historyTrigger" style="width:100%; text-align:center; padding:15px 0;">
-                <button onclick="window.loadMoreChat()" style="
+            <div id="historyTrigger" style="width:100%; text-align:center; padding:10px 0;">
+                <button onclick="window.loadMoreChat()" 
+                    onmouseover="this.style.opacity='1'" 
+                    onmouseout="this.style.opacity='0.3'"
+                    style="
                     background: transparent; 
-                    border: 1px solid var(--gold); 
+                    border: none; 
                     color: var(--gold); 
                     font-family: 'Orbitron', sans-serif; 
-                    font-size: 0.65rem; 
-                    padding: 8px 20px; 
+                    font-size: 0.55rem; 
+                    padding: 10px; 
                     cursor: pointer; 
                     letter-spacing: 2px;
+                    opacity: 0.3; 
+                    transition: opacity 0.3s;
                 ">
                     ▲ ACCESS ARCHIVE
                 </button>
