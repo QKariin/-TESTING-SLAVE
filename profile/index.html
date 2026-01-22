@@ -1240,7 +1240,7 @@
 <div id="MOBILE_APP" style="display:none;">
     
   <!-- 1. DASHBOARD (HOME) -->
-<div id="viewMobileHome" class="mob-frame" style="height: 100vh; width: 100vw; overflow: hidden !important; display: flex; flex-direction: column; padding: 0;">
+<div id="viewMobileHome" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; display: flex; flex-direction: column; padding: 0; z-index: 1;">
         
         <!-- === FIXED LAYER (Background & HUD) === -->
         <div class="mob-bg-layer">
@@ -1397,8 +1397,8 @@
         </div>
 
         <!-- *** INTERNAL SCROLLING WRAPPER (This is the Fix!) *** -->
-       <div id="mobHomeScroll" style="flex: 1; width: 100%; overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding-top: 60px; -webkit-overflow-scrolling: touch;">
-      
+<!-- Added padding: 60px top, 5px sides, 120px bottom (for footer safety) -->
+<div id="mobHomeScroll" style="flex: 1; width: 100%; overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding: 60px 5px 120px 5px; -webkit-overflow-scrolling: touch;">      
             <!-- 2. THE HALO (Identity) -->
             <div class="halo-section">
                 <div class="halo-ring">
@@ -1522,8 +1522,8 @@
 </div> <!-- <<< ADD THIS DIV to Close viewMobileRecord -->
 
 <!-- 5. GLOBAL VIEW (REBUILT TO MATCH RECORD VIEW EXACTLY) -->
-<div id="viewMobileGlobal" class="mob-frame" style="display:none; height: 100vh; width: 100vw; overflow: hidden !important; flex-direction:column; padding:0; background-color:#000;">
-    
+<!-- REMOVED class="mob-frame". Added Fixed Position + 100% Height to stop overflow -->
+<div id="viewMobileGlobal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; flex-direction: column; background: #000; z-index: 100;">    
     <!-- 1. HEADER (Cloned from Record View logic) -->
     <div class="mob-chat-header" style="flex-shrink: 0; width: 100%; justify-content: center; border-bottom: 1px solid #333; background: #000; padding: 15px 0; z-index: 50;">
         <div class="chat-queen-profile">
@@ -1539,7 +1539,7 @@
     </div>
 
     <!-- 2. CONTENT AREA (Explicit Width & Spacing) -->
-    <div style="flex: 1; overflow-y: auto; width: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 30px; gap: 20px;">
+<div id="mobGlobalScroll" style="flex: 1; overflow-y: auto; width: 100%; display: flex; flex-direction: column; align-items: center; padding: 30px 0 120px 0; gap: 20px; -webkit-overflow-scrolling: touch;">
 
         <!-- FILL WALLET BUTTON -->
         <div style="width: 90%;">
