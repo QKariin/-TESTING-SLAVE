@@ -52,23 +52,29 @@
 
         #mobRec_Grid, #mobRec_Heap { min-height: 100px; }
 
-        /* --- HIDE ALL SCROLLBARS (Chrome, Safari, Firefox) --- */
+       /* --- HIDE ALL SCROLLBARS (BRUTE FORCE) --- */
 
-        /* 1. Target the specific scrolling containers */
+        /* 1. Firefox / IE: Target IDs directly */
         #mobHomeScroll, 
         #mobGlobalScroll, 
+        #mobRec_Grid,      /* <--- ADDED */
+        #mobRec_Heap,      /* <--- ADDED */
         .mob-horiz-scroll,
         .qm-scroll-content {
-            -ms-overflow-style: none;  /* Internet Explorer 10+ */
-            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none !important;
+            scrollbar-width: none !important;
         }
         
-        /* 2. Target Webkit (Chrome, Safari, Edge) */
+        /* 2. Chrome / Safari / Edge: Target IDs directly */
         #mobHomeScroll::-webkit-scrollbar, 
         #mobGlobalScroll::-webkit-scrollbar, 
+        #mobRec_Grid::-webkit-scrollbar,   /* <--- ADDED */
+        #mobRec_Heap::-webkit-scrollbar,   /* <--- ADDED */
         .mob-horiz-scroll::-webkit-scrollbar,
         .qm-scroll-content::-webkit-scrollbar { 
-            display: none; 
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
         }
 
         /* =========================================
