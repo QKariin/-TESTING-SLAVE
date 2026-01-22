@@ -682,14 +682,20 @@
         #app-mode-footer {
             /* Ensure footer stays visible and doesn't overlap content */
             will-change: transform;
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 99999999 !important;
             /* Prevent footer buttons from wrapping or shrinking */
         }
         
         #app-mode-footer button {
             /* Ensure buttons fill available space */
-            flex: 1;
-            min-height: 60px;
-            padding: 8px 0;
+            flex: 1 !important;
+            min-height: 60px !important;
+            padding: 0 !important;
+            margin: 0 !important;
         }
     }
 </style>

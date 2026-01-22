@@ -1763,7 +1763,10 @@ window.triggerRankMock = function(customTitle) {
     function buildAppFooter() {
         // Run only on mobile (use innerWidth check)
         const isMobile = window.innerWidth <= 768;
-        if (!isMobile) return;
+        if (!isMobile) {
+            console.log('[Footer] Desktop detected (width:', window.innerWidth, '), skipping footer');
+            return;
+        }
 
         // Check if already exists
         let footer = document.getElementById('app-mode-footer');
@@ -1772,11 +1775,11 @@ window.triggerRankMock = function(customTitle) {
             footer.style.display = 'flex';
             footer.style.visibility = 'visible';
             footer.style.opacity = '1';
+            console.log('[Footer] Already exists, ensuring visibility');
             return;
         }
         
-        // Create footer element
-        footer = document.createElement('div');
+        console.log('[Footer] Creating new footer for mobile (width:', window.innerWidth, ')');
         footer.id = 'app-mode-footer';
         
         // CSS INJECTION with !important for override
@@ -1803,7 +1806,7 @@ window.triggerRankMock = function(customTitle) {
         
         // Apply styles with setAttribute for better compatibility
         // Use calc to ensure footer stays within viewport bounds
-        let styleString = 'display: flex !important; justify-content: space-around !important; align-items: stretch !important; position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: 100vw !important; min-height: 60px !important; max-height: 60px !important; box-sizing: border-box !important; background: linear-gradient(to top, #000 40%, rgba(0,0,0,0.95)) !important; padding-bottom: env(safe-area-inset-bottom) !important; z-index: 2147483647 !important; border-top: 1px solid rgba(197, 160, 89, 0.3) !important; backdrop-filter: blur(10px) !important; pointer-events: auto !important; touch-action: none !important; visibility: visible !important; opacity: 1 !important; margin: 0 !important; overflow: hidden !important;';
+        let styleString = 'display: flex !important; justify-content: space-around !important; align-items: stretch !important; position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important; width: 100vw !important; min-height: 60px !important; max-height: 60px !important; box-sizing: border-box !important; background: linear-gradient(to top, #000 40%, rgba(0,0,0,0.95)) !important; padding-bottom: env(safe-area-inset-bottom) !important; z-index: 99999999 !important; border-top: 1px solid rgba(197, 160, 89, 0.3) !important; backdrop-filter: blur(10px) !important; pointer-events: auto !important; touch-action: none !important; visibility: visible !important; opacity: 1 !important; margin: 0 !important; overflow: hidden !important;';
         footer.setAttribute('style', styleString);
 
         footer.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
@@ -1828,13 +1831,10 @@ window.triggerRankMock = function(customTitle) {
                 <span style="font-size:1.4rem !important;color:#888 !important;">⊕</span><span>GLOBAL</span>
             </button>`;
         
-        // Try appending to body first, then documentElement if needed
-        try {
-            document.body.appendChild(footer);
-        } catch (e) {
-            console.warn('Could not append to body, trying documentElement');
-            document.documentElement.appendChild(footer);
-        }
+        // Append to documentElement to stay above all other elements
+        document.documentElement.appendChild(footer);
+        console.log('[Footer] Footer appended to documentElement, element:', footer);
+        console.log('[Footer] Footer computed style bottom:', window.getComputedStyle(footer).bottom);
         
         // Force a reflow to ensure it renders
         footer.offsetHeight;
