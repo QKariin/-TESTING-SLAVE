@@ -1012,6 +1012,7 @@ window.handleEvidenceUpload = handleEvidenceUpload;
 window.handleProfileUpload = handleProfileUpload;
 window.handleAdminUpload = handleAdminUpload;
 window.WISHLIST_ITEMS = WISHLIST_ITEMS;
+window.toggleTributeStore = toggleTributeStore;
 window.gameStats = gameStats;
 
 function updateStats() {
@@ -1334,25 +1335,36 @@ function getQuote(type, isUnlocked) {
         : insults[Math.floor(Math.random() * insults.length)];
 }
 // =========================================
-// LUXURY TRIBUTE STORE LOGIC
+// LUXURY STORE LOGIC
 // =========================================
 
-window.toggleTributeStore = function() { 
+function toggleTributeStore() { 
     const overlay = document.getElementById('tributeStoreOverlay');
     if (!overlay) return;
 
-    if (overlay.classList.contains('hidden')) {
+    if (overlay.style.display === 'none' || overlay.classList.contains('hidden')) {
+        // OPEN
         overlay.classList.remove('hidden');
-        renderTributeGrid();
+        overlay.style.display = 'flex';
+        
+        // 1. Render Items
+        renderStoreItems();
+        
+        // 2. Add to Scroll Logic (Anti-Bounce Fix)
+        const scrollArea = document.getElementById('tributeScrollArea');
+        if(scrollArea) {
+            scrollArea.style.overflowY = 'auto';
+            scrollArea.style.webkitOverflowScrolling = 'touch';
+        }
+        
     } else {
+        // CLOSE
         overlay.classList.add('hidden');
+        overlay.style.display = 'none';
     }
-};
+}
 
-// Map old button function name just in case
-window.toggleTributeHunt = window.toggleTributeStore; 
-
-function renderTributeGrid() {
+function renderStoreItems() {
     const grid = document.getElementById('tributeGridContent');
     const items = window.WISHLIST_ITEMS || []; 
 
@@ -1360,31 +1372,33 @@ function renderTributeGrid() {
     grid.innerHTML = "";
 
     if (items.length === 0) {
-        grid.innerHTML = `<div style="grid-column: span 2; text-align: center; color: #666; padding-top: 50px; font-family: 'Cinzel';">NO TRIBUTES AVAILABLE</div>`;
+        grid.innerHTML = `<div style="grid-column: span 2; text-align: center; color: #666; padding-top: 50px; font-family: 'Cinzel';">NO ITEMS AVAILABLE</div>`;
         return;
     }
 
     items.forEach((item) => {
-        // Handle Data
+        // Safe Data Access
         const name = item.name || item.Name || "Item";
         const price = item.price || item.Price || 0;
-        // Fix Wix Image URLs if needed
         let img = item.img || item.image || item.Image || "";
+        
+        // Wix Image Fix
         if (img.startsWith("wix:image")) {
             img = `https://static.wixstatic.com/media/${img.split('/')[3].split('#')[0]}`;
         }
 
         const card = document.createElement('div');
-        card.className = "tribute-item";
+        card.className = "store-card";
         card.onclick = () => confirmPurchase(item);
 
         card.innerHTML = `
-            <div class="tribute-img-box">
-                <img src="${img}" class="tribute-img" onerror="this.style.display='none'">
+            <div class="store-img-box">
+                <img src="${img}" class="store-img" onerror="this.style.display='none'">
             </div>
-            <div class="tribute-info">
-                <div class="tribute-name">${name}</div>
-                <div class="tribute-price">${price} 🪙</div>
+            <div class="store-info">
+                <div class="store-name">${name}</div>
+                <div class="store-price">${price.toLocaleString()} 🪙</div>
+                <div class="store-buy-btn">ACQUIRE</div>
             </div>
         `;
         grid.appendChild(card);
@@ -1417,11 +1431,15 @@ function confirmPurchase(item) {
     }, "*");
 
     // Close Store
-    window.toggleTributeStore();
+    toggleTributeStore();
     
     // Trigger Rain
     if(typeof triggerCoinShower === 'function') triggerCoinShower();
 }
+
+// EXPORT TO WINDOW (Crucial for HTML onClick)
+window.toggleTributeStore = toggleTributeStore;
+
 function buyRealCoins(amount) { triggerSound('sfx-buy'); window.parent.postMessage({ type: "INITIATE_STRIPE_PAYMENT", amount: amount }, "*"); }
 function triggerCoinShower() { for (let i = 0; i < 40; i++) { const coin = document.createElement('div'); coin.className = 'coin-particle'; coin.innerHTML = `<svg style="width:100%; height:100%; fill:gold;"><use href="#icon-coin"></use></svg>`; coin.style.setProperty('--tx', `${Math.random() * 200 - 100}vw`); coin.style.setProperty('--ty', `${-(Math.random() * 80 + 20)}vh`); document.body.appendChild(coin); setTimeout(() => coin.remove(), 2000); } }
 function breakGlass(e) { if (e && e.stopPropagation) e.stopPropagation(); const overlay = document.getElementById('specialGlassOverlay'); if (overlay) overlay.classList.remove('active'); window.parent.postMessage({ type: "GLASS_BROKEN" }, "*"); }
