@@ -1,8 +1,14 @@
-/* --- LUXURY TACTICAL CHAT DNA (REPAIRED & ORGANIZED) --- */
+
+
+/* --- LUXURY TACTICAL CHAT DNA --- */
 
 /* =========================================
-   1. VARIABLES & GLOBAL UTILS
+   [GLOBAL] HEADER VISIBILITY LOGIC
    ========================================= */
+/* DEFAULT (DESKTOP): Hide Giant Mobile Header, Show Black Bar */
+.mob-chat-header { display: none !important; }
+.right-header { display: flex !important; }
+
 :root {
     --pink: #ff00de;
     --gold: #c5a059;
@@ -11,32 +17,98 @@
     --border: #333;
 }
 
-.hidden { display: none !important; }
-
-/* --- HEADER TOGGLE LOGIC (DESKTOP DEFAULTS) --- */
-/* Hide Mobile Header on Desktop */
-.mob-chat-header { display: none !important; }
-/* Show Desktop Header on Desktop */
-.right-header { display: flex !important; }
-
-
 /* =========================================
-   2. DESKTOP LAYOUT (The Prison)
+   1. DESKTOP DEFAULT STYLES
    ========================================= */
+
+/* Container Prison */
 .chat-container {
     background: var(--panel-bg);
     border: 1px solid var(--border);
     flex: 1; 
+    min-height: 0; /* CRITICAL: Allows the internal scrollbar to work */
+    
     display: flex;
     flex-direction: column;
     overflow: hidden;
     box-shadow: inset 0 0 40px #000;
-    position: relative; 
-    margin-bottom: 20px;
-    height: 100%; /* Ensures it fills the desktop stage */
+    position: relative;
+    margin-bottom: 20px; /* Add space at bottom so it doesn't touch edge */
 }
 
-/* Scrollable Area */
+/* --- DESKTOP RIGHT HEADER --- */
+.right-header {
+    width: 100%;
+    height: 80px; /* Fixed height */
+    background: #000;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    flex-shrink: 0; /* Prevents scrolling away */
+    z-index: 50;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+}
+
+.rh-profile-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.rh-avatar-wrapper {
+    position: relative;
+    width: 45px;
+    height: 45px;
+}
+
+.rh-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #c5a059; /* Gold Border */
+}
+
+.rh-status-dot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 10px;
+    height: 10px;
+    background: #444; /* Default gray */
+    border: 2px solid #000;
+    border-radius: 50%;
+}
+
+.rh-status-dot.online {
+    background: #00ff00;
+    box-shadow: 0 0 8px #00ff00;
+}
+
+.rh-text-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.rh-name {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    color: #fff;
+    letter-spacing: 2px;
+    font-weight: 700;
+}
+
+.rh-status-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    color: #c5a059; /* Gold text */
+    letter-spacing: 1px;
+    margin-top: 2px;
+}
+
 .chat-body-frame {
     flex: 1;
     overflow-y: auto;
@@ -44,60 +116,46 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
-    position: relative;
 }
 
-
-/* =========================================
-   3. DESKTOP HEADER (The Black Bar)
-   ========================================= */
-.right-header {
-    width: 100%;
-    height: 80px; 
-    background: #000;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 30px;
-    flex-shrink: 0; 
-    z-index: 50;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-}
-
-.rh-profile-group { display: flex; align-items: center; gap: 15px; }
-.rh-avatar-wrapper { position: relative; width: 45px; height: 45px; }
-.rh-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 1px solid var(--gold); }
-.rh-status-dot { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #444; border: 2px solid #000; border-radius: 50%; }
-.rh-status-dot.online { background: #00ff00; box-shadow: 0 0 8px #00ff00; }
-.rh-text-col { display: flex; flex-direction: column; justify-content: center; }
-.rh-name { font-family: 'Cinzel', serif; font-size: 1rem; color: #fff; letter-spacing: 2px; font-weight: 700; }
-.rh-status-text { font-family: 'Orbitron', sans-serif; font-size: 0.6rem; color: var(--gold); letter-spacing: 1px; margin-top: 2px; }
-
-
-/* =========================================
-   4. SYSTEM TICKER
-   ========================================= */
+/* --- SYSTEM TICKER INTERCEPTOR --- */
 .system-ticker {
-    width: 100%; padding: 8px 0; background: rgba(10, 10, 10, 0.95);
-    border-bottom: 1px solid rgba(197, 160, 89, 0.3); color: var(--gold);
-    font-family: 'Orbitron', sans-serif; font-size: 0.65rem; text-align: center;
-    letter-spacing: 3px; text-transform: uppercase; flex-shrink: 0; z-index: 40;
-    transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    width: 100%;
+    padding: 8px 0;
+    background: rgba(10, 10, 10, 0.95);
+    border-bottom: 1px solid rgba(197, 160, 89, 0.3); /* Gold Line */
+    color: #c5a059;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    text-align: center;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    flex-shrink: 0; /* Never collapse */
+    z-index: 40;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
-.ticker-flash { animation: textFlash 0.5s ease-in-out; }
-@keyframes textFlash { 
-    0% { color: #fff; text-shadow: 0 0 10px #fff; background: rgba(197, 160, 89, 0.2); } 
-    100% { color: var(--gold); background: rgba(10, 10, 10, 0.95); } 
+
+.system-ticker.hidden {
+    display: none !important;
+}
+
+/* BLINK ANIMATION FOR UPDATES */
+.ticker-flash {
+    animation: textFlash 0.5s ease-in-out;
+}
+@keyframes textFlash {
+    0% { color: #fff; text-shadow: 0 0 10px #fff; background: rgba(197, 160, 89, 0.2); }
+    100% { color: #c5a059; background: rgba(10, 10, 10, 0.95); }
 }
 
 
-/* =========================================
-   5. CHAT FOOTER (STRICT LAYOUT)
-   ========================================= */
+
+/* Input Terminal (Desktop Default) */
 .chat-footer {
     display: flex !important;
     flex-direction: row !important;
-    flex-wrap: nowrap !important; /* Forces single line */
+    flex-wrap: nowrap !important;
     align-items: center !important;
     gap: 10px;
     padding: 15px;
@@ -105,166 +163,485 @@
     border-top: 1px solid #333;
     position: relative;
     z-index: 200;
-    min-height: 70px;
+    min-height: 60px;
 }
 
-/* Wrapper for Input + Plus Button */
-.chat-input-wrapper { 
-    position: relative; 
-    flex-grow: 1; /* Takes all space */
-    display: flex; 
-    align-items: center; 
+/* THE WRAPPER (Holds Input + Button) */
+.chat-input-wrapper {
+    position: relative; /* Anchor for the absolute button */
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
 }
 
-/* The Input Field */
+/* INPUT FIELD */
 .chat-input {
-    width: 100% !important; 
-    background: #111; 
-    border: 1px solid #333; 
+    width: 100% !important;
+    background: #111;
+    border: 1px solid #333;
     color: #ccc;
-    font-family: 'Inter', sans-serif; 
-    font-size: 0.95rem;
-    padding: 12px 15px; 
-    padding-left: 45px !important; /* Room for Plus Button */
-    border-radius: 20px; 
-    outline: none; 
-    height: 40px; 
+    font-family: 'Inter', sans-serif;
+    padding: 10px 15px;
+    padding-left: 45px !important; /* SPACE FOR THE CIRCLE BUTTON */
+    border-radius: 20px; /* Rounder look */
+    outline: none;
+    height: 40px;
     transition: 0.3s;
 }
-.chat-input:focus { border-color: var(--gold); color: #fff; }
+.chat-input:focus { border-color: #c5a059; color: #fff; }
 
-/* Floating Plus Button */
+/* THE PLUS BUTTON (Floating Circle) */
 .chat-btn-plus {
-    position: absolute; left: 5px; top: 50%; transform: translateY(-50%);
-    width: 30px; height: 30px; border-radius: 50%; background: #222; border: 1px solid #444; color: #888;
-    font-size: 1.2rem; font-weight: 300; line-height: 1; cursor: pointer; 
-    display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 10;
+    position: absolute;
+    left: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #222;
+    border: 1px solid #444;
+    color: #888;
+    
+    font-size: 1.2rem;
+    font-weight: 300;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+    z-index: 10;
 }
-.chat-btn-plus:hover { background: var(--gold); color: #000; border-color: var(--gold); }
+.chat-btn-plus:hover { 
+    background: var(--gold); 
+    color: #000; 
+    border-color: var(--gold); 
+}
 
-/* Send Button */
-.chat-btn-send { color: var(--gold); font-family: 'Rajdhani', sans-serif; font-size: 1.5rem; font-weight: 700; background: none; border: none; cursor: pointer; padding-left: 5px; flex-shrink: 0; }
+/* OTHER BUTTONS */
+.chat-btn-send {
+    color: #c5a059;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: none; border: none; cursor: pointer; padding-left: 5px;
+}
 
-/* Tribute Button (Forced Visible) */
-.chat-btn-tribute { 
-    display: flex !important; /* Force it to show */
-    font-size: 1.5rem; 
-    background: none; 
-    border: none; 
-    cursor: pointer; 
-    opacity: 0.8;
-    color: var(--gold); 
-    padding: 0 5px;
+.chat-btn-tribute {
+    font-size: 1.2rem;
+    background: none; border: none; cursor: pointer; opacity: 0.7;
+}
+
+/* Avatar Fix - The "Shit" look stopper */
+.chat-av {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    object-fit: cover;
     flex-shrink: 0;
 }
-.chat-btn-tribute:hover { opacity: 1; transform: scale(1.1); }
 
-
-/* =========================================
-   6. MESSAGES
-   ========================================= */
-.msg-row { display: flex; gap: 12px; max-width: 100%; align-items: flex-end; margin-bottom: 10px; }
-.mr-out { flex-direction: row-reverse; justify-content: flex-start; } 
-.mr-in { flex-direction: row; justify-content: flex-start; }
-
-.m-slave { background: rgba(20, 20, 20, 0.9); color: var(--pink); border: 1px solid rgba(255, 0, 222, 0.2); border-radius: 12px 12px 2px 12px; font-weight: 500; }
-.m-queen { background: rgba(15, 15, 15, 0.95); border: 1px solid #333; color: #fff; border-radius: 12px 12px 12px 2px; }
-
-.msg { background: none; border: none; max-width: 70%; padding: 8px 0; font-family: 'Inter', sans-serif; font-size: 0.95rem; line-height: 1.4; }
-.mr-out .msg { color: #bbbbbb; text-align: right; border-right: 2px solid #444444; padding-right: 15px; margin-left: auto; }
-.mr-in .msg { color: #ffffff; text-align: left; border-left: 2px solid var(--gold); padding-left: 15px; margin-right: auto; }
-
-.msg-col { display: flex; flex-direction: column; }
-.mr-out .msg-col { align-items: flex-end; text-align: right; }
-.mr-in .msg-col { align-items: flex-start; text-align: left; }
-
-.msg-time { font-family: 'Rajdhani', sans-serif; font-size: 0.65rem; font-weight: 700; color: #333333; margin-top: 4px; width: fit-content; }
-
-/* System Messages */
-.system-row { justify-content: center; width: 100%; margin: 8px 0; }
-.msg-system { width: 98%; background: rgba(10, 10, 10, 0.9); border: 1px solid #1a1a1a; padding: 10px 0; text-align: center; font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); }
-.sys-gold { color: var(--gold); border: 1px solid var(--gold-dim); background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.05), transparent); }
-.sys-red { color: #ff003c; border-color: rgba(255, 0, 60, 0.2); }
-
-
-/* =========================================
-   7. STORE GRID & OVERLAY
-   ========================================= */
-.store-grid-layout { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; width: 100%; max-width: 1200px; margin: 0 auto; }
-
-.store-card { background: linear-gradient(180deg, rgba(30,30,30,0.8) 0%, rgba(10,10,10,0.95) 100%); border: 1px solid rgba(197, 160, 89, 0.2); border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; position: relative; transition: all 0.2s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-.store-card:active { transform: scale(0.98); border-color: var(--gold); }
-.store-img-box { width: 100%; aspect-ratio: 1 / 1; background: #000; border-bottom: 1px solid #333; position: relative; }
-.store-img { width: 100%; height: 100%; object-fit: cover; }
-.store-info { padding: 15px 10px; text-align: center; display: flex; flex-direction: column; gap: 5px; }
-.store-name { font-family: 'Cinzel', serif; font-size: 0.8rem; color: #fff; line-height: 1.2; }
-.store-price { font-family: 'Orbitron', sans-serif; font-size: 0.9rem; color: var(--gold); font-weight: 700; margin-top: 5px; }
-.store-buy-btn { margin-top: 10px; background: transparent; border: 1px solid #333; color: #666; font-size: 0.6rem; font-family: 'Orbitron'; padding: 8px; text-transform: uppercase; letter-spacing: 2px; }
-.store-card:active .store-buy-btn { background: var(--gold); color: #000; border-color: var(--gold); }
-
-/* Desktop Store Positioning */
-@media screen and (min-width: 769px) {
-    #tributeStoreOverlay {
-        position: absolute !important;
-        top: 0; right: 0; bottom: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0,0,0,0.95);
-        z-index: 500;
-    }
+/* Row Alignment */
+.msg-row {
+    display: flex;
+    gap: 12px;
+    max-width: 100%;
+    align-items: flex-end;
+    margin-bottom: 10px;
 }
 
+/* --- ALIGNMENT: SLAVE RIGHT / QUEEN LEFT --- */
+.mr-out { 
+    flex-direction: row-reverse; 
+    justify-content: flex-start; 
+} 
+
+.mr-in { 
+    flex-direction: row; 
+    justify-content: flex-start; 
+}
+
+/* --- KILL THE PINK BUBBLES --- */
+.m-slave {
+    background: rgba(20, 20, 20, 0.9);
+    color: #ff00de;
+    border: 1px solid rgba(255, 0, 222, 0.2);
+    border-radius: 12px 12px 2px 12px;
+    box-shadow: 0 0 15px rgba(255, 0, 222, 0.05);
+    font-weight: 500;
+    text-shadow: 0 0 5px rgba(255, 0, 222, 0.2);
+}
+
+/* Queen's Obsidian Bubble */
+.m-queen {
+    background: rgba(15, 15, 15, 0.95);
+    border: 1px solid #333;
+    color: #fff;
+    border-radius: 12px 12px 12px 2px;
+}
+
+/* Kill the Circus Avatars */
+.chat-av, .msg-avatar, .chat-av-placeholder { display: none !important; }
+
+/* --- LUXURY TERMINAL TYPOGRAPHY --- */
+.msg {
+    background: none;
+    border: none;
+    max-width: 70%;
+    padding: 8px 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.2px;
+}
+
+/* SLAVE MESSAGE: Anchor Right, Silver Strip on Right */
+.mr-out .msg {
+    color: #bbbbbb;
+    text-align: right;
+    border-right: 2px solid #444444; 
+    padding-right: 15px;
+    margin-left: auto;
+}
+
+/* QUEEN: Gold side-strip stays */
+.mr-in .msg {
+    color: #ffffff;
+    text-align: left;
+    border-left: 2px solid var(--gold);
+    padding-left: 15px;
+    margin-right: auto;
+}
+
+/* --- TIME STAMP POSITIONING --- */
+.msg-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.mr-out .msg-col {
+    align-items: flex-end;
+    text-align: right;
+}
+
+.mr-in .msg-col {
+    align-items: flex-start;
+    text-align: left;
+}
+
+.msg-time {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #333333;
+    margin-top: 4px;
+    width: fit-content;
+}
+
+.system-row {
+    justify-content: center;
+    width: 100%;
+    margin: 8px 0;
+}
+
+/* System/Reward Messages */
+.msg-system {
+    width: 98%;
+    background: rgba(10, 10, 10, 0.9);
+    border: 1px solid #1a1a1a;
+    padding: 10px 0;
+    text-align: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    box-shadow: inset 0 0 10px rgba(0,0,0,1);
+}
+
+.sys-gold {
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
+    background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.05), transparent);
+}
+
+.sys-red {
+    color: #ff003c;
+    border-color: rgba(255, 0, 60, 0.2);
+}
+
+/* THE ITEMS (Dark Glass Look) */
+.store-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 Columns Mobile */
+    gap: 15px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.tribute-item {
+    background: rgba(20, 20, 20, 0.9);
+    border: 1px solid #333;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+}
+.tribute-item:hover { border-color: #c5a059; }
+.tribute-item:active { transform: scale(0.98); }
+
+.tribute-img-box {
+    width: 100%;
+    height: 120px;
+    background: #000;
+    border-bottom: 1px solid #333;
+}
+.tribute-img { width: 100%; height: 100%; object-fit: cover; }
+
+.tribute-info { padding: 10px; text-align: center; }
+
+.tribute-name {
+    font-family: 'Cinzel', serif;
+    color: #e0e0e0;
+    font-size: 0.7rem;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tribute-price {
+    font-family: 'Orbitron', sans-serif;
+    color: #c5a059;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
 
 /* =========================================
-   8. MOBILE OVERRIDES (FULL SCREEN)
+   2. MOBILE OVERRIDE (FULL SCREEN + FOOTER FIX)
    ========================================= */
 @media screen and (max-width: 768px) {
 
-    /* HEADER SWAP */
+    /* [FIX] SWAP HEADERS: Show Giant Mobile Header, Hide Desktop Bar */
     .mob-chat-header { display: flex !important; }
     .right-header { display: none !important; }
-    .desktop-only { display: none !important; } /* Only hides elements explicitly marked 'desktop-only' */
 
-    /* CHAT CONTAINER ABSOLUTE */
-    .chat-container, #chatCard {
-        display: flex !important; flex-direction: column !important; 
-        position: absolute !important;
-        top: 0 !important; left: 0 !important; 
-        width: 100vw !important; height: 100dvh !important;
-        z-index: 5000 !important; 
-        background: #000 !important; 
-        border: none !important; margin: 0 !important; overflow: hidden !important;
+    /* MOBILE CHAT HEADER STYLING (Transferred from HTML) */
+    .mob-chat-header {
+        position: fixed; /* Sticks to top of chat card */
+        top: 0; left: 0; width: 100%; height: 65px;
+        background: rgba(10, 10, 10, 0.95);
+        border-bottom: 1px solid #333;
+        display: flex; align-items: center;
+        padding: 0 10px;
+        z-index: 5005; /* Above messages */
+        backdrop-filter: blur(10px);
     }
 
-    /* SCROLL AREA */
+    .chat-back {
+        background: none; border: none; color: #c5a059;
+        font-size: 2rem; padding: 0 15px 5px 5px; cursor: pointer;
+        line-height: 1;
+    }
+
+    .chat-queen-profile { display: flex; align-items: center; gap: 10px; }
+    
+    .queen-av-wrap { position: relative; width: 40px; height: 40px; }
+    .queen-av-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 1px solid #c5a059; }
+    
+    /* Online Dot */
+    .status-dot {
+        position: absolute; bottom: 0; right: 0;
+        width: 10px; height: 10px; border-radius: 50%;
+        border: 2px solid #000;
+        background: #666; /* Grey by default */
+    }
+    .status-dot.online { background: #00ff00; box-shadow: 0 0 5px #00ff00; }
+
+    .chat-meta-col { display: flex; flex-direction: column; }
+    .chat-queen-name { font-family: 'Cinzel'; font-size: 0.9rem; color: #fff; letter-spacing: 1px; }
+    .chat-status-text { font-family: 'Orbitron'; font-size: 0.55rem; color: #888; letter-spacing: 1px; }
+
+    /* ADJUST CHAT BODY PADDING (Important!) */
     .chat-body-frame {
-        width: 100% !important; padding: 15px 10px !important; padding-bottom: 150px !important; padding-top: 0 !important;
-        overflow-y: auto !important; -webkit-overflow-scrolling: touch; box-sizing: border-box !important;
+        padding-top: 75px !important; /* 65px header + 10px space */
     }
-    .chat-body-frame::-webkit-scrollbar { display: none; }
 
-    /* SYSTEM TICKER ADJUST */
-    .system-ticker { margin-top: 65px; }
+    /* FORCE FULL SCREEN OVERLAY */
+    .chat-container, #chatCard {
+        display: flex !important;
+        flex-direction: column !important;
+        position: absolute !important; /* CHANGED TO ABSOLUTE */
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important; /* Dynamic Height is Key */
+        z-index: 5000 !important;
+        background: #000 !important;
+        border: none !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+    }
 
-    /* CHAT FOOTER FIXED */
-    .chat-footer {
+    /* SCROLL AREA: Hide Scrollbar + Add Bottom Space */
+    .chat-body-frame {
+        width: 100% !important;
+        padding: 15px 10px !important;
+        
+        /* Space for Footer (80px) + Input (~60px) + Buffer */
+        padding-bottom: 150px !important; 
+        
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        box-sizing: border-box !important;
+
+        /* HIDE SCROLLBARS */
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE */
+    }
+    .chat-body-frame::-webkit-scrollbar { display: none; /* Chrome */ }
+
+     .system-ticker {
+        /* Pushes it down so it sits UNDER the fixed mobile header */
+        margin-top: 65px; 
+    }
+    
+    /* Remove padding from body so there is no gap */
+    .chat-body-frame {
+        padding-top: 0 !important; 
+    }
+
+    /* INPUT AREA: Sit ON TOP of Footer */
+   .chat-footer {
         position: fixed !important;
+        /* MATH: 60px Footer + Safe Area + 5px Gap */
         bottom: calc(65px + env(safe-area-inset-bottom)) !important;
-        left: 0 !important; width: 100% !important; 
-        z-index: 2147483647 !important;
-        padding: 8px 10px !important; 
+        left: 0 !important;
+        width: 100% !important;
+        
+        /* Ensure it sits ON TOP of the App Footer */
+        z-index: 2147483647 !important; 
+        
+        padding: 8px 10px !important;
         background: #000 !important; 
         border-top: 1px solid #222 !important;
         box-shadow: 0 -5px 20px rgba(0,0,0,0.8);
     }
 
-    .chat-input { font-size: 16px !important; height: 40px !important; }
+    .chat-input {
+        font-size: 16px !important; /* Prevents Zoom on iPhone */
+        height: 40px !important;
+    }
 
-    /* MOBILE GRID */
-    .store-grid-layout { grid-template-columns: repeat(2, 1fr); }
+    .store-grid-layout {
+        grid-template-columns: repeat(4, 1fr);
+    }
 
-    /* MESSAGES MOBILE */
-    .msg { max-width: 88% !important; font-size: 0.65rem !important; padding: 5px 12px !important; }
+
+/* THE CARD (Derived from your Luxury Card style) */
+.store-card {
+    background: linear-gradient(180deg, rgba(30,30,30,0.8) 0%, rgba(10,10,10,0.95) 100%);
+    border: 1px solid rgba(197, 160, 89, 0.2); /* Gold Dim */
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: all 0.2s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.store-card:active {
+    transform: scale(0.98);
+    border-color: #c5a059;
+}
+
+/* IMAGE AREA */
+.store-img-box {
+    width: 100%;
+    aspect-ratio: 1 / 1; /* Perfect Square */
+    background: #000;
+    border-bottom: 1px solid #333;
+    position: relative;
+}
+
+.store-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* INFO AREA */
+.store-info {
+    padding: 15px 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.store-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    color: #fff;
+    line-height: 1.2;
+}
+
+.store-price {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    color: #c5a059;
+    font-weight: 700;
+    margin-top: 5px;
+}
+
+/* BUY BUTTON (Visual Only - whole card is clickable) */
+.store-buy-btn {
+    margin-top: 10px;
+    background: transparent;
+    border: 1px solid #333;
+    color: #666;
+    font-size: 0.6rem;
+    font-family: 'Orbitron';
+    padding: 8px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.store-card:active .store-buy-btn {
+    background: #c5a059;
+    color: #000;
+    border-color: #c5a059;
+}
+    /* CLEAN UP MESSAGES FOR MOBILE */
+    .msg {
+        max-width: 88% !important;
+        font-size: 0.65rem !important;
+        padding: 5px 12px !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Keep the Colored Lines */
     .m-slave { border-right: 2px solid var(--pink) !important; border-radius: 0 !important; }
     .m-queen { border-left: 2px solid var(--gold) !important; border-radius: 0 !important; }
-    .msg-system { font-size: 0.55rem !important; width: 90% !important; }
+
+    /* Fix Service Messages */
+    .msg-system {
+        font-size: 0.55rem !important;
+        opacity: 0.6 !important;
+        background: transparent !important;
+        border: none !important;
+        border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+        width: 90% !important;
+        margin: 2px auto !important;
+    }
 }
