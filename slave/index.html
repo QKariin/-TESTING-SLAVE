@@ -747,6 +747,8 @@ if (window.visualViewport) {
     }
     // Run immediately and on resize
     checkDevice();
+    document.getElementById('device') = renderMobileHome();
+    mobile.style.display = 'flex';
     window.addEventListener('resize', checkDevice);
     window.addEventListener('load', checkDevice);
 </script>
