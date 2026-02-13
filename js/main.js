@@ -1331,6 +1331,12 @@ function updateStats() {
     const dNet = document.getElementById('deskNetTribute');
     if (dNet) dNet.innerText = gameStats.coins || 0;
 
+    // --- SIDEBAR STATS SYNC ---
+    const sbMerit = document.getElementById('sidebarMerit');
+    if (sbMerit) sbMerit.innerText = (gameStats.points || 0).toLocaleString();
+    const sbNet = document.getElementById('sidebarNet');
+    if (sbNet) sbNet.innerText = (gameStats.coins || 0).toLocaleString();
+
     // --- [FIX] PROFILE PICTURE LOGIC (SYNC ALL 3 IMAGES) ---
     if (userProfile.profilePicture) {
         let rawUrl = userProfile.profilePicture;
