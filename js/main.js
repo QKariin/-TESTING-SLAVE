@@ -1295,6 +1295,8 @@ function updateStats() {
 
     // FILL MOBILE TEXT DATA
     if (mobName) mobName.innerText = userProfile.name || "SLAVE";
+    const heroName = document.getElementById('heroUserName');
+    if (heroName) heroName.innerText = (userProfile.name || "LOYAL SUBJECT").toUpperCase();
     if (mobRank) mobRank.innerText = visualRank; // VISUAL PROMOTION
 
     if (mobPoints) mobPoints.innerText = gameStats.points || 0;
@@ -1310,11 +1312,23 @@ function updateStats() {
     // Daily Duties Logic
     const dailyKneels = (gameStats.kneelHistory ? JSON.parse(gameStats.kneelHistory).hours?.length || 0 : 0);
     if (mobDailyKneels) mobDailyKneels.innerText = dailyKneels + " / 8";
+    const deskKneelText = document.getElementById('deskKneelDailyText');
+    if (deskKneelText) deskKneelText.innerText = dailyKneels + " / 8";
 
-    if (kneelDailyFill) {
+    if (kneelDailyFill || document.getElementById('deskKneelDailyFill')) {
         const percent = Math.min((dailyKneels / 8) * 100, 100);
-        kneelDailyFill.style.width = percent + "%";
+        if (kneelDailyFill) kneelDailyFill.style.width = percent + "%";
+        const dkf = document.getElementById('deskKneelDailyFill');
+        if (dkf) dkf.style.width = percent + "%";
     }
+
+    // Desktop Stat Bar Sync
+    const dStreak = document.getElementById('deskStreak');
+    if (dStreak) dStreak.innerText = gameStats.taskdom_streak || 0;
+    const dTotal = document.getElementById('deskTotal');
+    if (dTotal) dTotal.innerText = gameStats.taskdom_total_tasks || 0;
+    const dNet = document.getElementById('deskNetTribute');
+    if (dNet) dNet.innerText = gameStats.coins || 0;
 
     // --- [FIX] PROFILE PICTURE LOGIC (SYNC ALL 3 IMAGES) ---
     if (userProfile.profilePicture) {
@@ -2433,6 +2447,8 @@ window.syncMobileDashboard = function () {
     const routineName = userProfile.routine || "NO PROTOCOL";
     const rDisplay = document.getElementById('mobRoutineDisplay');
     if (rDisplay) rDisplay.innerText = routineName.toUpperCase();
+    const dDisplay = document.getElementById('deskRoutineDisplay');
+    if (dDisplay) dDisplay.innerText = routineName.toUpperCase();
 
     // A. Define the 6 AM Logic
     const check6AmLock = (dateStr) => {
@@ -2460,21 +2476,34 @@ window.syncMobileDashboard = function () {
 
     // C. Update UI Elements
     const btnUpload = document.getElementById('btnRoutineUpload');
+    const dBtnUpload = document.getElementById('deskRoutineUploadBtn');
     const msgTime = document.getElementById('routineTimeMsg'); // "Window Closed"
+    const dMsgTime = document.getElementById('deskRoutineTimeMsg');
     const msgDone = document.getElementById('routineDoneMsg'); // "Accepted"
+    const dMsgDone = document.getElementById('deskRoutineDoneMsg');
 
-    if (btnUpload) {
+    if (btnUpload || dBtnUpload) {
         if (!hasRoutine) {
             // Case: No routine assigned
-            btnUpload.classList.add('hidden');
+            if (btnUpload) btnUpload.classList.add('hidden');
+            if (dBtnUpload) dBtnUpload.classList.add('hidden');
+
             if (msgTime) { msgTime.innerText = "NO PROTOCOL ASSIGNED"; msgTime.classList.remove('hidden'); }
+            if (dMsgTime) { dMsgTime.innerText = "NO PROTOCOL"; dMsgTime.classList.remove('hidden'); }
+
             if (msgDone) msgDone.classList.add('hidden');
+            if (dMsgDone) dMsgDone.classList.add('hidden');
         }
         else if (isDone) {
             // Case: DONE -> LOCK BUTTON
-            btnUpload.classList.add('hidden'); // Hide button
+            if (btnUpload) btnUpload.classList.add('hidden');
+            if (dBtnUpload) dBtnUpload.classList.add('hidden');
 
             if (msgTime) msgTime.classList.add('hidden');
+            if (dMsgTime) dMsgTime.classList.add('hidden');
+
+            if (msgDone) msgDone.classList.remove('hidden');
+            if (dMsgDone) dMsgDone.classList.remove('hidden');
 
             if (msgDone) {
                 // YOUR CUSTOM TEXT
@@ -2484,11 +2513,19 @@ window.syncMobileDashboard = function () {
         }
         else {
             // Case: NOT DONE -> SHOW BUTTON
-            btnUpload.classList.remove('hidden');
-            btnUpload.disabled = false;
+            if (btnUpload) {
+                btnUpload.classList.remove('hidden');
+                btnUpload.disabled = false;
+            }
+            if (dBtnUpload) {
+                dBtnUpload.classList.remove('hidden');
+                dBtnUpload.disabled = false;
+            }
 
             if (msgTime) msgTime.classList.add('hidden');
+            if (dMsgTime) dMsgTime.classList.add('hidden');
             if (msgDone) msgDone.classList.add('hidden');
+            if (dMsgDone) dMsgDone.classList.add('hidden');
         }
     }
 
