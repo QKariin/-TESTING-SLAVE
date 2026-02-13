@@ -52,7 +52,7 @@ export function switchTab(mode) {
 
     // 5. THE CLEAN VIEW MAP
     const viewMap = {
-        'serve': 'viewServingTop',
+        'serve': (document.getElementById('viewServingTopDesktop') ? 'viewServingTopDesktop' : 'viewServingTop'),
         'news': 'viewNews',
         'session': 'viewSession',
         'rewards': 'viewVault',
