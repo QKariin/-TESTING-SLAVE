@@ -163,7 +163,21 @@ export async function renderChat(messages) {
             return `<div class="msg-row" style="justify-content:center; margin: 10px 0;"><div class="msg-col" style="align-items:center;">${contentHtml}<div class="msg-time">${timeStr}</div></div></div>`;
         }
 
-        return `<div class="msg-row ${isMe ? 'mr-out' : 'mr-in'}"><div class="msg-col" style="align-items:${isMe ? 'flex-end' : 'flex-start'};">${contentHtml}<div class="msg-time">${timeStr}</div></div></div>`;
+        // Avatar Logic
+        const avatarUrl = isMe ?
+            (document.getElementById('profilePic')?.src || "https://static.wixstatic.com/media/ce3e5b_e06c7a2254d848a480eb98107c35e246~mv2.png") :
+            "https://static.wixstatic.com/media/ce3e5b_19faff471a434690b7a40aacf5bf42c4~mv2.png";
+
+        const avatarHtml = `<img src="${avatarUrl}" class="chat-av" style="border-color:${isMe ? '#444' : '#c5a059'};">`;
+
+        return `<div class="msg-row ${isMe ? 'mr-out' : 'mr-in'}">
+            ${!isMe ? avatarHtml : ''}
+            <div class="msg-col" style="align-items:${isMe ? 'flex-end' : 'flex-start'};">
+                ${contentHtml}
+                <div class="msg-time">${timeStr}</div>
+            </div>
+            ${isMe ? avatarHtml : ''}
+        </div>`;
     }).join('');
 
     if (conversationMessages.length > visibleMessages.length) {
