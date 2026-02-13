@@ -148,7 +148,7 @@ export async function renderChat(messages) {
                 }
             }
             // 2. STANDARD MEDIA
-            else if (m.message.startsWith('http') || m.mediaUrl || m.message.startsWith('wix:')) {
+            else if (m.message.startsWith('http') || m.mediaUrl || m.message.includes('wix:image') || m.message.includes('wix:video')) {
                 const rawUrl = m.mediaUrl || m.message;
                 const srcUrl = getOptimizedUrl(rawUrl, 600); // FIX: Verify WIX/Bytescale URLs
 
