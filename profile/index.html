@@ -1423,21 +1423,6 @@
                     <span style="font-size: 1.2rem; margin-right: 10px;">📖</span> LIBRARY
                 </button>
             </div>
-
-            <div class="v-card" style="margin-top: auto; padding: 15px; background: rgba(0,0,0,0.3);">
-                <div class="ribbon-label" style="text-align: center; margin-bottom: 10px; font-size: 0.6rem;">PHYSICAL
-                    DEVOTION</div>
-                <div id="btn" class="kneel-bar-graphic" style="height: 40px; border-radius: 10px;"
-                    onmousedown="if(window.handleHoldStart) window.handleHoldStart(event)"
-                    onmouseup="if(window.handleHoldEnd) window.handleHoldEnd(event)"
-                    onmouseleave="if(window.handleHoldEnd) window.handleHoldEnd(event)"
-                    ontouchstart="if(window.handleHoldStart) window.handleHoldStart(event)"
-                    ontouchend="if(window.handleHoldEnd) window.handleHoldEnd(event)">
-                    <div id="fill" class="graphic-fill"></div>
-                    <span id="txt-main" class="graphic-text"
-                        style="font-size: 0.7rem; letter-spacing: 2px;">KNEEL</span>
-                </div>
-            </div>
         </div>
 
         <div class="v-main-content">
@@ -1505,13 +1490,32 @@
                 </div>
                 <div style="position: relative; z-index: 1;">
                     <p
-                        style="color: rgba(255,255,255,0.6); font-family: 'Cinzel'; font-size: 0.8rem; letter-spacing: 2px;">
+                        style="color: rgba(255,255,255,0.6); font-family: 'Cinzel'; font-size: 0.8rem; letter-spacing: 2px; margin: 0;">
                         Welcome back,</p>
                     <h2 id="heroUserName"
-                        style="font-family: 'Orbitron'; font-size: 2rem; margin: 10px 0; color: white;">LOYAL SUBJECT
-                    </h2>
-                    <p style="color: var(--gold); font-family: 'Cinzel'; font-size: 0.9rem; letter-spacing: 1px;">"Your
-                        devotion determines your destiny."</p>
+                        style="font-family: 'Orbitron'; font-size: 2rem; margin: 5px 0; color: white;">
+                        LOYAL SUBJECT</h2>
+
+                    <!-- CONSOLIDATED KNEELING BUTTON -->
+                    <div id="btn" class="mob-kneel-bar"
+                        style="height: 40px; width: 200px; cursor: pointer; border-radius: 10px; overflow: hidden; position: relative; background: rgba(0,0,0,0.4); border: 1px solid var(--gold); margin: 10px 0;"
+                        onmousedown="window.handleHoldStart(event)" onmouseup="window.handleHoldEnd(event)"
+                        onmouseleave="window.handleHoldEnd(event)" ontouchstart="window.handleHoldStart(event)"
+                        ontouchend="window.handleHoldEnd(event)">
+                        <div id="fill" class="mob-bar-fill"
+                            style="width: 0%; background: var(--gold); height: 100%; position: absolute; left: 0; top: 0; transition: width 0.3s ease;">
+                        </div>
+                        <div class="mob-bar-content"
+                            style="position: relative; z-index: 1; height: 100%; display: flex; align-items: center; justify-content: center; width: 100%; gap: 10px;">
+                            <span id="txt-main"
+                                style="font-family: 'Orbitron'; font-size: 0.7rem; color: white; text-shadow: 0 1px 3px black;">HOLD
+                                TO KNEEL</span>
+                        </div>
+                    </div>
+
+                    <p
+                        style="color: var(--gold); font-family: 'Cinzel'; font-size: 0.9rem; letter-spacing: 1px; margin: 5px 0;">
+                        "Your devotion determines your destiny."</p>
                 </div>
             </div>
 
@@ -1586,42 +1590,17 @@
                                 <div id="chatContent" class="chat-area" style="padding: 20px;"></div>
                             </div>
                             <div class="chat-footer"
-                                style="background: rgba(255,255,255,0.03); border-top: 1px solid rgba(255,255,255,0.1); padding: 15px; display: flex; flex-direction: column; gap: 15px;">
+                                style="background: rgba(255,255,255,0.03); border-top: 1px solid rgba(255,255,255,0.1); padding: 15px; display: flex; align-items: center; gap: 10px;">
 
-                                <!-- KNEELING BUTTON -->
-                                <div id="btn" class="mob-kneel-bar"
-                                    style="height: 45px; cursor: pointer; border-radius: 12px; overflow: hidden; position: relative; background: rgba(0,0,0,0.4); border: 1px solid var(--gold); margin: 0;"
-                                    onmousedown="window.handleHoldStart(event)" onmouseup="window.handleHoldEnd(event)"
-                                    onmouseleave="window.handleHoldEnd(event)"
-                                    ontouchstart="window.handleHoldStart(event)"
-                                    ontouchend="window.handleHoldEnd(event)">
-                                    <div id="fill" class="mob-bar-fill"
-                                        style="width: 0%; background: var(--gold); height: 100%; position: absolute; left: 0; top: 0; transition: width 0.3s ease;">
-                                    </div>
-                                    <div class="mob-bar-content"
-                                        style="position: relative; z-index: 1; height: 100%; display: flex; align-items: center; justify-content: center; width: 100%; gap: 10px;">
-                                        <span id="txt-main"
-                                            style="font-family: 'Orbitron'; font-size: 0.8rem; color: white; text-shadow: 0 1px 3px black;">HOLD
-                                            TO KNEEL</span>
-                                        <span id="txt-sub"
-                                            style="font-family: 'Cinzel'; font-size: 0.6rem; color: rgba(255,255,255,0.7);">TODAY:
-                                            0</span>
-                                    </div>
+                                <div class="chat-input-wrapper"
+                                    style="flex-grow: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px;">
+                                    <button id="btnMediaPlus" class="chat-btn-plus" onclick="window.handleMediaPlus()"
+                                        style="background: var(--blue-accent);">+</button>
+                                    <input type="text" id="chatMsgInput" class="chat-input"
+                                        placeholder="Communicate with the Void..." onkeypress="handleChatKey(event)">
                                 </div>
-
-                                <div style="display: flex; gap: 10px; align-items: center;">
-                                    <div class="chat-input-wrapper"
-                                        style="flex-grow: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px;">
-                                        <button id="btnMediaPlus" class="chat-btn-plus"
-                                            onclick="window.handleMediaPlus()"
-                                            style="background: var(--blue-accent);">+</button>
-                                        <input type="text" id="chatMsgInput" class="chat-input"
-                                            placeholder="Communicate with the Void..."
-                                            onkeypress="handleChatKey(event)">
-                                    </div>
-                                    <button class="chat-btn-send" onclick="sendChatMessage()"
-                                        style="background: var(--gold); border-radius: 15px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">></button>
-                                </div>
+                                <button class="chat-btn-send" onclick="sendChatMessage()"
+                                    style="background: var(--gold); border-radius: 15px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">></button>
                             </div>
                         </div>
                     </div>
@@ -1659,7 +1638,8 @@
                         <div class="v-card" style="padding: 10px; margin-bottom: 20px;">
                             <div class="ribbon-label" style="padding: 10px;">ACCEPTED OFFERINGS</div>
                             <div id="gridOkay" class="horizontal-scroll-track"
-                                style="height: 180px; padding-bottom: 10px;"></div>
+                                style="height: 180px; padding-bottom: 10px;">
+                            </div>
                         </div>
                         <div class="v-card" style="padding: 10px; margin-bottom: 20px;">
                             <div class="ribbon-label" style="padding: 10px;">PENDING VERDICT</div>
