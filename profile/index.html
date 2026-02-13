@@ -1441,15 +1441,7 @@
      ======================================================= -->
     <div id="DESKTOP_APP">
         <div class="v-sidebar">
-            <div class="v-brand"
-                style="font-family: 'Orbitron'; font-size: 1.2rem; font-weight: 900; color: var(--gold); letter-spacing: 4px; padding: 20px 0; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;">
-                VISION UI
-            </div>
-
-            <div class="v-card" style="margin-bottom: 20px; text-align: center; padding: 15px;">
-                <div id="subHierarchy" class="hierarchy-top"
-                    style="transform: none; margin: 0 auto 15px; font-size: 0.7rem; border-color: var(--gold-dim); background: rgba(0,0,0,0.2);">
-                    LOADING...</div>
+            <div class="v-card" style="margin-bottom: 20px; text-align: center; padding: 15px; margin-top: 20px;">
                 <div class="avatar-container" style="width: 100px; height: 115px; margin: 0 auto 10px; padding: 2px;"
                     onclick="document.getElementById('profileUploadInput').click()">
                     <img id="profilePic" src="" alt="Avatar" style="filter: none;">
@@ -1459,6 +1451,19 @@
                 <div id="nextLevelName"
                     style="color: var(--gold); font-size: 0.65rem; font-family: 'Cinzel'; letter-spacing: 1px;">NEXT
                     RANK: -</div>
+
+                <!-- NEW STATS IN SIDEBAR -->
+                <div
+                    style="display:flex; justify-content:center; gap:20px; margin-top:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
+                    <div style="text-align:center;">
+                        <div style="font-size:0.6rem; color:#888; font-family:'Orbitron';">MERIT</div>
+                        <div id="sidebarMerit" style="font-size:1rem; color:#fff; font-family:'Orbitron';">0</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:0.6rem; color:#888; font-family:'Orbitron';">NET</div>
+                        <div id="sidebarNet" style="font-size:1rem; color:#f5d142; font-family:'Orbitron';">0</div>
+                    </div>
+                </div>
             </div>
 
             <div class="nav-menu">
@@ -1468,11 +1473,11 @@
                 <button class="nav-btn" onclick="switchTab('record')">
                     <span style="font-size: 1.2rem; margin-right: 10px;">📜</span> RECORDS
                 </button>
+                <button class="nav-btn" onclick="switchTab('news')">
+                    <span style="font-size: 1.2rem; margin-right: 10px;">👑</span> QUEEN KARIN
+                </button>
                 <button class="nav-btn" onclick="switchTab('buy')">
                     <span style="font-size: 1.2rem; margin-right: 10px;">💰</span> EXCHEQUER
-                </button>
-                <button class="nav-btn" onclick="switchTab('news')">
-                    <span style="font-size: 1.2rem; margin-right: 10px;">📖</span> LIBRARY
                 </button>
             </div>
         </div>
