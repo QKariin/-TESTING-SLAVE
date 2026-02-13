@@ -1222,12 +1222,13 @@ window.gameStats = gameStats;
 
 function updateStats() {
     // 1. DESKTOP UPDATE (Basic Header)
-    const subName = document.getElementById('subName');
+    // 1. DESKTOP UPDATE (Basic Header)
+    const subName = document.getElementById('subName') || document.getElementById('heroUserName');
     const subHierarchy = document.getElementById('subHierarchy');
-    const coinsEl = document.getElementById('coins');
-    const pointsEl = document.getElementById('points');
+    const coinsEl = document.getElementById('coins') || document.getElementById('mobCoins');
+    const pointsEl = document.getElementById('points') || document.getElementById('mobPoints');
 
-    if (!subName || !userProfile || !gameStats) return;
+    if ((!subName && !document.getElementById('mob_slaveName')) || !userProfile || !gameStats) return;
 
     // --- VISUAL HIERARCHY LOGIC (STRICT) ---
     // Start with what the DB says
