@@ -248,11 +248,16 @@ window.goToExchequer = function () {
     window.closePoverty();
     if (window.closeQueenMenu) window.closeQueenMenu();
 
-    // 2. Switch to the Global View (Mobile) instead of 'buy' (Desktop)
-    // This prevents the "Black Screen" crash
+    // 2. DESKTOP CHECK: If wide screen, open the new #viewBuy tab
+    if (window.innerWidth > 768) {
+        window.switchTab('buy');
+        return;
+    }
+
+    // 3. MOBILE: Switch to Global View and open Mobile Overlay
     if (window.toggleMobileView) window.toggleMobileView('global');
 
-    // 3. Force open the Store Overlay immediately after switching views
+    // Force open the Store Overlay immediately after switching views
     setTimeout(() => {
         if (window.openExchequer) window.openExchequer();
     }, 200);
@@ -282,23 +287,34 @@ window.toggleTaskDetails = function (forceOpen = null) {
 
 window.updateTaskUIState = function (isActive) {
     const statusText = document.getElementById('mainStatusText');
+
+    // NEW CONTAINERS
+    const idleContainer = document.getElementById('mainButtonsArea');
+    const activeContainer = document.getElementById('activeTaskContent');
+
+    // fallback for Legacy elements if containers don't exist yet (safety)
     const idleMsg = document.getElementById('idleMessage');
     const timerRow = document.getElementById('activeTimerRow');
-    const reqBtn = document.getElementById('mainButtonsArea');
     const uploadArea = document.getElementById('uploadBtnContainer');
 
     if (isActive) {
         if (statusText) { statusText.innerText = "WORKING"; statusText.className = "status-text-lg status-working"; }
-        if (idleMsg) idleMsg.classList.add('hidden');
+
+        // VISUAL TOGGLE
+        if (idleContainer) idleContainer.classList.add('hidden');
+        if (activeContainer) activeContainer.classList.remove('hidden');
+
+        // Fallbacks (ensure children are visible if container logic fails)
         if (timerRow) timerRow.classList.remove('hidden');
-        if (reqBtn) reqBtn.classList.add('hidden');
         if (uploadArea) uploadArea.classList.remove('hidden');
+
     } else {
         if (statusText) { statusText.innerText = "UNPRODUCTIVE"; statusText.className = "status-text-lg status-unproductive"; }
-        if (idleMsg) idleMsg.classList.remove('hidden');
-        if (timerRow) timerRow.classList.add('hidden');
-        if (reqBtn) reqBtn.classList.remove('hidden');
-        if (uploadArea) uploadArea.classList.add('hidden');
+
+        // VISUAL TOGGLE
+        if (idleContainer) idleContainer.classList.remove('hidden');
+        if (activeContainer) activeContainer.classList.add('hidden');
+
         window.toggleTaskDetails(false);
     }
 };
