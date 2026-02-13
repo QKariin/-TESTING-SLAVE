@@ -7,7 +7,7 @@ import {
 } from './state.js';
 import { URLS } from './config.js';
 import { triggerSound } from './utils.js';
-import { getSignedUrl } from './media.js';
+import { getSignedUrl, getOptimizedUrl } from './media.js';
 import { mediaType } from './media.js';
 
 // Add this variable at the TOP of chat.js (outside the function)
@@ -148,12 +148,15 @@ export async function renderChat(messages) {
                 }
             }
             // 2. STANDARD MEDIA
-            else if (m.message.startsWith('http') || m.mediaUrl) {
-                const srcUrl = m.mediaUrl || m.message;
+            else if (m.message.startsWith('http') || m.mediaUrl || m.message.startsWith('wix:')) {
+                const rawUrl = m.mediaUrl || m.message;
+                const srcUrl = getOptimizedUrl(rawUrl, 600); // FIX: Verify WIX/Bytescale URLs
+
                 if (mediaType(srcUrl) === "video") {
                     contentHtml = `<div class="msg ${msgClass}" style="padding:0; background:black;"><video src="${srcUrl}" controls style="max-width:100%;"></video></div>`;
-                } else if (mediaType(srcUrl) === "image") {
-                    contentHtml = `<div class="msg ${msgClass}" style="padding:0;"><img src="${srcUrl}" style="max-width:100%;" onclick="openChatPreview('${encodeURIComponent(srcUrl)}', false)"></div>`;
+                } else {
+                    // Assume Image
+                    contentHtml = `<div class="msg ${msgClass}" style="padding:0;"><img src="${srcUrl}" style="max-width:100%; display:block; border-radius:inherit;" onclick="openChatPreview('${encodeURIComponent(srcUrl)}', false)"></div>`;
                 }
             }
         }
@@ -163,20 +166,23 @@ export async function renderChat(messages) {
             return `<div class="msg-row" style="justify-content:center; margin: 10px 0;"><div class="msg-col" style="align-items:center;">${contentHtml}<div class="msg-time">${timeStr}</div></div></div>`;
         }
 
-        // Avatar Logic
-        const avatarUrl = isMe ?
-            (document.getElementById('profilePic')?.src || "https://static.wixstatic.com/media/ce3e5b_e06c7a2254d848a480eb98107c35e246~mv2.png") :
-            "https://static.wixstatic.com/media/ce3e5b_19faff471a434690b7a40aacf5bf42c4~mv2.png";
-
-        const avatarHtml = `<img src="${avatarUrl}" class="chat-av" style="border-color:${isMe ? '#444' : '#c5a059'};">`;
+        // Avatar Logic (Queen Only - Inside Bubble)
+        if (!isMe) {
+            const avatarUrl = "https://static.wixstatic.com/media/ce3e5b_19faff471a434690b7a40aacf5bf42c4~mv2.png";
+            // Inject avatar INSIDE the message bubble for Queen text messages
+            if (!m.message.startsWith('WISHLIST::') && !m.message.startsWith('http') && !m.mediaUrl && !m.message.startsWith('wix:')) {
+                contentHtml = `<div class="msg ${msgClass}" style="display:flex; align-items:center; gap:10px;">
+                    <img src="${avatarUrl}" style="width:28px; height:28px; border-radius:50%; object-fit:cover; border:1px solid #c5a059;">
+                    <span>${txt}</span>
+                </div>`;
+            }
+        }
 
         return `<div class="msg-row ${isMe ? 'mr-out' : 'mr-in'}">
-            ${!isMe ? avatarHtml : ''}
             <div class="msg-col" style="align-items:${isMe ? 'flex-end' : 'flex-start'};">
                 ${contentHtml}
                 <div class="msg-time">${timeStr}</div>
             </div>
-            ${isMe ? avatarHtml : ''}
         </div>`;
     }).join('');
 
