@@ -301,8 +301,26 @@
                 opacity: 0;
                 overflow: hidden;
                 transition: all 0.4s ease;
+                transition: all 0.4s ease;
                 background: transparent;
                 border-top: 1px solid transparent;
+                box-sizing: border-box;
+            }
+
+            /* SAFETY: PREVENT LONG TEXT EXPANDING DRAWER */
+            #drawer_CurrentRank,
+            #drawer_NextRank {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 100%;
+                display: block;
+            }
+
+            #drawer_ProgressContainer {
+                max-width: 100%;
+                overflow: hidden;
+                box-sizing: border-box;
             }
 
             .mob-internal-drawer.open {
