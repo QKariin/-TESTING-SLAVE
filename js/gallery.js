@@ -1,18 +1,19 @@
 
 // gallery.js - TRILOGY LAYOUT (FIXED)
 import { mediaType } from './media.js';
-import { 
-    galleryData, 
+import {
+    galleryData,
     historyLimit,
     currentHistoryIndex,
     touchStartX,
-    setCurrentHistoryIndex, 
-    setHistoryLimit, 
+    setCurrentHistoryIndex,
+    setHistoryLimit,
     setTouchStartX,
     gameStats,
     setGameStats,
     setCurrentTask,
-    setPendingTaskState
+    setPendingTaskState,
+    userProfile
 } from './state.js';
 import { triggerSound } from './utils.js';
 import { getOptimizedUrl, getThumbnail, getSignedUrl } from './media.js';
@@ -38,24 +39,29 @@ function getPoints(item) {
 let normalizedCache = new Set();
 
 function normalizeGalleryItem(item) {
+    if (!item) return;
+
+    // 1. Ensure Status is a String
+    if (!item.status) item.status = "";
+
     // Use item ID/timestamp as cache key to avoid re-normalizing
     const cacheKey = item._id || item._createdDate;
     if (normalizedCache.has(cacheKey)) return;
-    
-    // Search for photos in any possible field
-    if (item.proofUrl && typeof item.proofUrl === 'string' && item.proofUrl.length > 5) {
-        normalizedCache.add(cacheKey);
-        return;
-    }
-    
-    const candidates = ['media', 'file', 'evidence', 'url', 'image', 'src', 'attachment', 'photo'];
-    for (let key of candidates) {
-        if (item[key] && typeof item[key] === 'string' && item[key].length > 5) {
-            item.proofUrl = item[key];
-            normalizedCache.add(cacheKey);
-            return;
+
+    // 2. Find Proof URL (Aggressive Search)
+    if (!item.proofUrl || item.proofUrl.length < 5) {
+        const candidates = ['media', 'file', 'evidence', 'url', 'image', 'src', 'attachment', 'photo', 'cover', 'thumbnail', 'poster'];
+        for (let key of candidates) {
+            if (item[key] && typeof item[key] === 'string' && item[key].length > 5) {
+                // Ignore "Avatar" completely - User does not want profile pics as evidence
+                if (key === 'avatar') continue;
+
+                item.proofUrl = item[key];
+                break;
+            }
         }
     }
+    normalizedCache.add(cacheKey);
 }
 
 // --- HELPER: SORTED LIST ---
@@ -64,19 +70,48 @@ function getSortedGallery() {
     return [...galleryData].sort((a, b) => new Date(b._createdDate) - new Date(a._createdDate));
 }
 
-// --- HELPER: GET FILTERED LIST ---
+// --- HELPER: GET FILTERED LIST (SEPARATED BY BUTTON TYPE) ---
 function getGalleryList() {
     if (!galleryData || !Array.isArray(galleryData)) return [];
-    
-    // Normalize ALL items first
+
+    // Normalize data structure first
     galleryData.forEach(normalizeGalleryItem);
-    
+
+    // FILTER: This determines what shows in the Service Record (Altar)
     let items = galleryData.filter(i => {
-        const s = (i.status || "").toLowerCase();
-        return (s.includes('pending') || s.includes('app') || s.includes('rej') || s === "") && i.proofUrl;
+        // 1. Basic Check: Must have data
+        if (!i) return false;
+
+        // 2. Must have VISUAL PROOF (Fixes empty Altar slots)
+        if (!i.proofUrl || i.proofUrl.length < 5) return false;
+
+        // 3. THE SEPARATOR (Based on category)
+        const cat = (i.category || "").toLowerCase();
+        const txt = (i.text || "").toLowerCase();
+
+        // Hide "Routine" uploads from here
+        if (cat === 'routine' || txt.includes('daily routine')) return false;
+
+        // Hide "System" updates (Level ups, badge earns, profile changes)
+        if (cat === 'profile' || cat === 'system' || cat === 'level' || cat === 'badge' || cat === 'rank') return false;
+
+        // 4. BLOCK AVATARS (Image Comparison)
+        // If the proofUrl matches the user's current profile picture, it's not a task proof.
+        if (userProfile && userProfile.profilePicture && i.proofUrl) {
+            // Check for exact match or Wix media ID match
+            if (i.proofUrl === userProfile.profilePicture) return false;
+            if (userProfile.profilePicture.includes(i.proofUrl)) return false;
+
+            // Wix often appends dims to the end, so check pure filename if possible
+            const p1 = i.proofUrl.split('/').pop().split('.')[0];
+            const p2 = userProfile.profilePicture.split('/').pop().split('.')[0];
+            if (p1.length > 5 && p1 === p2) return false;
+        }
+
+        return true;
     });
 
-    // Apply Filter
+    // Apply Sticker Filters (The buttons at the top of history)
     if (activeStickerFilter === "DENIED") {
         items = items.filter(item => (item.status || "").toLowerCase().includes('rej'));
     } else if (activeStickerFilter === "PENDING") {
@@ -85,6 +120,7 @@ function getGalleryList() {
         items = items.filter(item => item.sticker === activeStickerFilter);
     }
 
+    // Sort Newest First
     return items.sort((a, b) => new Date(b._createdDate) - new Date(a._createdDate));
 }
 
@@ -111,7 +147,7 @@ function renderStickerFilters() {
     `;
 
     stickers.forEach(url => {
-        if(url === STICKER_DENIED) return;
+        if (url === STICKER_DENIED) return;
         const isActive = (activeStickerFilter === url) ? 'active' : '';
         html += `<div class="filter-circle ${isActive}" onclick="window.setGalleryFilter('${url}')"><img src="${url}"></div>`;
     });
@@ -119,199 +155,333 @@ function renderStickerFilters() {
     filterBar.innerHTML = html;
 }
 
-// REPLACE your renderGallery function with this:
-// REPLACE your renderGallery function with this:
 export async function renderGallery() {
     if (!galleryData) return;
-    
-    // Desktop Targets
-    const gridFailed = document.getElementById('gridFailed'); 
-    const gridOkay = document.getElementById('gridOkay');     
+
+    // --- 0. STATE CHECK (PREVENT BLINKING) ---
+    // Create a signature of the current state: Data Length + Data Timestamp + Filter
+    const newestItem = galleryData.length > 0 ? galleryData[0]._createdDate : "0";
+    const stateSig = `${galleryData.length}-${newestItem}-${activeStickerFilter}`;
+
+    // If state hasn't changed, DO NOT TOUCH THE DOM
+    if (window.lastGalleryRenderState === stateSig) return;
+    window.lastGalleryRenderState = stateSig;
+
+    // --- 1. TARGETS ---
+    const gridFailed = document.getElementById('gridFailed');
+    const gridOkay = document.getElementById('gridOkay');
+    const gridPending = document.getElementById('gridPending');
     const historySection = document.getElementById('historySection');
-    
+
+    // Altar Slots (Desktop)
     const slot1 = { card: document.getElementById('altarSlot1'), img: document.getElementById('imgSlot1'), ref: document.getElementById('reflectSlot1') };
     const slot2 = { card: document.getElementById('altarSlot2'), img: document.getElementById('imgSlot2') };
     const slot3 = { card: document.getElementById('altarSlot3'), img: document.getElementById('imgSlot3') };
 
-    // Mobile Home Targets
-    const mob1 = document.getElementById('mobImgSlot1');
-    const mob2 = document.getElementById('mobImgSlot2');
-    const mob3 = document.getElementById('mobImgSlot3');
+    // Mobile Altar Slots
+    const mob1 = document.getElementById('mobRec_Slot1');
+    const mob2 = document.getElementById('mobRec_Slot2');
+    const mob3 = document.getElementById('mobRec_Slot3');
 
-    // Mobile Record Targets (HORIZONTAL STRIPS)
-    const rec1 = document.getElementById('mobRec_Slot1');
-    const rec2 = document.getElementById('mobRec_Slot2');
-    const rec3 = document.getElementById('mobRec_Slot3');
-    const recGrid = document.getElementById('mobRec_Grid'); // Middle (Archive)
-    const recHeap = document.getElementById('mobRec_Heap'); // Bottom (Heap)
+    // Mobile Lists
+    const recGrid = document.getElementById('mobRec_Grid');
+    const recHeap = document.getElementById('mobRec_Heap');
 
     if (!gridFailed || !gridOkay) return;
 
-    // Reset All Grids
+    // Reset
     gridFailed.innerHTML = "";
     gridOkay.innerHTML = "";
-    if(recGrid) recGrid.innerHTML = "";
-    if(recHeap) recHeap.innerHTML = "";
+    if (gridPending) gridPending.innerHTML = "";
+    if (recGrid) recGrid.innerHTML = "";
+    if (recHeap) recHeap.innerHTML = "";
 
-    const allItems = getGalleryList(); 
+    // --- 2. GET DATA ---
+    const allItems = getGalleryList();
 
     if (historySection) {
         if (allItems.length === 0) historySection.classList.add('solo-mode');
         else historySection.classList.remove('solo-mode');
     }
 
-    // --- 1. TOP 3 (THE ALTAR) ---
-    let bestOf = [...allItems]
-        .filter(item => {
-            const s = (item.status || "").toLowerCase();
-            return !s.includes('rej') && !s.includes('fail') && !s.includes('pending');
-        })
-        .sort((a, b) => getPoints(b) - getPoints(a))
-        .slice(0, 3);
+    // --- 3. SEPARATE LISTS (STRICTER) ---
+    /* 
+       LOGIC:
+       - FAILED: Explicit "Fail", "Reject", "Denied"
+       - PENDING: Explicit "Pending", "Wait", "Review" OR Empty Status (Assume pending if new)
+       - ACCEPTED: Everything else (Approved, Completed, or Legacy valid)
+    */
 
-    const getThumb = async (item, size) => {
-        return await getSignedUrl(getThumbnail(getOptimizedUrl(item.proofUrl || item.media, size)));
+    // A. Denied
+    const deniedList = allItems.filter(item => {
+        const s = (item.status || "").toLowerCase();
+        return s.includes('rej') || s.includes('fail') || s.includes('deni') || s.includes('refus');
+    });
+
+    // B. Pending
+    const pendingList = allItems.filter(item => {
+        const s = (item.status || "").toLowerCase();
+        // If status is empty, treat as Pending (safer than Accepted)
+        if (s === "") return true;
+        return s.includes('pending') || s.includes('wait') || s.includes('review') || s.includes('process');
+    });
+
+    // C. Accepted (Candidates)
+    const candidates = allItems.filter(item => {
+        if (deniedList.includes(item)) return false;
+        if (pendingList.includes(item)) return false;
+        return true;
+    });
+
+    // --- 4. ALTAR SORTING (HIGHEST RATED) ---
+    // User Request: "pictures with an highest rating"
+    // Sort by Points (Desc) -> Date (Desc)
+    candidates.sort((a, b) => {
+        const statsA = getPoints(a);
+        const statsB = getPoints(b);
+        if (statsB !== statsA) return statsB - statsA; // Higher score first
+        return new Date(b.date || b._createdDate) - new Date(a.date || a._createdDate); // Then newer
+    });
+
+    let bestOf = [];
+
+    // Take top 3 highest rated items
+    if (candidates.length > 0) bestOf.push(candidates.shift());
+    if (candidates.length > 0) bestOf.push(candidates.shift());
+    if (candidates.length > 0) bestOf.push(candidates.shift());
+
+    // --- 5. IMAGE LOADER (SEQUENTIAL & ROBUST) ---
+    const getThumb = async (item, size = 300) => {
+        if (!item) return PLACEHOLDER_IMG;
+
+        // 1. Get Initial Raw URL
+        let raw = item.proofUrl || item.media || item.url || item.image || "";
+        if (typeof raw === 'object' && raw.src) raw = raw.src;
+
+        if (!raw || typeof raw !== 'string' || raw.length < 5) return PLACEHOLDER_IMG;
+
+        // *** FIX 1: FORCE IMAGE FORMAT FOR BYTESCALE ***
+        if (raw.includes("upcdn.io")) {
+            // Convert /raw/ to /image/ so we get a JPG (Fixes Videos & iPhone HEIC)
+            let thumbUrl = raw.replace('/raw/', '/image/');
+            if (!thumbUrl.includes('?')) {
+                thumbUrl += `?w=${size}&h=${size}&fit=crop&f=jpg&q=80`;
+            }
+
+            // Attempt to sign the *Thumbnail* URL, not the Raw one
+            try {
+                return await getSignedUrl(thumbUrl);
+            } catch (e) {
+                // If signing fails, return the unsigned JPG link. 
+                // It is better to try loading an image than a raw video.
+                return thumbUrl;
+            }
+        }
+
+        // 2. Standard Logic for Non-Bytescale
+        if (raw.includes('.mp4') || raw.includes('.mov') || raw.includes('.webm') || raw.startsWith('wix:video')) {
+            if (item.cover) raw = item.cover;
+            else if (item.thumbnail) raw = item.thumbnail;
+            else if (item.poster) raw = item.poster;
+        }
+
+        if (raw.startsWith('wix:image')) {
+            try { raw = "https://static.wixstatic.com/media/" + raw.split('/')[3].split('#')[0]; } catch (e) { }
+        }
+
+        try {
+            return await getSignedUrl(getThumbnail(getOptimizedUrl(raw, size)));
+        } catch (e) {
+            return raw;
+        }
     };
 
-    // --- RANK 1 (Center) ---
-    if (bestOf[0]) {
-        let thumb = await getThumb(bestOf[0], 400);
-        let realIndex = allItems.indexOf(bestOf[0]);
+    // --- 6. RENDER TRACKS (ASYNC PARALLEL - RESTORED) ---
+    const renderChunk = async (list, isTrash) => {
+        if (!list || list.length === 0) return { desk: "", mob: "" };
 
-        // Desktop
-        if(slot1.card) {
-            slot1.card.style.display = 'flex';
-            slot1.img.src = thumb;
-            if(slot1.ref) slot1.ref.src = thumb;
-            slot1.card.onclick = () => window.openHistoryModal(realIndex);
-            slot1.img.style.filter = "none";
-        }
-        // Mobile Sync
-        if(mob1) { mob1.src = thumb; mob1.onclick = () => window.openHistoryModal(realIndex); }
-        if(rec1) { rec1.src = thumb; rec1.onclick = () => window.openHistoryModal(realIndex); }
-    } else {
-        if(slot1.card) { slot1.img.src = IMG_QUEEN_MAIN; if(slot1.ref) slot1.ref.src = IMG_QUEEN_MAIN; }
-        if(mob1) mob1.src = IMG_QUEEN_MAIN;
-        if(rec1) rec1.src = IMG_QUEEN_MAIN;
-    }
+        // We process all items in parallel to resolve their URLs
+        const promises = list.map(async (item) => {
+            const idx = allItems.indexOf(item);
 
-    // --- RANK 2 (Left) ---
-    if (bestOf[1]) {
-        let thumb = await getThumb(bestOf[1], 300);
-        let realIndex = allItems.indexOf(bestOf[1]);
-        if(slot2.card) { slot2.card.style.display = 'flex'; slot2.img.src = thumb; slot2.card.onclick = () => window.openHistoryModal(realIndex); }
-        if(mob2) { mob2.src = thumb; mob2.onclick = () => window.openHistoryModal(realIndex); }
-        if(rec2) { rec2.src = thumb; rec2.onclick = () => window.openHistoryModal(realIndex); }
-    } else {
-        if(slot2.img) slot2.img.src = IMG_STATUE_SIDE;
-        if(mob2) mob2.src = IMG_STATUE_SIDE;
-        if(rec2) rec2.src = IMG_STATUE_SIDE;
-    }
+            // 1. Get the Resolved URL (Async)
+            // This handles Wix, Bytescale, Video Posters, everything.
+            let src = await getThumb(item, 300);
 
-    // --- RANK 3 (Right) ---
-    if (bestOf[2]) {
-        let thumb = await getThumb(bestOf[2], 300);
-        let realIndex = allItems.indexOf(bestOf[2]);
-        if(slot3.card) { slot3.card.style.display = 'flex'; slot3.img.src = thumb; slot3.card.onclick = () => window.openHistoryModal(realIndex); }
-        if(mob3) { mob3.src = thumb; mob3.onclick = () => window.openHistoryModal(realIndex); }
-        if(rec3) { rec3.src = thumb; rec3.onclick = () => window.openHistoryModal(realIndex); }
-    } else {
-        if(slot3.img) slot3.img.src = IMG_STATUE_SIDE;
-        if(mob3) mob3.src = IMG_STATUE_SIDE;
-        if(rec3) rec3.src = IMG_STATUE_SIDE;
-    }
+            const imgStyle = isTrash ? 'filter: grayscale(100%) brightness(0.7);' : '';
 
-    // --- 2. MIDDLE (ARCHIVE) ---
-    const middleItems = allItems.filter(item => {
-        if (bestOf.includes(item)) return false; 
-        const s = (item.status || "").toLowerCase();
-        return !s.includes('rej') && !s.includes('fail');
-    });
+            // Video Indicator
+            const raw = (item.proofUrl || item.media || item.url || "").toLowerCase();
+            const isVideo = raw.includes('video') || raw.includes('.mp4') || raw.includes('.mov');
+            const videoIcon = isVideo ? `<div class="video-indicator">▶</div>` : "";
 
-    let desktopArchiveHtml = '';
-    let mobileArchiveHtml = '';
+            const isPending = (item.status || "").toLowerCase().includes('pending');
+            const overlay = isPending ? `<div class="pending-overlay"><div class="pending-badge">AWAITING<br>VERDICT</div></div>` : ``;
+            const mobBadge = isPending ? `<div style="position:absolute; inset:0; background:rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center;"><div class="pending-badge" style="font-size:0.4rem; padding:3px; border-width:1px;">WATCHING</div></div>` : ``;
 
-    if (middleItems.length > 0) {
-        const middlePromises = middleItems.map(item => getSignedUrl(getOptimizedUrl(item.proofUrl || item.media, 300)));
-        const middleThumbs = await Promise.all(middlePromises);
-        
-        for (let i = 0; i < middleItems.length; i++) {
-            const thumb = middleThumbs[i];
-            const realIndex = allItems.indexOf(middleItems[i]);
-            const isPending = (middleItems[i].status || "").toLowerCase().includes('pending');
-            const overlay = isPending ? `<div class="pending-overlay"><div class="pending-icon">⏳</div></div>` : ``;
-            const mobBadge = isPending ? `<div class="mob-pending-badge">⏳</div>` : ``;
+            let stickerHtml = "";
+            if (item.sticker && !isTrash && !isPending) {
+                stickerHtml = `<img src="${item.sticker}" class="gallery-sticker-badge">`;
+            }
 
-            // Desktop Blueprints
-            desktopArchiveHtml += `
-                <div class="item-blueprint" onclick="window.openHistoryModal(${realIndex})">
-                    <img class="blueprint-img" src="${thumb}" loading="lazy">
-                    <div class="bp-corner bl-tl"></div><div class="bp-corner bl-tr"></div>
-                    <div class="bp-corner bl-bl"></div><div class="bp-corner bl-br"></div>
+            const desk = `
+                <div class="${isTrash ? 'item-trash' : 'item-blueprint'}" onclick="window.openHistoryModal(${idx})">
+                    <img class="${isTrash ? 'trash-img' : 'blueprint-img'}" 
+                         src="${src}" 
+                         loading="lazy" 
+                         style="${imgStyle}"
+                         onerror="this.src='${PLACEHOLDER_IMG}'">
+                    ${videoIcon}
+                    ${stickerHtml}
+                    ${isTrash ? '<div class="trash-stamp">DENIED</div>' : ''}
                     ${overlay}
                 </div>`;
-            
-            // Mobile Horizontal Scroll Item
-            mobileArchiveHtml += `
-                <div class="mob-scroll-item" onclick="window.openHistoryModal(${realIndex})">
-                    <img class="mob-scroll-img" src="${thumb}" loading="lazy">
+
+            const mob = `
+                <div class="mob-scroll-item" onclick="window.openHistoryModal(${idx})" style="${isTrash ? 'height:80px; width:80px;' : ''}">
+                    <img src="${src}" class="mob-scroll-img" 
+                         loading="lazy" 
+                         style="${imgStyle}" 
+                         onerror="this.src='${PLACEHOLDER_IMG}'">
+                    ${videoIcon}
+                    ${stickerHtml}
                     ${mobBadge}
                 </div>`;
-        }
-    } else {
-        for(let i=0; i<6; i++) desktopArchiveHtml += `<div class="item-placeholder-slot"><img src="${IMG_MIDDLE_EMPTY}"></div>`;
+
+            return { desk, mob };
+        });
+
+        const results = await Promise.all(promises);
+        return {
+            desk: results.map(r => r.desk).join(''),
+            mob: results.map(r => r.mob).join('')
+        };
+    };
+
+    // --- 7. EXECUTE RENDERS ---
+
+    // A. Accepted (Candidates)
+    // Note: Added 'await' because renderChunk is async again
+    const acceptedHTML = await renderChunk(candidates, false);
+    gridOkay.innerHTML = acceptedHTML.desk;
+    if (recGrid) recGrid.innerHTML += acceptedHTML.mob;
+
+    // B. Pending
+    if (pendingList.length > 0) {
+        const pendingHTML = await renderChunk(pendingList, false);
+        if (gridPending) gridPending.innerHTML = pendingHTML.desk;
+        if (recGrid) recGrid.innerHTML = pendingHTML.mob + recGrid.innerHTML;
     }
-    
-    gridOkay.innerHTML = desktopArchiveHtml;
-    if(recGrid) recGrid.innerHTML = mobileArchiveHtml;
 
-    // --- 3. BOTTOM (HEAP) - NOW SYNCED TO MOBILE ---
-    const failedItems = allItems.filter(item => {
-        const s = (item.status || "").toLowerCase();
-        return s.includes('rej') || s.includes('fail');
-    });
+    // C. Denied (Heap)
+    const deniedHTML = await renderChunk(deniedList, true);
+    gridFailed.innerHTML = deniedHTML.desk;
+    if (recHeap) recHeap.innerHTML = deniedHTML.mob;
 
-    let desktopFailedHtml = '';
-    let mobileFailedHtml = '';
 
-    if (failedItems.length > 0) {
-        const failedPromises = failedItems.map(item => getSignedUrl(getOptimizedUrl(item.proofUrl || item.media, 300)));
-        const failedThumbs = await Promise.all(failedPromises);
-        
-        for (let i = 0; i < failedItems.length; i++) {
-            const thumb = failedThumbs[i];
-            const realIndex = allItems.indexOf(failedItems[i]);
-            
-            // Desktop Trash
-            desktopFailedHtml += `
-                <div class="item-trash" onclick="window.openHistoryModal(${realIndex})">
-                    <img class="trash-img" src="${thumb}" loading="lazy">
-                    <div class="trash-stamp">DENIED</div>
-                </div>`;
-            
-            // Mobile Heap (Small)
-            mobileFailedHtml += `
-                <div class="mob-scroll-item" onclick="window.openHistoryModal(${realIndex})">
-                    <img class="mob-scroll-img" src="${thumb}" loading="lazy">
-                </div>`;
+    // --- 8. RENDER DESKTOP ALTAR ---
+    // --- 8. RENDER DESKTOP ALTAR ---
+    const renderAltarSlot = async (item, slotObj, isMain) => {
+        if (!item || !slotObj.card) {
+            if (slotObj.card) slotObj.card.style.display = 'none';
+            return;
         }
-    } else {
-        for(let i=0; i<6; i++) desktopFailedHtml += `<div class="item-placeholder-slot"><img src="${IMG_BOTTOM_EMPTY}"></div>`;
+        slotObj.card.style.display = 'flex';
+
+        // 1. Get Initial Thumb
+        let url = await getThumb(item, isMain ? 800 : 400);
+
+        // 2. EXTERNAL IMAGE FIX (UpCDN / Bytescale / Firebase)
+        // If it's an external image, getThumb might have messed it up with optimization params.
+        // We prefer the RAW proofUrl if it's a direct image link.
+        if (item.proofUrl && item.proofUrl.startsWith('http') && !item.proofUrl.includes('wix:')) {
+            const ext = item.proofUrl.split('?')[0].split('.').pop().toLowerCase();
+            if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext)) {
+                url = item.proofUrl;
+            }
+        }
+
+        // 3. VIDEO SAFETY
+        if (typeof url === 'string' && (url.includes('.mp4') || url.includes('.mov') || url.includes('.webm') || url.startsWith('wix:video'))) {
+            // ... video fallback logic ...
+            if (item.cover) url = await getThumb({ proofUrl: item.cover }, isMain ? 800 : 400);
+            else if (item.thumbnail) url = await getThumb({ proofUrl: item.thumbnail }, isMain ? 800 : 400);
+            else url = PLACEHOLDER_IMG;
+        }
+
+        if (slotObj.img) {
+            slotObj.img.src = url;
+            slotObj.img.onerror = function () { this.src = PLACEHOLDER_IMG; }; // Double safety
+        }
+        if (slotObj.ref) {
+            slotObj.ref.src = url;
+            slotObj.ref.onerror = function () { this.src = PLACEHOLDER_IMG; };
+        }
+
+        const scoreEl = document.getElementById(isMain ? 'scoreSlot1' : (slotObj === slot2 ? 'scoreSlot2' : 'scoreSlot3'));
+        if (scoreEl) scoreEl.innerText = getPoints(item);
+    };
+
+    await renderAltarSlot(bestOf[0], slot1, true);
+    await renderAltarSlot(bestOf[1], slot2, false);
+    await renderAltarSlot(bestOf[2], slot3, false);
+
+    // --- 9. RENDER MOBILE ALTAR (INSIDE THE FUNCTION NOW) ---
+    const renderMobSlot = async (item, el, size) => {
+        if (!el) return;
+        if (item) {
+            let url = await getThumb(item, size);
+
+            // EXTERNAL IMAGE FIX (Mobile)
+            if (item.proofUrl && item.proofUrl.startsWith('http') && !item.proofUrl.includes('wix:')) {
+                const ext = item.proofUrl.split('?')[0].split('.').pop().toLowerCase();
+                if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext)) {
+                    url = item.proofUrl;
+                }
+            }
+
+            el.src = url;
+            el.style.filter = "none";
+            el.onerror = function () {
+                this.src = IMG_QUEEN_MAIN;
+                this.style.filter = "grayscale(100%) brightness(0.5)";
+            };
+            el.onclick = () => window.openHistoryModal(allItems.indexOf(item));
+        } else {
+            el.src = IMG_QUEEN_MAIN; // Fallback
+            el.style.filter = "grayscale(100%) brightness(0.5)";
+        }
+    };
+
+    await renderMobSlot(bestOf[0], mob1, 400);
+
+    // Explicit Fallback for Center Slot (Queen) if empty
+    if (!bestOf[0] && mob1) {
+        mob1.src = "https://static.wixstatic.com/media/ce3e5b_5fc6a144908b493b9473757471ec7ebb~mv2.png";
+        mob1.style.filter = "grayscale(100%) brightness(0.5)";
     }
-    
-    gridFailed.innerHTML = desktopFailedHtml;
-    if(recHeap) recHeap.innerHTML = mobileFailedHtml;
+
+    await renderMobSlot(bestOf[1], mob2, 300);
+    await renderMobSlot(bestOf[2], mob3, 300);
 }
-
 // --- CRITICAL FIX: EXPORT THIS EMPTY FUNCTION TO PREVENT CRASH ---
 export function loadMoreHistory() {
     setHistoryLimit(historyLimit + 25);
+    window.lastGalleryRenderState = null; // Force re-render
     renderGallery();
     console.log("Increased history limit to", historyLimit);
 }
 
+// --- FORCE WINDOW EXPORTS ---
+window.renderGallery = renderGallery;
+window.setGalleryFilter = function (filterType) {
+    activeStickerFilter = filterType;
+    window.lastGalleryRenderState = null; // Force re-render (though signature check handles filter too, being safe)
+    renderGallery();
+};
+
 // --- REDEMPTION LOGIC ---
-window.atoneForTask = function(index) {
+window.atoneForTask = function (index) {
     const items = getGalleryList();
     const task = items[index];
     if (!task) return;
@@ -326,40 +496,40 @@ window.atoneForTask = function(index) {
     setGameStats({ ...gameStats, coins: gameStats.coins - 100 });
 
     const coinEl = document.getElementById('coins');
-    if(coinEl) coinEl.innerText = gameStats.coins;
+    if (coinEl) coinEl.innerText = gameStats.coins;
 
-    const restoredTask = { 
-        text: task.text, 
-        category: 'redemption', 
-        timestamp: Date.now() 
+    const restoredTask = {
+        text: task.text,
+        category: 'redemption',
+        timestamp: Date.now()
     };
     setCurrentTask(restoredTask);
 
-    const endTimeVal = Date.now() + 86400000; 
-    const newPendingState = { 
-        task: restoredTask, 
-        endTime: endTimeVal, 
-        status: "PENDING" 
+    const endTimeVal = Date.now() + 86400000;
+    const newPendingState = {
+        task: restoredTask,
+        endTime: endTimeVal,
+        status: "PENDING"
     };
     setPendingTaskState(newPendingState);
 
-    window.closeModal(); 
-    
-    if(window.restorePendingUI) window.restorePendingUI();
-    if(window.updateTaskUIState) window.updateTaskUIState(true);
-    if(window.toggleTaskDetails) window.toggleTaskDetails(true);
+    window.closeModal();
 
-    window.parent.postMessage({ 
-        type: "PURCHASE_ITEM", 
+    if (window.restorePendingUI) window.restorePendingUI();
+    if (window.updateTaskUIState) window.updateTaskUIState(true);
+    if (window.toggleTaskDetails) window.toggleTaskDetails(true);
+
+    window.parent.postMessage({
+        type: "PURCHASE_ITEM",
         itemName: "Redemption",
         cost: 100,
-        messageToDom: "Slave paid 100 coins to retry failed task." 
+        messageToDom: "Slave paid 100 coins to retry failed task."
     }, "*");
 
-    window.parent.postMessage({ 
-        type: "savePendingState", 
-        pendingState: newPendingState, 
-        consumeQueue: false 
+    window.parent.postMessage({
+        type: "savePendingState",
+        pendingState: newPendingState,
+        consumeQueue: false
     }, "*");
 };
 
@@ -376,9 +546,9 @@ export async function openHistoryModal(index) {
     const isVideo = mediaType(url) === 'video';
     url = await getSignedUrl(url);
     const mediaContainer = document.getElementById('modalMediaContainer');
-    
+
     if (mediaContainer) {
-        mediaContainer.innerHTML = isVideo ? 
+        mediaContainer.innerHTML = isVideo ?
             `<video src="${url}" autoplay loop muted playsinline style="width:100%; height:100%; object-fit:contain;"></video>` :
             `<img src="${url}" style="width:100%; height:100%; object-fit:contain;">`;
     }
@@ -386,7 +556,7 @@ export async function openHistoryModal(index) {
     // 2. Setup Data
     const pts = getPoints(item);
     const status = (item.status || "").toLowerCase();
-    
+
     // CRITICAL FIX: Add 'deni' and 'refus' to ensure the button shows for "Denied" tasks
     const isRejected = status.includes('rej') || status.includes('fail') || status.includes('deni') || status.includes('refus');
 
@@ -395,7 +565,7 @@ export async function openHistoryModal(index) {
     if (overlay) {
         let verdictText = item.adminComment || "Logged without commentary.";
         // If rejected but no comment, show default text
-        if(isRejected && !item.adminComment) verdictText = "Submission rejected. Standards not met.";
+        if (isRejected && !item.adminComment) verdictText = "Submission rejected. Standards not met.";
 
         // --- REDEMPTION BUTTON GENERATOR ---
         let redemptionBtn = '';
@@ -441,27 +611,30 @@ export async function openHistoryModal(index) {
         glassModal.onclick = (e) => window.closeModal(e);
         glassModal.classList.add('active');
         glassModal.classList.remove('inspect-mode');
+
+        // *** ADD THIS LINE: LOCK THE DASHBOARD ***
+        document.getElementById('viewMobileHome').style.overflow = 'hidden';
     }
 }
 
 // REPLACE OR ADD toggleDirective (Fixes the text swapping)
 // REPLACE YOUR toggleDirective FUNCTION WITH THIS
-window.toggleDirective = function(index) {
-    const items = getGalleryList(); 
+window.toggleDirective = function (index) {
+    const items = getGalleryList();
     const item = items[index];
     if (!item) return;
 
     const box = document.getElementById('verdictBox');
-    
+
     // Check current view state
     if (box.dataset.view === 'task') {
         // Switch back to Verdict (Admin comments are usually plain text, so innerText is fine here, but you can change to innerHTML if needed)
         let verdictText = item.adminComment || "Logged without commentary.";
         const status = (item.status || "").toLowerCase();
-        if((status.includes('rej') || status.includes('fail')) && !item.adminComment) {
-             verdictText = "Submission rejected. Standards not met.";
+        if ((status.includes('rej') || status.includes('fail')) && !item.adminComment) {
+            verdictText = "Submission rejected. Standards not met.";
         }
-        
+
         box.innerText = `"${verdictText}"`;
         box.style.color = "#eee";
         box.style.fontStyle = "italic";
@@ -471,7 +644,7 @@ window.toggleDirective = function(index) {
         // --- THE FIX IS HERE --- 
         // We change .innerText to .innerHTML so the <p> and <br> tags render correctly
         box.innerHTML = item.text || "No directive data available.";
-        
+
         box.style.color = "#ccc";
         box.style.fontStyle = "normal";
         box.dataset.view = 'task';
@@ -487,7 +660,7 @@ export function toggleHistoryView(view) {
     const views = ['modalInfoView', 'modalFeedbackView', 'modalTaskView'];
     views.forEach(id => {
         const el = document.getElementById(id);
-        if(el) el.classList.add('hidden');
+        if (el) el.classList.add('hidden');
     });
 
     if (view === 'proof') {
@@ -502,44 +675,44 @@ export function toggleHistoryView(view) {
         if (view === 'task') targetId = 'modalTaskView';
 
         const target = document.getElementById(targetId);
-        if(target) target.classList.remove('hidden');
+        if (target) target.classList.remove('hidden');
     }
 }
 
 // REPLACE your closeModal with this simple version
 export function closeModal(e) {
-    // If we have an event (e), stop it from triggering other things
-    if(e && e.stopPropagation) e.stopPropagation();
+    if (e && e.stopPropagation) e.stopPropagation();
 
-    // Force Close Everything
     const modal = document.getElementById('glassModal');
     if (modal) {
         modal.classList.remove('active');
-        modal.classList.remove('inspect-mode'); // Reset inspect mode too
+        modal.classList.remove('inspect-mode');
     }
-    
-    // Clear the Media/Video to stop it playing in background
+
     const media = document.getElementById('modalMediaContainer');
     if (media) media.innerHTML = "";
+
+    // *** ADD THIS LINE: UNLOCK THE DASHBOARD ***
+    document.getElementById('viewMobileHome').style.overflow = 'auto';
 }
 
 // Helper to ensure clean closing
 function forceClose() {
     const modal = document.getElementById('glassModal');
     if (modal) modal.classList.remove('active');
-    
+
     const media = document.getElementById('modalMediaContainer');
     if (media) media.innerHTML = "";
 }
 
-export function openModal() {}
+export function openModal() { }
 
 export function initModalSwipeDetection() {
     const modalEl = document.getElementById('glassModal');
     if (!modalEl) return;
 
     modalEl.addEventListener('touchstart', e => setTouchStartX(e.changedTouches[0].screenX), { passive: true });
-    
+
     modalEl.addEventListener('touchend', e => {
         const touchEndX = e.changedTouches[0].screenX;
         const diff = touchStartX - touchEndX;
@@ -547,10 +720,10 @@ export function initModalSwipeDetection() {
         if (Math.abs(diff) > 80) {
             let historyItems = getGalleryList();
             let nextIndex = currentHistoryIndex;
-            
-            if (diff > 0) nextIndex++; 
-            else nextIndex--; 
-            
+
+            if (diff > 0) nextIndex++;
+            else nextIndex--;
+
             if (nextIndex >= 0 && nextIndex < historyItems.length) {
                 openHistoryModal(nextIndex);
             }
@@ -559,7 +732,7 @@ export function initModalSwipeDetection() {
 }
 
 // ADD THIS FUNCTION
-window.toggleInspectMode = function() {
+window.toggleInspectMode = function () {
     const modal = document.getElementById('glassModal');
     if (modal) {
         modal.classList.toggle('inspect-mode');
@@ -568,7 +741,7 @@ window.toggleInspectMode = function() {
 
 // --- PASTE THIS AT THE VERY BOTTOM OF gallery.js ---
 
-window.addEventListener('click', function(e) {
+window.addEventListener('click', function (e) {
     const modal = document.getElementById('glassModal');
     const card = document.getElementById('modalUI');
 
@@ -588,7 +761,7 @@ window.addEventListener('click', function(e) {
             modal.classList.remove('inspect-mode');
             return;
         }
-    
+
     }
 
     window.closeModal();
@@ -596,7 +769,7 @@ window.addEventListener('click', function(e) {
 
 // --- PASTE AT BOTTOM OF gallery.js ---
 
-window.toggleMobileMenu = function() {
+window.toggleMobileMenu = function () {
     const sidebar = document.querySelector('.layout-left');
     if (sidebar) {
         sidebar.classList.toggle('mobile-open');
@@ -611,51 +784,11 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// ... inside renderGallery ...
 
-    // --- SYNC MOBILE ALTAR ---
-    const mob1 = document.getElementById('mobImgSlot1');
-    const mob2 = document.getElementById('mobImgSlot2');
-    const mob3 = document.getElementById('mobImgSlot3');
-
-    // Slot 1 (Center)
-    if (mob1) {
-        if (bestOf[0]) {
-            // Re-use logic for thumbnail
-            let thumb = getThumbnail(getOptimizedUrl(bestOf[0].proofUrl || bestOf[0].media, 400));
-            mob1.src = thumb;
-            mob1.style.filter = "none";
-            mob1.onclick = () => window.openHistoryModal(allItems.indexOf(bestOf[0]));
-        } else {
-            // Set default Queen image if empty
-            mob1.src = "https://static.wixstatic.com/media/ce3e5b_5fc6a144908b493b9473757471ec7ebb~mv2.png";
-            mob1.style.filter = "grayscale(100%) brightness(0.5)";
-        }
-    }
-
-    // Slot 2 (Left)
-    if (mob2 && bestOf[1]) {
-        let thumb = getThumbnail(getOptimizedUrl(bestOf[1].proofUrl || bestOf[1].media, 300));
-        mob2.src = thumb;
-        mob2.onclick = () => window.openHistoryModal(allItems.indexOf(bestOf[1]));
-    }
-
-    // Slot 3 (Right)
-    if (mob3 && bestOf[2]) {
-        let thumb = getThumbnail(getOptimizedUrl(bestOf[2].proofUrl || bestOf[2].media, 300));
-        mob3.src = thumb;
-        mob3.onclick = () => window.openHistoryModal(allItems.indexOf(bestOf[2]));
-    }
-
-// FORCE WINDOW EXPORTS
+// --- FORCE WINDOW EXPORTS ---
 window.renderGallery = renderGallery;
 window.openHistoryModal = openHistoryModal;
 window.toggleHistoryView = toggleHistoryView;
 window.closeModal = closeModal;
-window.atoneForTask = window.atoneForTask;
 window.loadMoreHistory = loadMoreHistory;
-window.setGalleryFilter = function(filterType) {
-    activeStickerFilter = filterType;
-    renderGallery(); 
-    console.log("render render", filterType);
-};
+// atoneForTask, toggleInspectMode, setGalleryFilter, toggleMobileMenu are already on window
